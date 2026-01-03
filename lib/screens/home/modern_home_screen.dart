@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'dart:ui';
 import '../events/modern_event_detail_screen.dart';
 import '../submission/event_submission_screen.dart';
+import '../profile/modern_profile_screen.dart';
 import '../../widgets/event_calendar.dart';
 import '../../widgets/notification_widget.dart';
+import '../../widgets/language_selector.dart';
 import '../../core/providers/notification_provider.dart';
 
 class ModernHomeScreen extends StatefulWidget {
@@ -155,10 +158,14 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                   IconButton(
                     icon: const Icon(Icons.person_outline),
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Profile coming soon!')),
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const ModernProfileScreen()),
                       );
                     },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.language),
+                    onPressed: () => showLanguageSelector(context),
                   ),
                 ],
               ),
@@ -191,7 +198,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                                   });
                                 },
                                 decoration: InputDecoration(
-                                  hintText: 'Search events...',
+                                  hintText: 'search_events'.tr(),
                                   hintStyle: GoogleFonts.poppins(color: Colors.white38),
                                   prefixIcon: const Icon(Icons.search, color: Colors.white54),
                                   border: InputBorder.none,
@@ -226,7 +233,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                       
                       // Categories
                       Text(
-                        'Categories',
+                        'category'.tr(),
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -257,7 +264,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Event Calendar',
+                              'event_calendar',
                               style: GoogleFonts.poppins(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,

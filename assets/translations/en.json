@@ -50,6 +50,7 @@
   "event_description": "Event Description",
   "event_category": "Event Category",
   "event_image": "Event Image",
+  "event_calendar": "Event Calendar",
   "submit": "Submit",
   "cancel": "Cancel",
   "save": "Save",

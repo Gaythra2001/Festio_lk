@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'dart:ui';
+import '../../widgets/language_selector.dart';
 
 class ModernProfileScreen extends StatelessWidget {
   const ModernProfileScreen({super.key});
@@ -134,8 +136,8 @@ class ModernProfileScreen extends StatelessWidget {
                   // Menu Items
                   _buildMenuItem(
                     icon: Icons.person_outline,
-                    title: 'Edit Profile',
-                    subtitle: 'Update your personal information',
+                    title: 'edit'.tr(),
+                    subtitle: 'update_profile'.tr(),
                     onTap: () {},
                   ),
                   
@@ -143,8 +145,8 @@ class ModernProfileScreen extends StatelessWidget {
                   
                   _buildMenuItem(
                     icon: Icons.event_note,
-                    title: 'My Bookings',
-                    subtitle: 'View your upcoming and past events',
+                    title: 'bookings'.tr(),
+                    subtitle: 'upcoming_events'.tr(),
                     onTap: () {},
                   ),
                   
@@ -152,8 +154,8 @@ class ModernProfileScreen extends StatelessWidget {
                   
                   _buildMenuItem(
                     icon: Icons.favorite_border,
-                    title: 'Favorites',
-                    subtitle: 'Events you love',
+                    title: 'my_favorites'.tr(),
+                    subtitle: 'favorite'.tr(),
                     onTap: () {},
                   ),
                   
@@ -161,26 +163,29 @@ class ModernProfileScreen extends StatelessWidget {
                   
                   _buildMenuItem(
                     icon: Icons.notifications_outlined,
-                    title: 'Notifications',
-                    subtitle: 'Manage your notification preferences',
+                    title: 'notifications'.tr(),
+                    subtitle: 'settings'.tr(),
                     onTap: () {},
                   ),
                   
                   const SizedBox(height: 12),
                   
-                  _buildMenuItem(
-                    icon: Icons.language,
-                    title: 'Language',
-                    subtitle: 'English',
-                    onTap: () {},
+                  Builder(
+                    builder: (context) => _buildMenuItem(
+                      icon: Icons.language,
+                      title: 'language'.tr(),
+                      subtitle: context.locale.languageCode == 'si' ? 'සිංහල' : 
+                                context.locale.languageCode == 'ta' ? 'தமிழ்' : 'English',
+                      onTap: () => showLanguageSelector(context),
+                    ),
                   ),
                   
                   const SizedBox(height: 12),
                   
                   _buildMenuItem(
                     icon: Icons.help_outline,
-                    title: 'Help & Support',
-                    subtitle: 'Get help or contact us',
+                    title: 'help_support'.tr(),
+                    subtitle: 'contact_us'.tr(),
                     onTap: () {},
                   ),
                   
@@ -188,8 +193,8 @@ class ModernProfileScreen extends StatelessWidget {
                   
                   _buildMenuItem(
                     icon: Icons.privacy_tip_outlined,
-                    title: 'Privacy Policy',
-                    subtitle: 'Read our privacy policy',
+                    title: 'privacy_policy'.tr(),
+                    subtitle: 'about'.tr(),
                     onTap: () {},
                   ),
                   
@@ -224,7 +229,7 @@ class ModernProfileScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            'Logout',
+                            'logout'.tr(),
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
