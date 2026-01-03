@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import '../home/modern_home_screen.dart';
+import '../navigation/main_navigation_screen.dart';
 import '../../widgets/language_selector.dart';
 import '../../core/providers/user_data_provider.dart';
 import 'modern_registration_screen.dart';
@@ -43,7 +43,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
 
         // Navigate to home screen
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const ModernHomeScreen()),
+          MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
         );
       }
     } catch (e) {
