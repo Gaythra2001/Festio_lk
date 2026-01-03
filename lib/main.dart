@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:festio_lk/core/theme/modern_theme.dart';
 import 'package:festio_lk/screens/auth/modern_login_screen.dart';
 import 'package:festio_lk/core/providers/auth_provider.dart';
@@ -7,8 +8,23 @@ import 'package:festio_lk/core/providers/event_provider.dart';
 import 'package:festio_lk/core/providers/booking_provider.dart';
 import 'package:festio_lk/core/providers/notification_provider.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
+  
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [
+        Locale('en'),
+        Locale('si'),
+        Locale('ta'),
+      ],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en'),
+      startLocale: const Locale('en'),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -27,6 +43,9 @@ class MyApp extends StatelessWidget {
         title: 'Festio LK',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
         home: const ModernLoginScreen(),
       ),
     );
