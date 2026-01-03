@@ -5,10 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'dart:ui';
 import '../events/modern_event_detail_screen.dart';
 import '../submission/event_submission_screen.dart';
-import '../profile/modern_profile_screen.dart';
 import '../../widgets/event_calendar.dart';
-import '../../widgets/notification_widget.dart';
-import '../../widgets/language_selector.dart';
 import '../../widgets/juice_rating.dart';
 import '../../core/providers/notification_provider.dart';
 
@@ -188,33 +185,6 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                     ],
                   ),
                 ),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.calendar_month_outlined),
-                    onPressed: () {
-                      setState(() {
-                        _showCalendar = !_showCalendar;
-                      });
-                    },
-                  ),
-                  NotificationBell(
-                    onTap: () {
-                      NotificationBell.showNotificationPanel(context);
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.person_outline),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ModernProfileScreen()),
-                      );
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.language),
-                    onPressed: () => showLanguageSelector(context),
-                  ),
-                ],
               ),
               
               // Content
