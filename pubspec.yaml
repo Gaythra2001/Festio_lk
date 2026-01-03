@@ -1,0 +1,62 @@
+name: festio_lk
+description: AI-Based Cultural Event Discovery App - Local Event Submission Platform
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  
+  # UI & Navigation
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+  flutter_svg: ^2.0.9
+  cached_network_image: ^3.3.0
+  image_picker: ^1.0.5
+  
+  # State Management
+  provider: ^6.1.1
+  
+  # Backend & Storage (optional - only needed when useFirebase = true)
+  firebase_core: ^4.3.0
+  firebase_auth: ^6.1.3
+  cloud_firestore: ^6.1.1
+  firebase_storage: ^13.0.5
+  
+  # Localization
+  intl: ^0.20.2
+  easy_localization: ^3.0.3
+  
+  # Utilities
+  http: ^1.1.2
+  shared_preferences: ^2.2.2
+  qr_flutter: ^4.1.0
+  url_launcher: ^6.2.2
+  path_provider: ^2.1.1
+  
+  # Forms & Validation
+  flutter_form_builder: ^10.2.0
+  form_builder_validators: ^11.0.0
+  
+  # Date & Time
+  intl_phone_field: ^3.2.0
+  table_calendar: ^3.0.9
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/translations/
+
