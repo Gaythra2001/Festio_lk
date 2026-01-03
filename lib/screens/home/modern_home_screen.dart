@@ -9,6 +9,7 @@ import '../profile/modern_profile_screen.dart';
 import '../../widgets/event_calendar.dart';
 import '../../widgets/notification_widget.dart';
 import '../../widgets/language_selector.dart';
+import '../../widgets/juice_rating.dart';
 import '../../core/providers/notification_provider.dart';
 
 class ModernHomeScreen extends StatefulWidget {
@@ -47,6 +48,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'location': 'Kandy, Sri Lanka',
       'category': 'Festival',
       'imageUrl': 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800',
+      'juice': 4.8,
     },
     {
       'title': 'Traditional Dance Performance',
@@ -54,6 +56,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'location': 'Colombo, Sri Lanka',
       'category': 'Dance',
       'imageUrl': 'https://images.unsplash.com/photo-1504609773096-104ff2c73ba4?w=800',
+      'juice': 4.2,
     },
     {
       'title': 'Cultural Music Festival',
@@ -61,6 +64,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'location': 'Galle, Sri Lanka',
       'category': 'Music',
       'imageUrl': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800',
+      'juice': 4.6,
     },
     {
       'title': 'Vesak Lantern Festival',
@@ -68,6 +72,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'location': 'Colombo, Sri Lanka',
       'category': 'Festival',
       'imageUrl': 'https://images.unsplash.com/photo-1478145787956-f6f12c59624d?w=800',
+      'juice': 3.9,
     },
     {
       'title': 'Traditional Theater Show',
@@ -75,6 +80,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'location': 'Kandy, Sri Lanka',
       'category': 'Theater',
       'imageUrl': 'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=800',
+      'juice': 3.5,
     },
     {
       'title': 'Baila Night Concert',
@@ -82,6 +88,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'location': 'Negombo, Sri Lanka',
       'category': 'Music',
       'imageUrl': 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800',
+      'juice': 4.4,
     },
   ];
 
@@ -354,6 +361,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                             date: event['date']!,
                             location: event['location']!,
                             imageUrl: event['imageUrl']!,
+                            juice: event['juice']! as double,
                           ),
                         )),
                     ],
@@ -454,6 +462,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
     required String date,
     required String location,
     required String imageUrl,
+    required double juice,
   }) {
     return InkWell(
       onTap: () {
@@ -551,15 +560,19 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                           size: 16,
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          location,
-                          style: GoogleFonts.poppins(
-                            color: Colors.white70,
-                            fontSize: 14,
+                        Expanded(
+                          child: Text(
+                            location,
+                            style: GoogleFonts.poppins(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    JuiceRatingCompact(rating: juice),
                   ],
                 ),
               ),
