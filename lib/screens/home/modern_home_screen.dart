@@ -121,31 +121,71 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
         children: [
           CustomScrollView(
             slivers: [
-              // Modern App Bar
+              // Professional App Bar with Hero Section
               SliverAppBar(
-                expandedHeight: 120,
+                expandedHeight: 160,
                 floating: false,
                 pinned: true,
                 backgroundColor: Colors.transparent,
+                elevation: 0,
                 flexibleSpace: FlexibleSpaceBar(
-                  background: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFF667eea),
-                          Color(0xFF764ba2),
-                        ],
+                  background: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Gradient Background
+                      Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFF667eea),
+                              Color(0xFF764ba2),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                      // Overlay Pattern (optional subtle effect)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.1),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  title: Text(
-                    'Festio LK',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                    ),
+                  titlePadding: const EdgeInsets.symmetric(horizontal: 20),
+                  title: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Festio LK',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 28,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      Text(
+                        'Discover Cultural Treasures',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w400,
+                          fontSize: 12,
+                          color: Colors.white70,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 actions: [
@@ -184,7 +224,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Search Bar with AI Button
+                      // Search Bar with AI Button - Professional styling
                       Row(
                         children: [
                           Expanded(
@@ -193,12 +233,23 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                                 color: const Color(0xFF1A1F3A),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.1),
+                                  color: Colors.white.withOpacity(0.08),
+                                  width: 1.5,
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
                               child: TextField(
                                 controller: _searchController,
-                                style: GoogleFonts.poppins(color: Colors.white),
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                ),
                                 onChanged: (value) {
                                   setState(() {
                                     _searchQuery = value;
@@ -206,25 +257,44 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                                 },
                                 decoration: InputDecoration(
                                   hintText: 'search_events'.tr(),
-                                  hintStyle: GoogleFonts.poppins(color: Colors.white38),
-                                  prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                                  hintStyle: GoogleFonts.poppins(
+                                    color: Colors.white38,
+                                    fontSize: 15,
+                                  ),
+                                  prefixIcon: const Icon(
+                                    Icons.search,
+                                    color: Colors.white54,
+                                    size: 20,
+                                  ),
                                   border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                    horizontal: 4,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                           const SizedBox(width: 12),
-                          // AI Bot Button
+                          // AI Bot Button - Professional styling
                           Container(
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
                               borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF667eea).withOpacity(0.4),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
                             ),
                             child: IconButton(
-                              icon: const Icon(Icons.smart_toy_outlined, color: Colors.white),
+                              icon: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 22),
                               onPressed: () {
                                 setState(() {
                                   _showAIBot = true;
@@ -377,21 +447,29 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
         ],
       ),
       
-      // Floating Action Button
+      // Floating Action Button - Professional styling
       floatingActionButton: Container(
         decoration: BoxDecoration(
           gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [
               Color(0xFF667eea),
               Color(0xFF764ba2),
             ],
           ),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF6C63FF).withOpacity(0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+              color: const Color(0xFF667eea).withOpacity(0.4),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
+              spreadRadius: 2,
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -405,10 +483,14 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
           },
           backgroundColor: Colors.transparent,
           elevation: 0,
-          icon: const Icon(Icons.add),
+          icon: const Icon(Icons.add, size: 24),
           label: Text(
             'Add Event',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+              letterSpacing: 0.3,
+            ),
           ),
         ),
       ),
@@ -431,6 +513,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
           decoration: BoxDecoration(
             gradient: isSelected
                 ? const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                     colors: [
                       Color(0xFF667eea),
                       Color(0xFF764ba2),
@@ -442,14 +526,24 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
             border: Border.all(
               color: isSelected 
                   ? Colors.transparent 
-                  : Colors.white.withOpacity(0.1),
+                  : Colors.white.withOpacity(0.08),
+              width: 1.5,
             ),
+            boxShadow: isSelected ? [
+              BoxShadow(
+                color: const Color(0xFF667eea).withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ] : null,
           ),
           child: Text(
             label,
             style: GoogleFonts.poppins(
               color: Colors.white,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              fontSize: 14,
+              letterSpacing: 0.3,
             ),
           ),
         ),
@@ -483,9 +577,15 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+              color: Colors.black.withOpacity(0.25),
+              blurRadius: 25,
+              offset: const Offset(0, 12),
+              spreadRadius: 1,
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -498,10 +598,16 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                 child: Image.network(
                   imageUrl,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: const Color(0xFF1A1F3A),
+                      child: const Icon(Icons.event, color: Colors.white38),
+                    );
+                  },
                 ),
               ),
               
-              // Gradient Overlay
+              // Gradient Overlay - Enhanced for better readability
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
@@ -510,7 +616,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withOpacity(0.8),
+                        Colors.black.withOpacity(0.2),
+                        Colors.black.withOpacity(0.85),
                       ],
                     ),
                   ),
@@ -527,13 +634,16 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                   children: [
                     Text(
                       title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
+                        letterSpacing: 0.3,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
                         const Icon(
@@ -547,11 +657,12 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                           style: GoogleFonts.poppins(
                             color: Colors.white70,
                             fontSize: 14,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         const Icon(
@@ -563,9 +674,12 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         Expanded(
                           child: Text(
                             location,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.poppins(
                               color: Colors.white70,
                               fontSize: 14,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
@@ -577,7 +691,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                 ),
               ),
               
-              // Favorite Button
+              // Favorite Button with glass effect
               Positioned(
                 top: 16,
                 right: 16,
@@ -585,10 +699,14 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                     child: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withOpacity(0.15),
                         shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.2),
+                          width: 1,
+                        ),
                       ),
                       child: const Icon(
                         Icons.favorite_border,
@@ -615,39 +733,54 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
           });
         },
         child: Container(
-          color: Colors.black.withOpacity(0.7),
+          color: Colors.black.withOpacity(0.6),
           child: Center(
             child: GestureDetector(
               onTap: () {}, // Prevent closing when tapping on the bot
               child: Container(
                 margin: const EdgeInsets.all(20),
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(28),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1A1F3A),
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(28),
                   border: Border.all(
                     color: const Color(0xFF667eea),
-                    width: 2,
+                    width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF667eea).withOpacity(0.3),
+                      color: const Color(0xFF667eea).withOpacity(0.25),
+                      blurRadius: 40,
+                      offset: const Offset(0, 16),
+                      spreadRadius: 2,
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.4),
                       blurRadius: 30,
-                      offset: const Offset(0, 10),
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // AI Icon
+                    // AI Icon with gradient
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                           colors: [Color(0xFF667eea), Color(0xFF764ba2)],
                         ),
                         shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF667eea).withOpacity(0.4),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
                       child: const Icon(
                         Icons.smart_toy,
@@ -656,14 +789,15 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                       ),
                     ),
                     
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
                     
                     Text(
                       'AI Event Recommender',
                       style: GoogleFonts.poppins(
-                        fontSize: 24,
+                        fontSize: 26,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
+                        letterSpacing: 0.5,
                       ),
                     ),
                     
@@ -675,10 +809,12 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.white70,
+                        fontWeight: FontWeight.w500,
+                        height: 1.5,
                       ),
                     ),
                     
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
                     
                     // Recommendation Buttons
                     _buildAIButton(
@@ -698,7 +834,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                       },
                     ),
                     
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     
                     _buildAIButton(
                       'Based on My Interests',
@@ -717,7 +853,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                       },
                     ),
                     
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     
                     _buildAIButton(
                       'Popular Right Now',
@@ -736,7 +872,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                       },
                     ),
                     
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
                     
                     // Close Button
                     TextButton(
@@ -749,6 +885,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         'Close',
                         style: GoogleFonts.poppins(
                           color: Colors.white54,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
                         ),
                       ),
                     ),
@@ -771,20 +909,31 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [Color(0xFF667eea), Color(0xFF764ba2)],
           ),
           borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF667eea).withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white),
+            Icon(icon, color: Colors.white, size: 20),
             const SizedBox(width: 12),
             Text(
               text,
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
+                fontSize: 15,
+                letterSpacing: 0.3,
               ),
             ),
           ],
