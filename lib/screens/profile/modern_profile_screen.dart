@@ -1,11 +1,128 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:typed_data';
 import 'dart:ui';
 import '../../widgets/language_selector.dart';
 
-class ModernProfileScreen extends StatelessWidget {
+class ModernProfileScreen extends StatefulWidget {
   const ModernProfileScreen({super.key});
+
+  @override
+  State<ModernProfileScreen> createState() => _ModernProfileScreenState();
+}
+
+class _ModernProfileScreenState extends State<ModernProfileScreen> {
+  final _nameController = TextEditingController(text: 'John Doe');
+  final _emailController = TextEditingController(text: 'john.doe@example.com');
+  final _locationController = TextEditingController(text: 'Colombo, Sri Lanka');
+
+  Uint8List? _avatarBytes;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _locationController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _changePhoto() async {
+    try {
+      final picker = ImagePicker();
+      final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+      if (file == null) return;
+      final bytes = await file.readAsBytes();
+      if (!mounted) return;
+      setState(() => _avatarBytes = bytes);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('error'.tr())),
+      );
+    }
+  }
+
+  void _openEditSheet() {
+    _nameController.text = _nameController.text;
+    _emailController.text = _emailController.text;
+    _locationController.text = _locationController.text;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF0F132C),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+            top: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'edit'.tr(),
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(controller: _nameController, label: 'full_name'.tr(), icon: Icons.person_outline),
+              const SizedBox(height: 12),
+              _buildTextField(controller: _emailController, label: 'email'.tr(), icon: Icons.email_outlined),
+              const SizedBox(height: 12),
+              _buildTextField(controller: _locationController, label: 'location'.tr(), icon: Icons.location_on_outlined),
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {});
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6C63FF),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'save'.tr(),
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +222,7 @@ class ModernProfileScreen extends StatelessWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.edit, color: Colors.white),
-                    onPressed: () {},
+                    onPressed: _openEditSheet,
                   ),
                 ],
               ),
@@ -136,7 +253,7 @@ class ModernProfileScreen extends StatelessWidget {
                             child: _buildQuickAction(
                               icon: Icons.person_outline,
                               label: 'edit'.tr(),
-                              onTap: () {},
+                              onTap: _openEditSheet,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -265,17 +382,40 @@ class ModernProfileScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 86,
-            height: 86,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-              image: const DecorationImage(
-                image: NetworkImage('https://i.pravatar.cc/300'),
-                fit: BoxFit.cover,
+          Stack(
+            children: [
+              Container(
+                width: 86,
+                height: 86,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 3),
+                  image: DecorationImage(
+                    image: _avatarBytes != null
+                        ? MemoryImage(_avatarBytes!)
+                        : const NetworkImage('https://i.pravatar.cc/300') as ImageProvider,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-            ),
+              Positioned(
+                bottom: -4,
+                right: -4,
+                child: InkWell(
+                  onTap: _changePhoto,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6C63FF),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -283,7 +423,7 @@ class ModernProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'John Doe',
+                  _nameController.text,
                   style: GoogleFonts.poppins(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
@@ -292,11 +432,22 @@ class ModernProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'john.doe@example.com',
+                  _emailController.text,
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     color: Colors.white.withOpacity(0.78),
                   ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.location_on_outlined, size: 16, color: Colors.white60),
+                    const SizedBox(width: 4),
+                    Text(
+                      _locationController.text,
+                      style: GoogleFonts.poppins(fontSize: 12, color: Colors.white60),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -562,6 +713,31 @@ class ModernProfileScreen extends StatelessWidget {
               size: 16,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withOpacity(0.12)),
+      ),
+      child: TextField(
+        controller: controller,
+        style: GoogleFonts.poppins(color: Colors.white),
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: Colors.white70),
+          labelText: label,
+          labelStyle: GoogleFonts.poppins(color: Colors.white60),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
         ),
       ),
     );
