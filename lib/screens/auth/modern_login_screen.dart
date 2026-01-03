@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../home/modern_home_screen.dart';
+import '../../widgets/language_selector.dart';
 
 class ModernLoginScreen extends StatefulWidget {
   const ModernLoginScreen({super.key});
@@ -18,7 +20,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
   Future<void> _handleLogin() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter email and password')),
+        SnackBar(content: Text('please_wait'.tr())),
       );
       return;
     }
@@ -52,7 +54,9 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: Stack(
+        children: [
+          Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -102,7 +106,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                   
                   // Welcome Text
                   Text(
-                    'Welcome Back',
+                    'welcome'.tr(),
                     style: GoogleFonts.poppins(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
@@ -113,7 +117,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                   const SizedBox(height: 8),
                   
                   Text(
-                    'Sign in to continue',
+                    'sign_in'.tr(),
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       color: Colors.white70,
@@ -125,7 +129,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                   // Email Field
                   _buildTextField(
                     controller: _emailController,
-                    hintText: 'Email',
+                    hintText: 'email'.tr(),
                     prefixIcon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                   ),
@@ -135,7 +139,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                   // Password Field
                   _buildTextField(
                     controller: _passwordController,
-                    hintText: 'Password',
+                    hintText: 'password'.tr(),
                     prefixIcon: Icons.lock_outline,
                     obscureText: _obscurePassword,
                     suffixIcon: IconButton(
@@ -163,7 +167,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                         );
                       },
                       child: Text(
-                        'Forgot Password?',
+                        'forgot_password'.tr(),
                         style: GoogleFonts.poppins(
                           color: const Color(0xFF6C63FF),
                           fontWeight: FontWeight.w500,
@@ -190,7 +194,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                       child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
                           : Text(
-                              'Sign In',
+                              'sign_in'.tr(),
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -255,7 +259,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Don't have an account? ",
+                        'dont_have_account'.tr(),
                         style: GoogleFonts.poppins(
                           color: Colors.white70,
                           fontSize: 14,
@@ -264,11 +268,11 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                       TextButton(
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Sign up feature coming soon!')),
+                            SnackBar(content: Text('sign_up'.tr())),
                           );
                         },
                         child: Text(
-                          'Sign Up',
+                          'sign_up'.tr(),
                           style: GoogleFonts.poppins(
                             color: const Color(0xFF6C63FF),
                             fontWeight: FontWeight.w600,
@@ -283,6 +287,23 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
             ),
           ),
         ),
+          ),
+          // Language selector button in top-right corner
+          Positioned(
+            top: 16,
+            right: 16,
+            child: SafeArea(
+              child: IconButton(
+                onPressed: () => showLanguageSelector(context),
+                icon: const Icon(Icons.language, color: Colors.white),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.white.withOpacity(0.1),
+                  padding: const EdgeInsets.all(12),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
