@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'dart:typed_data';
 import 'dart:ui';
 import '../../widgets/language_selector.dart';
+import '../../core/providers/user_data_provider.dart';
+import '../auth/modern_login_screen.dart';
 
 class ModernProfileScreen extends StatefulWidget {
   const ModernProfileScreen({super.key});
@@ -19,6 +22,29 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
   final _locationController = TextEditingController(text: 'Colombo, Sri Lanka');
 
   Uint8List? _avatarBytes;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load user data from provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userProvider =
+          Provider.of<UserDataProvider>(context, listen: false);
+      if (userProvider.isLoggedIn) {
+        setState(() {
+          if (userProvider.fullName != null) {
+            _nameController.text = userProvider.fullName!;
+          }
+          if (userProvider.email != null) {
+            _emailController.text = userProvider.email!;
+          }
+          if (userProvider.location != null) {
+            _locationController.text = userProvider.location!;
+          }
+        });
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -670,7 +696,64 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          // Show confirmation dialog
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: const Color(0xFF1A1F3A),
+              title: Text(
+                'Confirm Logout',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              content: Text(
+                'logout_confirmation'.tr(),
+                style: GoogleFonts.poppins(
+                  color: Colors.white70,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white70,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Logout user
+                    Provider.of<UserDataProvider>(context, listen: false)
+                        .logoutUser();
+
+                    // Close dialog
+                    Navigator.pop(context);
+
+                    // Navigate to login screen
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (_) => const ModernLoginScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                  child: Text(
+                    'Logout',
+                    style: GoogleFonts.poppins(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
