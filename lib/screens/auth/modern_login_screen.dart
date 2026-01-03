@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
 import '../home/modern_home_screen.dart';
 import '../../widgets/language_selector.dart';
+import '../../core/providers/user_data_provider.dart';
+import 'modern_registration_screen.dart';
 
 class ModernLoginScreen extends StatefulWidget {
   const ModernLoginScreen({super.key});
@@ -32,8 +35,13 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
       // This simulates a login - no actual Firebase needed
       await Future.delayed(const Duration(seconds: 1));
       
-      // Navigate to home screen
+      // Store user data in provider
       if (mounted) {
+        Provider.of<UserDataProvider>(context, listen: false).loginUser(
+          email: _emailController.text,
+        );
+
+        // Navigate to home screen
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const ModernHomeScreen()),
         );
@@ -297,8 +305,10 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                         ),
                         TextButton(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('sign_up'.tr())),
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      const ModernRegistrationScreen()),
                             );
                           },
                           child: Text(
