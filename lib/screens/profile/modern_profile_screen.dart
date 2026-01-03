@@ -529,20 +529,29 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
     required List<Color> colors,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: colors.map((c) => c.withOpacity(0.35)).toList(),
+          colors: colors.map((c) => c.withOpacity(0.22)).toList(),
         ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.14),
+          width: 1.2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 10),
+            color: colors[0].withOpacity(0.15),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+            spreadRadius: 2,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -550,20 +559,32 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: colors),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: colors,
+              ),
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: colors[0].withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: Icon(icon, color: Colors.white, size: 22),
+            child: Icon(icon, color: Colors.white, size: 24),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Text(
             value,
             style: GoogleFonts.poppins(
-              fontSize: 24,
+              fontSize: 28,
               fontWeight: FontWeight.w700,
               color: Colors.white,
+              letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 4),
@@ -572,6 +593,7 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
             style: GoogleFonts.poppins(
               fontSize: 12,
               color: Colors.white70,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -586,18 +608,32 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.06),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.1),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.white, size: 22),
+            Icon(
+              icon,
+              color: Colors.white,
+              size: 24,
+            ),
             const SizedBox(height: 8),
             Text(
               label,
@@ -605,6 +641,7 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
                 color: Colors.white,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
+                letterSpacing: 0.2,
               ),
             ),
           ],
@@ -620,7 +657,17 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
       decoration: BoxDecoration(
         color: Colors.red.withOpacity(0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.red.withOpacity(0.24)),
+        border: Border.all(
+          color: Colors.red.withOpacity(0.28),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.red.withOpacity(0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: ElevatedButton(
         onPressed: () {},
@@ -634,7 +681,11 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.logout, color: Colors.red),
+            const Icon(
+              Icons.logout,
+              color: Colors.red,
+              size: 20,
+            ),
             const SizedBox(width: 12),
             Text(
               'logout'.tr(),
@@ -642,6 +693,7 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Colors.red,
+                letterSpacing: 0.3,
               ),
             ),
           ],
@@ -665,8 +717,16 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
           color: const Color(0xFF1A1F3A),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withOpacity(0.08),
+            width: 1.2,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -674,14 +734,20 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     const Color(0xFF667eea).withOpacity(0.2),
                     const Color(0xFF764ba2).withOpacity(0.2),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: Colors.white, size: 24),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 24,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -694,6 +760,7 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
+                      letterSpacing: 0.3,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -702,14 +769,15 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: Colors.white60,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.arrow_forward_ios,
-              color: Colors.white38,
+              color: Colors.white.withOpacity(0.4),
               size: 16,
             ),
           ],
