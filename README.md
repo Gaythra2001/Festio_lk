@@ -2,11 +2,28 @@
 
 ## 📋 Project Overview
 
-Festio.lk is an AI-powered cultural event discovery and submission platform designed specifically for Sri Lanka. The application enables users to discover, explore, and participate in cultural events across the island while providing event organizers with a streamlined submission process.
+Festio.lk is an **AI-powered cultural event discovery and submission platform** designed specifically for Sri Lanka. The application enables users to discover, explore, and participate in cultural events across the island while providing event organizers with a streamlined submission process.
+
+Built with cutting-edge **Multi-Language Natural Language Processing (NLP)** capabilities, Festio.lk offers intelligent event classification, semantic search, and content quality analysis in **English, Sinhala (සිංහල), and Tamil (தமிழ்)**.
+
+### Research Focus
+
+This platform serves as a research tool for:
+- Multi-language NLP algorithm development
+- Cultural event recommendation systems
+- User behavior analysis and preference modeling
+- Cross-language information retrieval
+- Content quality assessment and spam detection
 
 ### Key Features
 
 - **Multi-Language Support**: Full support for English, Sinhala (සිංහල), and Tamil (தமிழ்) languages
+- **AI-Powered NLP**: Multi-language Natural Language Processing for intelligent event classification and search
+- **Semantic Search**: Advanced search with language detection and contextual understanding
+- **Auto-Classification**: Automatic event categorization using keyword analysis in all 3 languages
+- **Translation Quality**: Built-in validation for Sinhala and Tamil translations
+- **Spam Detection**: AI-based spam filtering and content quality analysis
+- **Smart Tags**: Automatic tag generation based on event content
 - **Event Discovery**: Browse upcoming and past cultural events with advanced filtering
 - **Category Filtering**: Filter events by categories including Festivals, Dance, Music, Theater, Art, Food, and Poya Days
 - **Poya Day Calendar**: Automatically generated Buddhist full moon (Poya) days with accurate dates and temple information
@@ -55,7 +72,7 @@ Festio.lk is an AI-powered cultural event discovery and submission platform desi
 ├─────────────────────────────────────────────────────────────────┤
 │  Providers/ (State Management via Provider)                     │
 │  ├── Auth Provider          (User authentication state)         │
-│  ├── Event Provider         (Event data management)             │
+│  ├── Event Provider         (Event data management + NLP)       │
 │  ├── Booking Provider       (Booking state management)          │
 │  ├── User Data Provider     (User profile & preferences)        │
 │  ├── Analytics Provider     (Usage analytics)                   │
@@ -69,7 +86,10 @@ Festio.lk is an AI-powered cultural event discovery and submission platform desi
 │  ├── Analytics Service      (Event tracking)                    │
 │  ├── Notification Service   (Push notifications)                │
 │  ├── Public API Service     (External integrations)             │
-│  └── Mock Services          (Demo mode implementations)         │
+│  ├── Mock Services          (Demo mode implementations)         │
+│  └── ML Services/                                                │
+│      ├── Multi-Language NLP (Text classification, search)       │
+│      └── Text Classifier    (Auto-categorization, spam detect)  │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -243,9 +263,47 @@ The app runs in demo mode by default with mock data. To enable Firebase:
 - **Runtime Switching**: Change language without restart
 - **Persistent Selection**: Language preference saved locally
 
+### AI & NLP Features
+- **Language Detection**: Automatic detection of English, Sinhala (සිංහල), and Tamil (தமிழ்)
+- **Semantic Search**: Multi-language search with Jaccard similarity and TF-IDF
+- **Event Classification**: Auto-categorize into 8 categories (Music, Cultural, Religious, Sports, Food, Art, Education, Entertainment)
+- **Sentiment Analysis**: Analyze review sentiment with language-specific keywords
+- **Translation Validation**: Quality assessment for Sinhala and Tamil translations
+- **Spam Detection**: Multi-language spam filtering with confidence scores
+- **Content Quality**: 0-100 scoring with A-D grading
+- **Smart Tags**: Automatic tag generation from event content
+- **Search Suggestions**: Autocomplete with category and event-based suggestions
+- **Keyword Extraction**: TF-IDF based keyword extraction in all languages
+
+For detailed NLP documentation, see [MULTI_LANGUAGE_NLP.md](MULTI_LANGUAGE_NLP.md)
+
 ---
 
-## 📄 License
+## � Documentation
+
+- **[MULTI_LANGUAGE_NLP.md](MULTI_LANGUAGE_NLP.md)** - Comprehensive NLP system documentation
+- **[FIREBASE_SETUP.md](FIREBASE_SETUP.md)** - Firebase configuration guide
+- **[HOW_TO_RUN.md](HOW_TO_RUN.md)** - Step-by-step running instructions
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Detailed architecture documentation
+- **[MULTI_LANGUAGE.md](MULTI_LANGUAGE.md)** - Multi-language implementation guide
+- **[DEMO_MODE.md](DEMO_MODE.md)** - Demo mode features and usage
+
+---
+
+## 🧪 Research & ML Capabilities
+
+Festio.lk is designed as a research platform for multi-language AI/NLP applications:
+
+- **Dataset Generation**: Collects user preferences, behavior, ratings, and calendar data
+- **Multi-Language Corpus**: Events and content in English, Sinhala, and Tamil
+- **NLP Algorithms**: Rule-based classification, semantic search, sentiment analysis
+- **Future ML Training**: Infrastructure ready for TensorFlow Lite integration
+- **Recommendation Engine**: User behavior tracking for personalized suggestions
+- **Analytics Pipeline**: Event tracking and user interaction data collection
+
+---
+
+## �📄 License
 
 This project is private and proprietary.
 
