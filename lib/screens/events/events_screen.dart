@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../widgets/event_calendar.dart';
+import '../../core/models/event_model.dart';
 
 class _Event {
   _Event({
@@ -39,9 +40,11 @@ class EventsScreen extends StatefulWidget {
 
 class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderStateMixin {
   String _selectedCategory = 'All';
-  final List<String> _categories = ['All', 'Festival', 'Dance', 'Music', 'Theater', 'Art', 'Food'];
+  final List<String> _categories = ['All', 'Festival', 'Dance', 'Music', 'Theater', 'Art', 'Food', 'Poya Days'];
   late final TabController _tabController;
-  final List<_Event> _events = [
+  late final List<_Event> _events;
+
+  List<_Event> _getBaseEvents() => [
     _Event(
       title: 'Kandy Esala Perahera',
       date: DateTime(2026, 8, 15),
@@ -116,9 +119,38 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
     ),
   ];
 
+  // Poya days for 2026 with actual full moon dates
+  List<_Event> _generatePoyaDays() {
+    final poyaDays = [
+      {'name': 'Duruthu Full Moon Poya', 'date': DateTime(2026, 1, 3), 'location': 'Kelaniya Temple', 'image': 'assets/images/poya/duruthu_poya.jpg'},
+      {'name': 'Navam Poya', 'date': DateTime(2026, 2, 10), 'location': 'Gangaramaya Temple', 'image': 'https://images.unsplash.com/photo-1604869515882-4d10fa4b0492?w=800'},
+      {'name': 'Medin Poya', 'date': DateTime(2026, 3, 12), 'location': 'Temples Nationwide', 'image': 'https://images.unsplash.com/photo-1581822261290-991b38693d1b?w=800'},
+      {'name': 'Bak Poya', 'date': DateTime(2026, 4, 10), 'location': 'Temples Nationwide', 'image': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'},
+      {'name': 'Vesak Poya', 'date': DateTime(2026, 5, 11), 'location': 'All Buddhist Temples', 'image': 'https://images.unsplash.com/photo-1593010567572-ca0c928db307?w=800'},
+      {'name': 'Poson Poya', 'date': DateTime(2026, 6, 9), 'location': 'Mihintale', 'image': 'https://images.unsplash.com/photo-1549388805-1d3e48a83f9c?w=800'},
+      {'name': 'Esala Poya', 'date': DateTime(2026, 7, 9), 'location': 'Temples Nationwide', 'image': 'https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?w=800'},
+      {'name': 'Nikini Poya', 'date': DateTime(2026, 8, 7), 'location': 'Temples Nationwide', 'image': 'https://images.unsplash.com/photo-1517948430535-1e2469d314fe?w=800'},
+      {'name': 'Binara Poya', 'date': DateTime(2026, 9, 6), 'location': 'Temples Nationwide', 'image': 'https://images.unsplash.com/photo-1522926193341-e9ffd686c60f?w=800'},
+      {'name': 'Vap Poya', 'date': DateTime(2026, 10, 5), 'location': 'Temples Nationwide', 'image': 'https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?w=800'},
+      {'name': 'Il Poya', 'date': DateTime(2026, 11, 4), 'location': 'Temples Nationwide', 'image': 'https://images.unsplash.com/photo-1548198753-12ea61d0e34d?w=800'},
+      {'name': 'Unduvap Poya', 'date': DateTime(2026, 12, 3), 'location': 'Anuradhapura', 'image': 'https://images.unsplash.com/photo-1604869515882-4d10fa4b0492?w=800'},
+    ];
+
+    return poyaDays.map((poya) => _Event(
+      title: poya['name'] as String,
+      date: poya['date'] as DateTime,
+      location: poya['location'] as String,
+      category: 'Poya Days',
+      image: poya['image'] as String,
+      juice: 4.7,
+      price: 'Free',
+    )).toList();
+  }
+
   @override
   void initState() {
     super.initState();
+    _events = [..._getBaseEvents(), ..._generatePoyaDays()];
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
@@ -131,6 +163,25 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  EventModel _convertToEventModel(_Event event) {
+    return EventModel(
+      id: event.title.hashCode.toString(),
+      title: event.title,
+      description: event.title,
+      startDate: event.date,
+      endDate: event.date,
+      location: event.location,
+      category: event.category,
+      organizerId: 'system',
+      organizerName: 'System',
+      isApproved: true,
+      isSpam: false,
+      spamScore: 0.0,
+      trustScore: 100,
+      submittedAt: DateTime.now(),
+    );
   }
 
   @override
@@ -190,7 +241,9 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                 ),
               ],
             ),
-            child: EventCalendar(events: const []),
+            child: EventCalendar(
+              events: filteredEvents.map(_convertToEventModel).toList(),
+            ),
           ),
 
           const SizedBox(height: 32),
@@ -441,18 +494,31 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
         child: Stack(
           children: [
             Positioned.fill(
-              child: Image.asset(
-                event.image,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  color: const Color(0xFF1A1F3A),
-                  child: Icon(
-                    Icons.event,
-                    size: 48,
-                    color: Colors.white.withOpacity(0.35),
-                  ),
-                ),
-              ),
+              child: event.image.startsWith('http')
+                  ? Image.network(
+                      event.image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: const Color(0xFF1A1F3A),
+                        child: Icon(
+                          Icons.event,
+                          size: 48,
+                          color: Colors.white.withOpacity(0.35),
+                        ),
+                      ),
+                    )
+                  : Image.asset(
+                      event.image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: const Color(0xFF1A1F3A),
+                        child: Icon(
+                          Icons.event,
+                          size: 48,
+                          color: Colors.white.withOpacity(0.35),
+                        ),
+                      ),
+                    ),
             ),
             Positioned.fill(
               child: DecoratedBox(
