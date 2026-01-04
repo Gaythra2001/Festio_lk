@@ -71,12 +71,16 @@ class RecommendationProvider with ChangeNotifier {
   /// Save user preferences
   Future<void> saveUserPreferences(
       String userId, UserPreferencesModel preferences) async {
-    if (!useFirebase) return;
     try {
-      await FirebaseFirestore.instance
-          .collection('user_preferences')
-          .doc(userId)
-          .set(preferences.toMap());
+      // Save to Firebase if enabled
+      if (useFirebase) {
+        await FirebaseFirestore.instance
+            .collection('user_preferences')
+            .doc(userId)
+            .set(preferences.toMap());
+      }
+
+      // Always update local state
       _userPreferences = preferences;
       notifyListeners();
     } catch (e) {
