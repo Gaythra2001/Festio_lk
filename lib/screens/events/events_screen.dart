@@ -104,7 +104,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
       date: DateTime(2026, 1, 25),
       location: 'Negombo',
       category: 'Food',
-      image: 'assets/images/food.jpg',
+      image: '../assets/images/aaa/food.png',
       juice: 4.3,
       price: 'LKR 500',
     ),
@@ -122,7 +122,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   // Poya days for 2026 with actual full moon dates
   List<_Event> _generatePoyaDays() {
     final poyaDays = [
-      {'name': 'Duruthu Full Moon Poya', 'date': DateTime(2026, 1, 3), 'location': 'Kelaniya Temple', 'image': 'assets/images/poya/duruthu_poya.jpg'},
+      {'name': 'Duruthu Full Moon Poya', 'date': DateTime(2026, 1, 3), 'location': 'Kelaniya Temple', 'image': 'assets/images/poya/duruthu poya.png.jpg'},
       {'name': 'Navam Poya', 'date': DateTime(2026, 2, 10), 'location': 'Gangaramaya Temple', 'image': 'https://images.unsplash.com/photo-1604869515882-4d10fa4b0492?w=800'},
       {'name': 'Medin Poya', 'date': DateTime(2026, 3, 12), 'location': 'Temples Nationwide', 'image': 'https://images.unsplash.com/photo-1581822261290-991b38693d1b?w=800'},
       {'name': 'Bak Poya', 'date': DateTime(2026, 4, 10), 'location': 'Temples Nationwide', 'image': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'},
@@ -719,3 +719,4 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
     );
   }
 }
+
