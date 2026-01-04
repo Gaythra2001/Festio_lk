@@ -21,7 +21,7 @@ class TextClassifierService {
         language: language, maxKeywords: 10);
 
     // Combine and deduplicate keywords
-    final allKeywords = {...titleKeywords, ...descKeywords}.toList();
+    final allKeywords = <String>{...titleKeywords, ...descKeywords}.toList();
 
     // Calculate confidence scores for each category
     final categoryScores = <String, double>{};

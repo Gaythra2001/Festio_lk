@@ -28,93 +28,87 @@ class MultiLanguageNLPService {
       'ta': ['மத', 'கோவில்', 'பள்ளி', 'வழிபாடு', 'புனித'],
     },
     'sports': {
-      'en': ['sports', 'game', 'tournament', 'match', 'championship', 'athletic', 'competition', 'race'],
-      'si': ['ක්‍රීඩා', 'තරගය', 'තරඟාවලිය', 'තරඟය'],
-      'ta': ['விளையாட்டு', 'போட்டி', 'விளையாட்டுப் போட்டி'],
+      'en': ['sports', 'game', 'match', 'tournament', 'cricket', 'football', 'competition', 'championship'],
+      'si': ['ක්‍රීඩා', 'තරඟය', 'තරග', 'ක්‍රිකට්', 'පාපන්දු'],
+      'ta': ['விளையாட்டு', 'போட்டி', 'கிரிக்கெட்', 'கால்பந்து'],
     },
     'food': {
-      'en': ['food', 'culinary', 'cuisine', 'cooking', 'restaurant', 'dining', 'taste', 'chef'],
-      'si': ['ආහාර', 'කෑම', 'ආපන', 'පිසීම', 'රසකැවිලි'],
-      'ta': ['உணவு', 'சமையல்', 'உணவகம்', 'சுவை'],
+      'en': ['food', 'cuisine', 'restaurant', 'dining', 'culinary', 'taste', 'cooking', 'festival'],
+      'si': ['ආහාර', 'රසකැවිලි', 'ආපනශාලාව', 'කෑම', 'උත්සවය'],
+      'ta': ['உணவு', 'சமையல்', 'உணவகம்', 'உணவு திருவிழா'],
     },
     'art': {
-      'en': ['art', 'exhibition', 'gallery', 'painting', 'sculpture', 'artist', 'creative', 'craft'],
-      'si': ['කලාව', 'ප්‍රදර්ශනය', 'චිත්‍ර', 'ශිල්පය', 'ශිල්පී'],
-      'ta': ['கலை', 'கண்காட்சி', 'ஓவியம்', 'சிற்பம்'],
+      'en': ['art', 'exhibition', 'gallery', 'painting', 'sculpture', 'craft', 'design', 'creative'],
+      'si': ['කලාව', 'ප්‍රදර්ශනය', 'චිත්‍ර', 'ශිල්පය', 'නිර්මාණ'],
+      'ta': ['கலை', 'கண்காட்சி', 'ஓவியம்', 'சிற்பம்', 'வடிவமைப்பு'],
     },
     'education': {
-      'en': ['education', 'workshop', 'seminar', 'training', 'lecture', 'learning', 'class', 'course'],
-      'si': ['අධ්‍යාපන', 'පුහුණු', 'වැඩමුළු', 'දේශනය', 'පන්ති'],
-      'ta': ['கல்வி', 'பயிற்சி', 'கருத்தரங்கு', 'வகுப்பு'],
+      'en': ['education', 'workshop', 'seminar', 'training', 'conference', 'learning', 'class', 'lecture'],
+      'si': ['අධ්‍යාපන', 'වැඩමුළුව', 'සම්මන්ත්‍රණය', 'පුහුණුව', 'ඉගෙනීම'],
+      'ta': ['கல்வி', 'பட்டறை', 'கருத்தரங்கு', 'பயிற்சி', 'மாநாடு'],
     },
     'entertainment': {
-      'en': ['entertainment', 'movie', 'cinema', 'theater', 'drama', 'comedy', 'magic', 'circus'],
-      'si': ['විනෝදාත්මක', 'චිත්‍රපට', 'නාට්‍ය', 'රංග', 'හාස්‍යය'],
-      'ta': ['பொழுதுபோக்கு', 'திரைப்படம்', 'நாடகம்', 'நகைச்சுவை'],
+      'en': ['entertainment', 'comedy', 'movie', 'show', 'performance', 'theater', 'drama', 'cinema'],
+      'si': ['විනෝදාත්මක', 'හාස්‍ය', 'චිත්‍රපටය', 'නාට්‍ය', 'ප්‍රදර්ශනය'],
+      'ta': ['பொழுதுபோக்கு', 'நகைச்சுவை', 'திரைப்படம்', 'நாடகம்', 'நிகழ்ச்சி'],
     },
   };
 
-  // Sentiment keywords for multi-language sentiment analysis
+  // Sentiment keywords
   static const Map<String, Map<String, List<String>>> sentimentKeywords = {
     'positive': {
-      'en': ['amazing', 'excellent', 'great', 'wonderful', 'fantastic', 'awesome', 'beautiful', 'perfect', 'love', 'best'],
-      'si': ['අපූරු', 'විශිෂ්ට', 'හොඳ', 'ලස්සන', 'සුන්දර', 'ප්‍රශංසනීය'],
-      'ta': ['அருமை', 'சிறப்பு', 'நல்ல', 'அழகான', 'சிறந்த'],
+      'en': ['amazing', 'excellent', 'great', 'wonderful', 'fantastic', 'awesome', 'beautiful', 'perfect', 'loved', 'enjoyed'],
+      'si': ['අපූරු', 'විශිෂ්ට', 'ලස්සන', 'හොඳ', 'සුන්දර', 'ප්‍රශස්ත'],
+      'ta': ['அருமை', 'சிறப்பு', 'அழகான', 'நல்ல', 'சிறந்த'],
     },
     'negative': {
-      'en': ['bad', 'terrible', 'awful', 'poor', 'disappointing', 'worst', 'boring', 'waste'],
-      'si': ['නරක', 'අමනාප', 'අසතුටුදායක', 'නිෂ්ඵල'],
-      'ta': ['மோசம்', 'கெட்ட', 'ஏமாற்றம்', 'மோசமான'],
+      'en': ['bad', 'terrible', 'awful', 'disappointing', 'poor', 'boring', 'waste', 'horrible'],
+      'si': ['නරක', 'අප්‍රසන්න', 'කාලය නාස්ති', 'දුර්වල'],
+      'ta': ['மோசம்', 'மோசமான', 'ஏமாற்றம்', 'வீண்'],
     },
   };
 
-  /// Detect language of text
+  /// Detect the language of input text
   String detectLanguage(String text) {
     if (text.isEmpty) return 'en';
 
     // Check for Sinhala
-    if (languagePatterns['si']!.hasMatch(text)) return 'si';
+    if (languagePatterns['si']!.hasMatch(text)) {
+      return 'si';
+    }
 
     // Check for Tamil
-    if (languagePatterns['ta']!.hasMatch(text)) return 'ta';
+    if (languagePatterns['ta']!.hasMatch(text)) {
+      return 'ta';
+    }
 
     // Default to English
     return 'en';
   }
 
-  /// Get text in user's preferred language
-  String getLocalizedText(EventModel event, String language) {
-    switch (language) {
-      case 'si':
-        return event.titleSi ?? event.title;
-      case 'ta':
-        return event.titleTa ?? event.title;
-      default:
-        return event.title;
-    }
-  }
-
-  /// Classify event into categories using NLP
+  /// Classify event into categories based on keywords
   List<String> classifyEvent(EventModel event, {String? language}) {
-    final lang = language ?? detectLanguage(event.title);
-    final text = '${event.title} ${event.description}'.toLowerCase();
-    final categories = <String>[];
+    final lang = language ?? detectLanguage(event.description);
+    final matchedCategories = <String>[];
 
-    categoryKeywords.forEach((category, keywords) {
-      final langKeywords = keywords[lang] ?? keywords['en']!;
-      
-      for (final keyword in langKeywords) {
-        if (text.contains(keyword.toLowerCase())) {
-          categories.add(category);
+    final searchText =
+        '${event.title.toLowerCase()} ${event.description.toLowerCase()} ${event.tags.join(' ').toLowerCase()}';
+
+    for (final category in categoryKeywords.keys) {
+      final keywords = categoryKeywords[category]?[lang] ?? [];
+
+      for (final keyword in keywords) {
+        if (searchText.contains(keyword.toLowerCase())) {
+          matchedCategories.add(category);
           break;
         }
       }
-    });
+    }
 
-    return categories.isEmpty ? ['general'] : categories;
+    return matchedCategories.isEmpty ? ['entertainment'] : matchedCategories;
   }
 
-  /// Analyze sentiment of text (for reviews/ratings)
+  /// Analyze sentiment of text
   Map<String, dynamic> analyzeSentiment(String text, {String? language}) {
     final lang = language ?? detectLanguage(text);
     final lowerText = text.toLowerCase();
@@ -123,57 +117,53 @@ class MultiLanguageNLPService {
     int negativeScore = 0;
 
     // Count positive keywords
-    final positiveWords = sentimentKeywords['positive']![lang] ?? 
-                          sentimentKeywords['positive']!['en']!;
-    for (final word in positiveWords) {
-      if (lowerText.contains(word.toLowerCase())) {
+    final positiveKeywords = sentimentKeywords['positive']?[lang] ?? [];
+    for (final keyword in positiveKeywords) {
+      if (lowerText.contains(keyword.toLowerCase())) {
         positiveScore++;
       }
     }
 
     // Count negative keywords
-    final negativeWords = sentimentKeywords['negative']![lang] ?? 
-                          sentimentKeywords['negative']!['en']!;
-    for (final word in negativeWords) {
-      if (lowerText.contains(word.toLowerCase())) {
+    final negativeKeywords = sentimentKeywords['negative']?[lang] ?? [];
+    for (final keyword in negativeKeywords) {
+      if (lowerText.contains(keyword.toLowerCase())) {
         negativeScore++;
       }
     }
 
-    // Calculate sentiment score (-1 to 1)
-    final total = positiveScore + negativeScore;
-    final sentiment = total == 0 
-        ? 0.0 
-        : (positiveScore - negativeScore) / total;
+    // Calculate sentiment
+    final totalScore = positiveScore + negativeScore;
+    String sentiment;
+    double sentimentValue;
+
+    if (totalScore == 0) {
+      sentiment = 'neutral';
+      sentimentValue = 0.0;
+    } else {
+      final positiveRatio = positiveScore / totalScore;
+      if (positiveRatio > 0.6) {
+        sentiment = 'positive';
+        sentimentValue = positiveRatio;
+      } else if (positiveRatio < 0.4) {
+        sentiment = 'negative';
+        sentimentValue = -1 * (negativeScore / totalScore);
+      } else {
+        sentiment = 'neutral';
+        sentimentValue = 0.0;
+      }
+    }
 
     return {
-      'sentiment': sentiment,
-      'label': sentiment > 0.2 ? 'positive' : (sentiment < -0.2 ? 'negative' : 'neutral'),
-      'positiveScore': positiveScore,
-      'negativeScore': negativeScore,
-      'confidence': total > 0 ? (positiveScore > negativeScore ? positiveScore / total : negativeScore / total) : 0.0,
+      'label': sentiment,
+      'sentiment': sentimentValue,
+      'positiveCount': positiveScore,
+      'negativeCount': negativeScore,
+      'confidence': totalScore > 0 ? totalScore / 10.0 : 0.0,
     };
   }
 
-  /// Calculate semantic similarity between two texts
-  /// Uses Jaccard similarity on word sets
-  double calculateTextSimilarity(String text1, String text2, {String? language}) {
-    final lang = language ?? detectLanguage(text1);
-    
-    // Tokenize
-    final words1 = _tokenize(text1, lang);
-    final words2 = _tokenize(text2, lang);
-
-    if (words1.isEmpty || words2.isEmpty) return 0.0;
-
-    // Calculate Jaccard similarity
-    final intersection = words1.toSet().intersection(words2.toSet());
-    final union = words1.toSet().union(words2.toSet());
-
-    return union.isEmpty ? 0.0 : intersection.length / union.length;
-  }
-
-  /// Multi-language semantic search
+  /// Semantic search using text similarity
   List<EventModel> semanticSearch(
     String query,
     List<EventModel> events, {
@@ -181,85 +171,97 @@ class MultiLanguageNLPService {
     int maxResults = 20,
   }) {
     final lang = language ?? detectLanguage(query);
-    final scoredEvents = <MapEntry<EventModel, double>>[];
+    final results = <Map<String, dynamic>>[];
 
     for (final event in events) {
       double score = 0.0;
 
-      // Get event text in appropriate language
-      final eventTitle = getLocalizedText(event, lang);
-      final eventDesc = lang == 'si' 
-          ? (event.descriptionSi ?? event.description)
-          : lang == 'ta'
-              ? (event.descriptionTa ?? event.description)
-              : event.description;
-
-      // Title similarity (weighted higher)
-      score += calculateTextSimilarity(query, eventTitle, language: lang) * 3.0;
-
-      // Description similarity
-      score += calculateTextSimilarity(query, eventDesc, language: lang) * 1.5;
+      // Calculate similarity score
+      final similarity = calculateTextSimilarity(
+        query,
+        '${event.title} ${event.description}',
+        language: lang,
+      );
+      score += similarity * 3.0; // Title/description match weighted heavily
 
       // Category match
-      if (event.category.toLowerCase().contains(query.toLowerCase()) ||
-          query.toLowerCase().contains(event.category.toLowerCase())) {
-        score += 2.0;
+      final eventCategories = classifyEvent(event, language: lang);
+      for (final category in eventCategories) {
+        final categoryWords = categoryKeywords[category]?[lang] ?? [];
+        for (final word in categoryWords) {
+          if (query.toLowerCase().contains(word.toLowerCase())) {
+            score += 2.0;
+          }
+        }
       }
 
-      // Tag matching
+      // Tag match
       for (final tag in event.tags) {
-        final tagSimilarity = calculateTextSimilarity(query, tag, language: lang);
-        score += tagSimilarity * 1.0;
+        if (query.toLowerCase().contains(tag.toLowerCase()) ||
+            tag.toLowerCase().contains(query.toLowerCase())) {
+          score += 1.5;
+        }
       }
 
       // Location match
-      final eventLocation = lang == 'si'
-          ? (event.locationSi ?? event.location)
-          : lang == 'ta'
-              ? (event.locationTa ?? event.location)
-              : event.location;
-      
-      if (eventLocation.toLowerCase().contains(query.toLowerCase())) {
-        score += 1.5;
+      if (event.location.toLowerCase().contains(query.toLowerCase())) {
+        score += 1.0;
       }
 
       if (score > 0) {
-        scoredEvents.add(MapEntry(event, score));
+        results.add({'event': event, 'score': score});
       }
     }
 
-    // Sort by score and return top results
-    scoredEvents.sort((a, b) => b.value.compareTo(a.value));
-    return scoredEvents
+    // Sort by score descending
+    results.sort((a, b) => (b['score'] as double).compareTo(a['score'] as double));
+
+    return results
         .take(maxResults)
-        .map((e) => e.key)
+        .map((r) => r['event'] as EventModel)
         .toList();
+  }
+
+  /// Calculate text similarity using Jaccard similarity
+  double calculateTextSimilarity(String text1, String text2, {String? language}) {
+    final lang = language ?? detectLanguage(text1);
+
+    final tokens1 = _tokenize(text1, lang);
+    final tokens2 = _tokenize(text2, lang);
+
+    if (tokens1.isEmpty || tokens2.isEmpty) return 0.0;
+
+    final set1 = tokens1.toSet();
+    final set2 = tokens2.toSet();
+
+    final intersection = set1.intersection(set2).length;
+    final union = set1.union(set2).length;
+
+    return union > 0 ? intersection / union : 0.0;
   }
 
   /// Extract keywords from text
   List<String> extractKeywords(String text, {String? language, int maxKeywords = 10}) {
     final lang = language ?? detectLanguage(text);
-    final words = _tokenize(text, lang);
+    final tokens = _tokenize(text, lang);
 
-    // Count word frequencies
-    final wordFreq = <String, int>{};
-    for (final word in words) {
-      if (word.length > 2) { // Ignore very short words
-        wordFreq[word] = (wordFreq[word] ?? 0) + 1;
-      }
+    // Count frequency
+    final frequency = <String, int>{};
+    for (final token in tokens) {
+      frequency[token] = (frequency[token] ?? 0) + 1;
     }
 
-    // Sort by frequency and return top keywords
-    final sortedWords = wordFreq.entries.toList()
+    // Sort by frequency
+    final sortedKeywords = frequency.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
-    return sortedWords
+    return sortedKeywords
         .take(maxKeywords)
         .map((e) => e.key)
         .toList();
   }
 
-  /// Assess translation quality by comparing keyword overlap
+  /// Assess translation quality
   double assessTranslationQuality(String original, String translation) {
     final origLang = detectLanguage(original);
     final transLang = detectLanguage(translation);
@@ -268,22 +270,24 @@ class MultiLanguageNLPService {
 
     // Check if key information is preserved
     // For multi-language, we check if the translation has similar category classifications
+    final now = DateTime.now();
     final origCategories = classifyEvent(
       EventModel(
         id: 'temp',
         title: original,
         description: original,
-        startDate: DateTime.now(),
-        endDate: DateTime.now(),
-        location: '',
         category: '',
+        startDate: now,
+        endDate: now,
+        location: '',
         organizerId: '',
         organizerName: '',
-        isApproved: true,
+        submittedAt: now,
+        tags: [],
+        isApproved: false,
         isSpam: false,
-        spamScore: 0,
-        trustScore: 100,
-        submittedAt: DateTime.now(),
+        spamScore: 0.0,
+        trustScore: 0,
       ),
       language: origLang,
     );
@@ -293,26 +297,29 @@ class MultiLanguageNLPService {
         id: 'temp',
         title: translation,
         description: translation,
-        startDate: DateTime.now(),
-        endDate: DateTime.now(),
-        location: '',
         category: '',
+        startDate: now,
+        endDate: now,
+        location: '',
         organizerId: '',
         organizerName: '',
-        isApproved: true,
+        submittedAt: now,
+        tags: [],
+        isApproved: false,
         isSpam: false,
-        spamScore: 0,
-        trustScore: 100,
-        submittedAt: DateTime.now(),
+        spamScore: 0.0,
+        trustScore: 0,
       ),
       language: transLang,
     );
 
-    // Calculate category overlap
-    final categoryOverlap = origCategories.toSet().intersection(transCategories.toSet()).length;
-    final categoryUnion = origCategories.toSet().union(transCategories.toSet()).length;
+    // Calculate overlap
+    final origSet = origCategories.toSet();
+    final transSet = transCategories.toSet();
+    final intersection = origSet.intersection(transSet).length;
+    final union = origSet.union(transSet).length;
 
-    return categoryUnion > 0 ? categoryOverlap / categoryUnion : 0.5;
+    return union > 0 ? intersection / union : 0.0;
   }
 
   /// Generate search suggestions
@@ -326,25 +333,26 @@ class MultiLanguageNLPService {
     final suggestions = <String>{};
 
     // Add category suggestions
-    categoryKeywords.forEach((category, keywords) {
-      final langKeywords = keywords[lang] ?? keywords['en']!;
-      for (final keyword in langKeywords) {
+    for (final category in categoryKeywords.keys) {
+      final keywords = categoryKeywords[category]?[lang] ?? [];
+      for (final keyword in keywords) {
         if (keyword.toLowerCase().startsWith(partial.toLowerCase())) {
           suggestions.add(keyword);
         }
       }
-    });
+    }
 
-    // Add event titles that match
+    // Add from event titles
     for (final event in events) {
-      final title = getLocalizedText(event, lang);
-      if (title.toLowerCase().contains(partial.toLowerCase())) {
-        suggestions.add(title);
+      if (event.title.toLowerCase().contains(partial.toLowerCase())) {
+        suggestions.add(event.title);
       }
+    }
 
-      // Add matching tags
+    // Add from tags
+    for (final event in events) {
       for (final tag in event.tags) {
-        if (tag.toLowerCase().contains(partial.toLowerCase())) {
+        if (tag.toLowerCase().startsWith(partial.toLowerCase())) {
           suggestions.add(tag);
         }
       }
@@ -381,54 +389,69 @@ class MultiLanguageNLPService {
     }
   }
 
-  /// Generate text embedding vector (simplified TF-IDF approach)
-  Map<String, double> generateTextEmbedding(String text, {String? language}) {
-    final lang = language ?? detectLanguage(text);
-    final words = _tokenize(text, lang);
-    final embedding = <String, double>{};
+  /// Calculate TF-IDF embeddings
+  Map<String, double> calculateTFIDF(String text, List<String> corpus) {
+    final tokens = _tokenize(text, detectLanguage(text));
+    final tf = <String, double>{};
+    final idf = <String, double>{};
 
     // Calculate term frequency
-    final totalWords = words.length.toDouble();
-    for (final word in words) {
-      embedding[word] = (embedding[word] ?? 0) + (1.0 / totalWords);
+    for (final token in tokens) {
+      tf[token] = (tf[token] ?? 0) + 1;
     }
 
-    return embedding;
+    // Normalize TF
+    final maxFreq = tf.values.isEmpty ? 1 : tf.values.reduce((a, b) => a > b ? a : b);
+    for (final key in tf.keys) {
+      tf[key] = tf[key]! / maxFreq;
+    }
+
+    // Calculate IDF
+    for (final token in tf.keys) {
+      int documentCount = 0;
+      for (final doc in corpus) {
+        if (doc.toLowerCase().contains(token)) {
+          documentCount++;
+        }
+      }
+      idf[token] = documentCount > 0
+          ? (corpus.length / documentCount).clamp(1.0, 10.0)
+          : 1.0;
+    }
+
+    // Calculate TF-IDF
+    final tfidf = <String, double>{};
+    for (final token in tf.keys) {
+      tfidf[token] = tf[token]! * idf[token]!;
+    }
+
+    return tfidf;
   }
 
-  /// Calculate cosine similarity between embeddings
-  double cosineSimilarity(Map<String, double> embedding1, Map<String, double> embedding2) {
-    final allKeys = {...embedding1.keys, ...embedding2.keys};
-    
+  /// Calculate cosine similarity between two TF-IDF vectors
+  double cosineSimilarity(Map<String, double> vec1, Map<String, double> vec2) {
+    if (vec1.isEmpty || vec2.isEmpty) return 0.0;
+
+    final allKeys = {...vec1.keys, ...vec2.keys};
     double dotProduct = 0.0;
-    double norm1 = 0.0;
-    double norm2 = 0.0;
+    double magnitude1 = 0.0;
+    double magnitude2 = 0.0;
 
     for (final key in allKeys) {
-      final val1 = embedding1[key] ?? 0.0;
-      final val2 = embedding2[key] ?? 0.0;
-      
+      final val1 = vec1[key] ?? 0.0;
+      final val2 = vec2[key] ?? 0.0;
+
       dotProduct += val1 * val2;
-      norm1 += val1 * val1;
-      norm2 += val2 * val2;
+      magnitude1 += val1 * val1;
+      magnitude2 += val2 * val2;
     }
 
-    if (norm1 == 0 || norm2 == 0) return 0.0;
-    
-    return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
-  }
-}
+    magnitude1 = magnitude1.isFinite ? magnitude1 : 0.0;
+    magnitude2 = magnitude2.isFinite ? magnitude2 : 0.0;
 
-// Math helper
-class Math {
-  static double sqrt(double x) => x.isNaN ? 0.0 : (x < 0 ? 0.0 : _sqrt(x));
-  
-  static double _sqrt(double x) {
-    if (x == 0) return 0;
-    double guess = x / 2;
-    for (int i = 0; i < 10; i++) {
-      guess = (guess + x / guess) / 2;
-    }
-    return guess;
+    final denominator = (magnitude1 * magnitude2);
+    if (denominator == 0) return 0.0;
+
+    return dotProduct / denominator;
   }
 }
