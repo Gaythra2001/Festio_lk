@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../core/models/booking_model.dart';
 import '../core/models/chat_message_model.dart';
-import '../core/services/ai/ai_chatbot_service.dart';
-import '../core/models/user_model.dart';
 import '../core/models/event_model.dart';
-import '../core/models/user_preferences_model.dart';
 import '../core/models/user_behavior_model.dart';
+import '../core/models/user_model.dart';
+import '../core/models/user_preferences_model.dart';
+import '../core/providers/recommendation_provider.dart';
 
 /// AI Chatbot Widget for Event Recommendations
 class AIChatbotWidget extends StatefulWidget {
   final UserModel user;
   final List<EventModel> allEvents;
-  final List<dynamic> userBookings;
-  final Map<String, List<dynamic>> allUserBookings;
+  final List<BookingModel> userBookings;
+  final Map<String, List<BookingModel>> allUserBookings;
   final UserPreferencesModel? userPreferences;
   final UserBehaviorModel? userBehavior;
 
@@ -30,7 +32,6 @@ class AIChatbotWidget extends StatefulWidget {
 }
 
 class _AIChatbotWidgetState extends State<AIChatbotWidget> {
-  final AIEventChatbotService _chatbotService = AIEventChatbotService();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
@@ -39,22 +40,37 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
   @override
   void initState() {
     super.initState();
-    // Send initial greeting
-    _sendInitialGreeting();
+    _loadHistoryAndGreet();
   }
 
-  Future<void> _sendInitialGreeting() async {
+  Future<void> _loadHistoryAndGreet() async {
+    final recommendationProvider =
+        Provider.of<RecommendationProvider>(context, listen: false);
+
+    // Load existing history if any
+    final history = recommendationProvider.getChatHistory(widget.user.id);
+    if (history.isNotEmpty) {
+      setState(() => _messages.addAll(history));
+      _scrollToBottom();
+      return;
+    }
+
+    // Otherwise send greeting
+    await _sendInitialGreeting(recommendationProvider);
+  }
+
+  Future<void> _sendInitialGreeting(
+    RecommendationProvider recommendationProvider,
+  ) async {
     setState(() => _isTyping = true);
 
-    final greeting = await _chatbotService.processMessage(
+    final greeting = await recommendationProvider.sendChatMessage(
       userId: widget.user.id,
-      userMessage: "Hello",
+      message: "Hello",
       user: widget.user,
       allEvents: widget.allEvents,
       userBookings: widget.userBookings,
       allUserBookings: widget.allUserBookings,
-      userPreferences: widget.userPreferences,
-      userBehavior: widget.userBehavior,
     );
 
     setState(() {
@@ -85,17 +101,17 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
     _messageController.clear();
     _scrollToBottom();
 
-    // Get bot response
+    // Get bot response via provider (keeps shared history alive)
     try {
-      final botResponse = await _chatbotService.processMessage(
+      final recommendationProvider =
+          Provider.of<RecommendationProvider>(context, listen: false);
+      final botResponse = await recommendationProvider.sendChatMessage(
         userId: widget.user.id,
-        userMessage: message,
+        message: message,
         user: widget.user,
         allEvents: widget.allEvents,
         userBookings: widget.userBookings,
         allUserBookings: widget.allUserBookings,
-        userPreferences: widget.userPreferences,
-        userBehavior: widget.userBehavior,
       );
 
       setState(() {
@@ -372,7 +388,8 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
                 ),
                 filled: true,
                 fillColor: Colors.grey[100],
-                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
               textInputAction: TextInputAction.send,
               onSubmitted: _sendMessage,

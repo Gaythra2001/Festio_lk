@@ -7,6 +7,7 @@ import '../../core/providers/auth_provider.dart';
 import '../../core/providers/event_provider.dart';
 import '../../core/providers/booking_provider.dart';
 import '../../core/services/ai/advanced_recommendation_engine.dart';
+import '../../core/models/user_model.dart';
 import '../../widgets/ai_chatbot_widget.dart';
 import '../profile/user_preferences_form_screen.dart';
 import '../events/modern_event_detail_screen.dart';
@@ -641,7 +642,7 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
-  void _openChatbot() {
+  Future<void> _openChatbot() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final eventProvider = Provider.of<EventProvider>(context, listen: false);
     final bookingProvider =
@@ -649,11 +650,22 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
     final recommendationProvider =
         Provider.of<RecommendationProvider>(context, listen: false);
 
-    if (authProvider.user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please login to use the chatbot')),
-      );
-      return;
+    // Support guest chat when Firebase is disabled
+    final isGuest = authProvider.user == null;
+    final user = isGuest
+        ? UserModel(
+            id: 'guest',
+            email: 'guest@festio.lk',
+            displayName: 'Guest',
+            createdAt: DateTime.now(),
+            preferredLanguage: 'en',
+          )
+        : authProvider.user!;
+
+    // Only load Firebase-backed data when signed-in and Firebase enabled
+    if (!isGuest) {
+      await recommendationProvider.loadUserPreferences(user.id);
+      await recommendationProvider.loadUserBehavior(user.id);
     }
 
     showModalBottomSheet(
@@ -666,10 +678,10 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
         maxChildSize: 0.95,
         builder: (context, scrollController) {
           return AIChatbotWidget(
-            user: authProvider.user!,
+            user: user,
             allEvents: eventProvider.events,
-            userBookings: bookingProvider.bookings,
-            allUserBookings: {},
+            userBookings: isGuest ? [] : bookingProvider.bookings,
+            allUserBookings: const {},
             userPreferences: recommendationProvider.userPreferences,
             userBehavior: recommendationProvider.userBehavior,
           );
