@@ -15,11 +15,12 @@ import '../config/app_config.dart';
 /// Enhanced Recommendation Provider with Advanced AI and Chatbot Integration
 class RecommendationProvider with ChangeNotifier {
   final RecommendationEngine _legacyEngine = RecommendationEngine();
-  final AdvancedRecommendationEngine _advancedEngine = AdvancedRecommendationEngine();
+  final AdvancedRecommendationEngine _advancedEngine =
+      AdvancedRecommendationEngine();
   final AIEventChatbotService _chatbotService = AIEventChatbotService();
-  final UserBehaviorTrackingService _behaviorService = UserBehaviorTrackingService();
-  FirebaseFirestore? get _firestore => useFirebase ? FirebaseFirestore.instance : null;
-  
+  final UserBehaviorTrackingService _behaviorService =
+      UserBehaviorTrackingService();
+
   List<ScoredEvent> _recommendations = [];
   List<EventModel> _legacyRecommendations = [];
   UserPreferencesModel? _userPreferences;
@@ -42,8 +43,12 @@ class RecommendationProvider with ChangeNotifier {
 
   /// Load user preferences
   Future<void> loadUserPreferences(String userId) async {
+    if (!useFirebase) return;
     try {
-      final doc = await _firestore.collection('user_preferences').doc(userId).get();
+      final doc = await FirebaseFirestore.instance
+          .collection('user_preferences')
+          .doc(userId)
+          .get();
       if (doc.exists) {
         _userPreferences = UserPreferencesModel.fromMap(doc.data()!);
         notifyListeners();
@@ -64,9 +69,14 @@ class RecommendationProvider with ChangeNotifier {
   }
 
   /// Save user preferences
-  Future<void> saveUserPreferences(String userId, UserPreferencesModel preferences) async {
+  Future<void> saveUserPreferences(
+      String userId, UserPreferencesModel preferences) async {
+    if (!useFirebase) return;
     try {
-      await _firestore.collection('user_preferences').doc(userId).set(preferences.toMap());
+      await FirebaseFirestore.instance
+          .collection('user_preferences')
+          .doc(userId)
+          .set(preferences.toMap());
       _userPreferences = preferences;
       notifyListeners();
     } catch (e) {
@@ -211,7 +221,8 @@ class RecommendationProvider with ChangeNotifier {
   }
 
   /// Track booking
-  Future<void> trackBooking(String userId, BookingModel booking, EventModel event) async {
+  Future<void> trackBooking(
+      String userId, BookingModel booking, EventModel event) async {
     await _behaviorService.trackBooking(userId, booking, event);
   }
 
@@ -265,4 +276,3 @@ class RecommendationProvider with ChangeNotifier {
     notifyListeners();
   }
 }
-

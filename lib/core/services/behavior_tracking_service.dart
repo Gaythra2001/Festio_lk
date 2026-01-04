@@ -8,7 +8,7 @@ import '../config/app_config.dart';
 /// Service for tracking and analyzing user behavior patterns
 /// Provides implicit feedback for the recommendation engine
 class UserBehaviorTrackingService {
-  FirebaseFirestore? get _firestore => useFirebase ? FirebaseFirestore.instance : null;
+  // Don't eagerly initialize Firestore - only when actually needed
   static const String COLLECTION = 'user_behaviors';
 
   // Session tracking
@@ -17,11 +17,14 @@ class UserBehaviorTrackingService {
 
   /// Initialize or get user behavior data
   Future<UserBehaviorModel?> getUserBehavior(String userId) async {
-    if (!useFirebase || _firestore == null) {
+    if (!useFirebase) {
       return _createMockBehavior(userId);
     }
     try {
-      final doc = await _firestore!.collection(COLLECTION).doc(userId).get();
+      final doc = await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .get();
       if (doc.exists) {
         return UserBehaviorModel.fromMap(doc.data()!, userId);
       }
@@ -39,26 +42,22 @@ class UserBehaviorTrackingService {
       totalSessions: 5,
       averageSessionDuration: 300,
       lastActiveAt: DateTime.now(),
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
       eventViews: {},
       eventClicks: {},
       eventTimeSpent: {},
       searchQueries: [],
-      categoryInteractions: {},
-      locationInteractions: {},
-      tagInteractions: {},
-      favoriteEvents: [],
       totalBookings: 0,
       bookingsByCategory: {},
-      bookingsByLocation: {},
       clickThroughRate: 0.0,
-      conversionRate: 0.0,
     );
   }
 
   /// Create new behavior tracking for user
   Future<void> initializeUserBehavior(String userId) async {
-    if (!useFirebase || _firestore == null) return;
-    
+    if (!useFirebase) return;
+
     try {
       final behavior = UserBehaviorModel(
         userId: userId,
@@ -67,7 +66,10 @@ class UserBehaviorTrackingService {
         updatedAt: DateTime.now(),
       );
 
-      await _firestore!.collection(COLLECTION).doc(userId).set(behavior.toMap());
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .set(behavior.toMap());
     } catch (e) {
       debugPrint('Error initializing user behavior: $e');
     }
@@ -76,10 +78,13 @@ class UserBehaviorTrackingService {
   /// Track when user starts a session
   Future<void> trackSessionStart(String userId) async {
     _sessionStartTime = DateTime.now();
-    if (!useFirebase || _firestore == null) return;
+    if (!useFirebase) return;
 
     try {
-      await _firestore!.collection(COLLECTION).doc(userId).update({
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update({
         'lastActiveAt': FieldValue.serverTimestamp(),
         'totalSessions': FieldValue.increment(1),
       });
@@ -91,7 +96,7 @@ class UserBehaviorTrackingService {
   /// Track when user ends a session
   Future<void> trackSessionEnd(String userId) async {
     if (_sessionStartTime == null) return;
-    if (!useFirebase || _firestore == null) {
+    if (!useFirebase) {
       _sessionStartTime = null;
       return;
     }
@@ -100,7 +105,10 @@ class UserBehaviorTrackingService {
         DateTime.now().difference(_sessionStartTime!).inSeconds / 60.0;
 
     try {
-      final doc = await _firestore!.collection(COLLECTION).doc(userId).get();
+      final doc = await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .get();
       if (!doc.exists) return;
 
       final data = doc.data()!;
@@ -112,7 +120,10 @@ class UserBehaviorTrackingService {
       final newAvg =
           ((currentAvg * (sessions - 1)) + sessionDuration) / sessions;
 
-      await _firestore!.collection(COLLECTION).doc(userId).update({
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update({
         'averageSessionDuration': newAvg,
       });
 
@@ -125,9 +136,13 @@ class UserBehaviorTrackingService {
   /// Track when user views an event
   Future<void> trackEventView(String userId, EventModel event) async {
     _eventViewStartTimes[event.id] = DateTime.now();
+    if (!useFirebase) return;
 
     try {
-      await _firestore.collection(COLLECTION).doc(userId).update({
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update({
         'eventViews.${event.id}': FieldValue.increment(1),
         'categoryViews.${event.category}': FieldValue.increment(1),
         'lastActiveAt': FieldValue.serverTimestamp(),
@@ -140,6 +155,10 @@ class UserBehaviorTrackingService {
   /// Track when user stops viewing an event (to calculate time spent)
   Future<void> trackEventViewEnd(String userId, String eventId) async {
     if (!_eventViewStartTimes.containsKey(eventId)) return;
+    if (!useFirebase) {
+      _eventViewStartTimes.remove(eventId);
+      return;
+    }
 
     final timeSpent = DateTime.now()
         .difference(_eventViewStartTimes[eventId]!)
@@ -147,7 +166,10 @@ class UserBehaviorTrackingService {
         .toDouble();
 
     try {
-      final doc = await _firestore.collection(COLLECTION).doc(userId).get();
+      final doc = await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .get();
       if (!doc.exists) return;
 
       final data = doc.data()!;
@@ -156,7 +178,10 @@ class UserBehaviorTrackingService {
               0.0;
       final newTimeSpent = currentTimeSpent + timeSpent;
 
-      await _firestore.collection(COLLECTION).doc(userId).update({
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update({
         'eventTimeSpent.$eventId': newTimeSpent,
       });
 
@@ -168,8 +193,12 @@ class UserBehaviorTrackingService {
 
   /// Track when user clicks on an event
   Future<void> trackEventClick(String userId, EventModel event) async {
+    if (!useFirebase) return;
     try {
-      await _firestore.collection(COLLECTION).doc(userId).update({
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update({
         'eventClicks.${event.id}': FieldValue.increment(1),
         'lastActiveAt': FieldValue.serverTimestamp(),
       });
@@ -180,8 +209,12 @@ class UserBehaviorTrackingService {
 
   /// Track when user shares an event
   Future<void> trackEventShare(String userId, String eventId) async {
+    if (!useFirebase) return;
     try {
-      await _firestore.collection(COLLECTION).doc(userId).update({
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update({
         'eventShares.$eventId': FieldValue.increment(1),
         'lastActiveAt': FieldValue.serverTimestamp(),
       });
@@ -195,11 +228,17 @@ class UserBehaviorTrackingService {
       String userId, String eventId, bool isFavorite) async {
     try {
       if (isFavorite) {
-        await _firestore.collection(COLLECTION).doc(userId).update({
+        await FirebaseFirestore.instance
+            .collection(COLLECTION)
+            .doc(userId)
+            .update({
           'eventFavorites.$eventId': FieldValue.increment(1),
         });
       } else {
-        await _firestore.collection(COLLECTION).doc(userId).update({
+        await FirebaseFirestore.instance
+            .collection(COLLECTION)
+            .doc(userId)
+            .update({
           'eventFavorites.$eventId': FieldValue.delete(),
         });
       }
@@ -211,7 +250,10 @@ class UserBehaviorTrackingService {
   /// Track user search queries
   Future<void> trackSearch(String userId, String query) async {
     try {
-      final doc = await _firestore.collection(COLLECTION).doc(userId).get();
+      final doc = await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .get();
       if (!doc.exists) return;
 
       final data = doc.data()!;
@@ -237,7 +279,10 @@ class UserBehaviorTrackingService {
         }
       }
 
-      await _firestore.collection(COLLECTION).doc(userId).update(updates);
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update(updates);
     } catch (e) {
       debugPrint('Error tracking search: $e');
     }
@@ -246,7 +291,10 @@ class UserBehaviorTrackingService {
   /// Track when user clicks on search result
   Future<void> trackSearchResultClick(String userId, String eventId) async {
     try {
-      final doc = await _firestore.collection(COLLECTION).doc(userId).get();
+      final doc = await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .get();
       if (!doc.exists) return;
 
       final data = doc.data()!;
@@ -258,7 +306,10 @@ class UserBehaviorTrackingService {
         results.removeRange(0, results.length - 30);
       }
 
-      await _firestore.collection(COLLECTION).doc(userId).update({
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update({
         'clickedSearchResults': results,
       });
     } catch (e) {
@@ -273,7 +324,10 @@ class UserBehaviorTrackingService {
       final dayName = _getDayName(event.startDate.weekday);
       final timeSlot = _getTimeSlot(event.startDate.hour);
 
-      await _firestore.collection(COLLECTION).doc(userId).update({
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update({
         'totalBookings': FieldValue.increment(1),
         'bookingsByCategory.${event.category}': FieldValue.increment(1),
         'bookingsByDay.$dayName': FieldValue.increment(1),
@@ -292,7 +346,10 @@ class UserBehaviorTrackingService {
   /// Track booking cancellation
   Future<void> trackBookingCancellation(String userId) async {
     try {
-      await _firestore.collection(COLLECTION).doc(userId).update({
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update({
         'cancelledBookings': FieldValue.increment(1),
       });
     } catch (e) {
@@ -303,7 +360,10 @@ class UserBehaviorTrackingService {
   /// Track when user abandons an event (viewed but didn't book)
   Future<void> trackAbandonedEvent(String userId, String eventId) async {
     try {
-      final doc = await _firestore.collection(COLLECTION).doc(userId).get();
+      final doc = await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .get();
       if (!doc.exists) return;
 
       final data = doc.data()!;
@@ -317,7 +377,10 @@ class UserBehaviorTrackingService {
           abandoned.removeAt(0);
         }
 
-        await _firestore.collection(COLLECTION).doc(userId).update({
+        await FirebaseFirestore.instance
+            .collection(COLLECTION)
+            .doc(userId)
+            .update({
           'abandonnedEvents': abandoned,
         });
       }
@@ -329,7 +392,10 @@ class UserBehaviorTrackingService {
   /// Track notification interaction
   Future<void> trackNotificationClick(String userId) async {
     try {
-      await _firestore.collection(COLLECTION).doc(userId).update({
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update({
         'notificationClicks': FieldValue.increment(1),
       });
     } catch (e) {
@@ -340,7 +406,10 @@ class UserBehaviorTrackingService {
   /// Track notification dismissal
   Future<void> trackNotificationDismissal(String userId) async {
     try {
-      await _firestore.collection(COLLECTION).doc(userId).update({
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update({
         'notificationDismissals': FieldValue.increment(1),
       });
     } catch (e) {
@@ -355,7 +424,10 @@ class UserBehaviorTrackingService {
     final dayName = _getDayName(now.weekday);
 
     try {
-      await _firestore.collection(COLLECTION).doc(userId).update({
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update({
         'activityByHour.$hour': FieldValue.increment(1),
         'activityByDay.$dayName': FieldValue.increment(1),
       });
@@ -367,7 +439,10 @@ class UserBehaviorTrackingService {
   /// Track tag clicks
   Future<void> trackTagClick(String userId, String tag) async {
     try {
-      await _firestore.collection(COLLECTION).doc(userId).update({
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update({
         'tagClicks.$tag': FieldValue.increment(1),
       });
     } catch (e) {
@@ -378,7 +453,10 @@ class UserBehaviorTrackingService {
   /// Update booking conversion rate
   Future<void> _updateConversionRate(String userId) async {
     try {
-      final doc = await _firestore.collection(COLLECTION).doc(userId).get();
+      final doc = await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .get();
       if (!doc.exists) return;
 
       final data = doc.data()!;
@@ -390,7 +468,10 @@ class UserBehaviorTrackingService {
 
       final conversionRate = totalViews > 0 ? totalBookings / totalViews : 0.0;
 
-      await _firestore.collection(COLLECTION).doc(userId).update({
+      await FirebaseFirestore.instance
+          .collection(COLLECTION)
+          .doc(userId)
+          .update({
         'bookingConversionRate': conversionRate,
       });
     } catch (e) {
