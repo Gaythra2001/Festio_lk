@@ -8,6 +8,7 @@ import 'package:festio_lk/core/providers/event_provider.dart';
 import 'package:festio_lk/core/providers/booking_provider.dart';
 import 'package:festio_lk/core/providers/notification_provider.dart';
 import 'package:festio_lk/core/providers/user_data_provider.dart';
+import 'package:festio_lk/core/providers/recommendation_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BookingProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => UserDataProvider()),
+        ChangeNotifierProvider(create: (_) => RecommendationProvider()),
       ],
       child: MaterialApp(
         title: 'Festio LK',
