@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import '../../core/models/user_preferences_model.dart';
+import '../../core/providers/recommendation_provider.dart';
 
 /// Comprehensive User Preferences Form for Research-Grade Recommendations
 /// Collects detailed user data to power the AI recommendation engine
@@ -102,8 +103,10 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
         _likesNewExperiences = prefs.likesNewExperiences;
         _prefersFamiliarEvents = prefs.prefersFamiliarEvents;
         _adventureLevel = prefs.adventureLevel;
-        _allowsPersonalizedNotifications = prefs.allowsPersonalizedNotifications;
-        _allowsLocationBasedRecommendations = prefs.allowsLocationBasedRecommendations;
+        _allowsPersonalizedNotifications =
+            prefs.allowsPersonalizedNotifications;
+        _allowsLocationBasedRecommendations =
+            prefs.allowsLocationBasedRecommendations;
         _sharesDataForResearch = prefs.sharesDataForResearch;
         _notificationFrequency = prefs.notificationFrequency;
       });
@@ -220,7 +223,7 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
             style: TextStyle(color: Colors.grey[600]),
           ),
           SizedBox(height: 24),
-          
+
           // Age
           TextFormField(
             initialValue: _age?.toString(),
@@ -257,7 +260,14 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               labelText: 'Religion (Optional)',
               border: OutlineInputBorder(),
             ),
-            items: ['buddhism', 'hinduism', 'islam', 'christianity', 'other', 'none']
+            items: [
+              'buddhism',
+              'hinduism',
+              'islam',
+              'christianity',
+              'other',
+              'none'
+            ]
                 .map((r) => DropdownMenuItem(
                       value: r,
                       child: Text(r.toUpperCase()),
@@ -285,7 +295,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               labelText: 'Education Level (Optional)',
               border: OutlineInputBorder(),
             ),
-            items: ['high_school', 'undergraduate', 'graduate', 'postgraduate', 'other']
+            items: [
+              'high_school',
+              'undergraduate',
+              'graduate',
+              'postgraduate',
+              'other'
+            ]
                 .map((e) => DropdownMenuItem(
                       value: e,
                       child: Text(e.replaceAll('_', ' ').toUpperCase()),
@@ -301,11 +317,31 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
   // Page 2: Location & Budget
   Widget _buildPage2LocationBudget() {
     final sriLankanDistricts = [
-      'Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matale', 'Nuwara Eliya',
-      'Galle', 'Matara', 'Hambantota', 'Jaffna', 'Kilinochchi', 'Mannar',
-      'Vavuniya', 'Mullaitivu', 'Batticaloa', 'Ampara', 'Trincomalee',
-      'Kurunegala', 'Puttalam', 'Anuradhapura', 'Polonnaruwa', 'Badulla',
-      'Moneragala', 'Ratnapura', 'Kegalle'
+      'Colombo',
+      'Gampaha',
+      'Kalutara',
+      'Kandy',
+      'Matale',
+      'Nuwara Eliya',
+      'Galle',
+      'Matara',
+      'Hambantota',
+      'Jaffna',
+      'Kilinochchi',
+      'Mannar',
+      'Vavuniya',
+      'Mullaitivu',
+      'Batticaloa',
+      'Ampara',
+      'Trincomalee',
+      'Kurunegala',
+      'Puttalam',
+      'Anuradhapura',
+      'Polonnaruwa',
+      'Badulla',
+      'Moneragala',
+      'Ratnapura',
+      'Kegalle'
     ];
 
     return SingleChildScrollView(
@@ -327,20 +363,23 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               border: OutlineInputBorder(),
             ),
             items: sriLankanDistricts
-                .map((d) => DropdownMenuItem(value: d.toLowerCase(), child: Text(d)))
+                .map((d) =>
+                    DropdownMenuItem(value: d.toLowerCase(), child: Text(d)))
                 .toList(),
             onChanged: (value) => setState(() => _primaryArea = value),
           ),
           SizedBox(height: 16),
 
           // Preferred Areas (Multi-select)
-          Text('Preferred Areas (select multiple)', style: TextStyle(fontWeight: FontWeight.w500)),
+          Text('Preferred Areas (select multiple)',
+              style: TextStyle(fontWeight: FontWeight.w500)),
           SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: sriLankanDistricts.take(10).map((district) {
-              final isSelected = _preferredAreas.contains(district.toLowerCase());
+              final isSelected =
+                  _preferredAreas.contains(district.toLowerCase());
               return FilterChip(
                 label: Text(district),
                 selected: isSelected,
@@ -359,7 +398,8 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           SizedBox(height: 16),
 
           // Max Travel Distance
-          Text('Maximum Travel Distance: ${_maxTravelDistance?.toInt() ?? 50} km'),
+          Text(
+              'Maximum Travel Distance: ${_maxTravelDistance?.toInt() ?? 50} km'),
           Slider(
             value: _maxTravelDistance ?? 50,
             min: 5,
@@ -429,13 +469,31 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
   // Page 3: Event Preferences
   Widget _buildPage3EventPreferences() {
     final eventTypes = [
-      'Music', 'Religious', 'Cultural', 'Sports', 'Educational',
-      'Festival', 'Art', 'Food', 'Theater', 'Dance', 'Comedy', 'Technology'
+      'Music',
+      'Religious',
+      'Cultural',
+      'Sports',
+      'Educational',
+      'Festival',
+      'Art',
+      'Food',
+      'Theater',
+      'Dance',
+      'Comedy',
+      'Technology'
     ];
 
     final musicGenres = [
-      'Rock', 'Pop', 'Classical', 'Hip-Hop', 'Jazz', 'Electronic',
-      'Traditional', 'Reggae', 'Blues', 'Country'
+      'Rock',
+      'Pop',
+      'Classical',
+      'Hip-Hop',
+      'Jazz',
+      'Electronic',
+      'Traditional',
+      'Reggae',
+      'Blues',
+      'Country'
     ];
 
     return SingleChildScrollView(
@@ -450,13 +508,15 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           SizedBox(height: 24),
 
           // Favorite Event Types
-          Text('Favorite Event Types', style: TextStyle(fontWeight: FontWeight.w500)),
+          Text('Favorite Event Types',
+              style: TextStyle(fontWeight: FontWeight.w500)),
           SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: eventTypes.map((type) {
-              final isSelected = _favoriteEventTypes.contains(type.toLowerCase());
+              final isSelected =
+                  _favoriteEventTypes.contains(type.toLowerCase());
               return FilterChip(
                 label: Text(type),
                 selected: isSelected,
@@ -475,7 +535,8 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           SizedBox(height: 24),
 
           // Music Genres
-          Text('Favorite Music Genres', style: TextStyle(fontWeight: FontWeight.w500)),
+          Text('Favorite Music Genres',
+              style: TextStyle(fontWeight: FontWeight.w500)),
           SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -507,19 +568,25 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               hintText: 'Artist 1, Artist 2, Artist 3',
             ),
             onChanged: (value) {
-              _favoriteArtists = value.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+              _favoriteArtists = value
+                  .split(',')
+                  .map((e) => e.trim())
+                  .where((e) => e.isNotEmpty)
+                  .toList();
             },
           ),
           SizedBox(height: 16),
 
           // Disliked Event Types
-          Text('Event Types to Avoid', style: TextStyle(fontWeight: FontWeight.w500)),
+          Text('Event Types to Avoid',
+              style: TextStyle(fontWeight: FontWeight.w500)),
           SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: eventTypes.take(6).map((type) {
-              final isSelected = _dislikedEventTypes.contains(type.toLowerCase());
+              final isSelected =
+                  _dislikedEventTypes.contains(type.toLowerCase());
               return FilterChip(
                 label: Text(type),
                 selected: isSelected,
@@ -577,8 +644,15 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-                .map((day) {
+            children: [
+              'monday',
+              'tuesday',
+              'wednesday',
+              'thursday',
+              'friday',
+              'saturday',
+              'sunday'
+            ].map((day) {
               final isSelected = _preferredDays.contains(day);
               return FilterChip(
                 label: Text(day.substring(0, 3).toUpperCase()),
@@ -614,7 +688,8 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           SwitchListTile(
             title: Text('Family-Friendly Events'),
             value: _prefersFamilyFriendly,
-            onChanged: (value) => setState(() => _prefersFamilyFriendly = value),
+            onChanged: (value) =>
+                setState(() => _prefersFamilyFriendly = value),
           ),
           SwitchListTile(
             title: Text('Outdoor Events'),
@@ -634,20 +709,24 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           SwitchListTile(
             title: Text('Prefers Familiar Events'),
             value: _prefersFamiliarEvents,
-            onChanged: (value) => setState(() => _prefersFamiliarEvents = value),
+            onChanged: (value) =>
+                setState(() => _prefersFamiliarEvents = value),
           ),
           SizedBox(height: 16),
 
           // Adventure Level
-          Text('Adventure Level: ${_adventureLevel}', style: TextStyle(fontWeight: FontWeight.w500)),
-          Text('How adventurous are you?', style: TextStyle(fontSize: 12, color: Colors.grey)),
+          Text('Adventure Level: ${_adventureLevel}',
+              style: TextStyle(fontWeight: FontWeight.w500)),
+          Text('How adventurous are you?',
+              style: TextStyle(fontSize: 12, color: Colors.grey)),
           Slider(
             value: _adventureLevel.toDouble(),
             min: 1,
             max: 5,
             divisions: 4,
             label: _adventureLevel.toString(),
-            onChanged: (value) => setState(() => _adventureLevel = value.toInt()),
+            onChanged: (value) =>
+                setState(() => _adventureLevel = value.toInt()),
           ),
           Text(
             _adventureLevel == 1
@@ -686,8 +765,15 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
   // Page 5: Cultural Preferences
   Widget _buildPage5CulturalPreferences() {
     final culturalInterestOptions = [
-      'Traditional', 'Modern', 'Fusion', 'Historical', 'Contemporary',
-      'Folk', 'Classical', 'Urban', 'Rural'
+      'Traditional',
+      'Modern',
+      'Fusion',
+      'Historical',
+      'Contemporary',
+      'Folk',
+      'Classical',
+      'Urban',
+      'Rural'
     ];
 
     return SingleChildScrollView(
@@ -710,18 +796,21 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           SwitchListTile(
             title: Text('Observes Religious Holidays'),
             value: _observesReligiousHolidays,
-            onChanged: (value) => setState(() => _observesReligiousHolidays = value),
+            onChanged: (value) =>
+                setState(() => _observesReligiousHolidays = value),
           ),
           SizedBox(height: 16),
 
           // Cultural Interests
-          Text('Cultural Interests', style: TextStyle(fontWeight: FontWeight.w500)),
+          Text('Cultural Interests',
+              style: TextStyle(fontWeight: FontWeight.w500)),
           SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: culturalInterestOptions.map((interest) {
-              final isSelected = _culturalInterests.contains(interest.toLowerCase());
+              final isSelected =
+                  _culturalInterests.contains(interest.toLowerCase());
               return FilterChip(
                 label: Text(interest),
                 selected: isSelected,
@@ -746,8 +835,7 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               labelText: 'Preferred Language for Events',
               border: OutlineInputBorder(),
             ),
-            items: ['en', 'si', 'ta', 'multi']
-                .map((lang) {
+            items: ['en', 'si', 'ta', 'multi'].map((lang) {
               String label;
               switch (lang) {
                 case 'en':
@@ -796,24 +884,28 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
             title: Text('Personalized Notifications'),
             subtitle: Text('Get recommendations based on your preferences'),
             value: _allowsPersonalizedNotifications,
-            onChanged: (value) => setState(() => _allowsPersonalizedNotifications = value),
+            onChanged: (value) =>
+                setState(() => _allowsPersonalizedNotifications = value),
           ),
           SwitchListTile(
             title: Text('Location-Based Recommendations'),
             subtitle: Text('Events near you'),
             value: _allowsLocationBasedRecommendations,
-            onChanged: (value) => setState(() => _allowsLocationBasedRecommendations = value),
+            onChanged: (value) =>
+                setState(() => _allowsLocationBasedRecommendations = value),
           ),
           SwitchListTile(
             title: Text('Share Data for Research'),
             subtitle: Text('Help improve our recommendation system'),
             value: _sharesDataForResearch,
-            onChanged: (value) => setState(() => _sharesDataForResearch = value),
+            onChanged: (value) =>
+                setState(() => _sharesDataForResearch = value),
           ),
           SizedBox(height: 16),
 
           // Notification Frequency
-          Text('Notification Frequency', style: TextStyle(fontWeight: FontWeight.w500)),
+          Text('Notification Frequency',
+              style: TextStyle(fontWeight: FontWeight.w500)),
           Text(
             'How often do you want recommendations?',
             style: TextStyle(fontSize: 12, color: Colors.grey),
@@ -824,7 +916,8 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
             max: 7,
             divisions: 6,
             label: _getNotificationFrequencyLabel(),
-            onChanged: (value) => setState(() => _notificationFrequency = value.toInt()),
+            onChanged: (value) =>
+                setState(() => _notificationFrequency = value.toInt()),
           ),
           Text(
             _getNotificationFrequencyLabel(),
@@ -902,12 +995,14 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           if (_currentPage > 0)
             Expanded(
               child: OutlinedButton(
-                onPressed: _isLoading ? null : () {
-                  _pageController.previousPage(
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                },
+                onPressed: _isLoading
+                    ? null
+                    : () {
+                        _pageController.previousPage(
+                          duration: Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
                 child: Text('Back'),
               ),
             ),
@@ -918,7 +1013,9 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               onPressed: _isLoading ? null : _handleNext,
               child: _isLoading
                   ? CircularProgressIndicator(color: Colors.white)
-                  : Text(_currentPage == _totalPages - 1 ? 'Save Preferences' : 'Next'),
+                  : Text(_currentPage == _totalPages - 1
+                      ? 'Save Preferences'
+                      : 'Next'),
             ),
           ),
         ],
@@ -982,21 +1079,30 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
         completionPercentage: 100.0,
       );
 
-      await FirebaseFirestore.instance
-          .collection('user_preferences')
-          .doc(widget.userId)
-          .set(preferences.toMap());
+      // Save through RecommendationProvider (handles both Firebase and mock modes)
+      final recommendationProvider =
+          Provider.of<RecommendationProvider>(context, listen: false);
+      await recommendationProvider.saveUserPreferences(
+          widget.userId, preferences);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Preferences saved successfully!')),
+          SnackBar(
+            content: Text('Preferences saved successfully!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
         );
         Navigator.pop(context, preferences);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving preferences: $e')),
+          SnackBar(
+            content: Text('Error saving preferences: $e'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
         );
       }
     } finally {
