@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'dart:ui';
 import '../events/modern_event_detail_screen.dart';
 import '../submission/event_submission_screen.dart';
+import '../recommendations/ai_recommendations_screen.dart';
 import '../../widgets/event_calendar.dart';
 import '../../widgets/juice_rating.dart';
 import '../../core/providers/notification_provider.dart';
@@ -266,9 +267,12 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                             child: IconButton(
                               icon: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 22),
                               onPressed: () {
-                                setState(() {
-                                  _showAIBot = true;
-                                });
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const AIRecommendationsScreen(),
+                                  ),
+                                );
                               },
                               tooltip: 'AI Recommendations',
                             ),
