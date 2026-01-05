@@ -3,9 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:ui';
+
 import '../events/modern_event_detail_screen.dart';
 import '../submission/event_submission_screen.dart';
+import '../profile/modern_profile_screen.dart';
 import '../recommendations/ai_recommendations_screen.dart';
+
 import '../../widgets/event_calendar.dart';
 import '../../widgets/juice_rating.dart';
 import '../../core/providers/notification_provider.dart';
@@ -28,7 +31,6 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Add demo notifications
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final notificationProvider =
           Provider.of<NotificationProvider>(context, listen: false);
@@ -108,8 +110,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
     // Filter by search query
     if (_searchQuery.isNotEmpty) {
       events = events.where((e) {
-        final title = (e['title'] as String).toLowerCase();
-        final location = (e['location'] as String).toLowerCase();
+        final title = e['title'].toLowerCase();
+        final location = e['location'].toLowerCase();
         final query = _searchQuery.toLowerCase();
         return title.contains(query) || location.contains(query);
       }).toList();
@@ -126,71 +128,18 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
         children: [
           CustomScrollView(
             slivers: [
-              // Professional App Bar with Hero Section
               SliverAppBar(
                 expandedHeight: 160,
-                floating: false,
                 pinned: true,
                 backgroundColor: Colors.transparent,
-                elevation: 0,
                 flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // Gradient Background
-                      Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color(0xFF667eea),
-                              Color(0xFF764ba2),
-                            ],
-                          ),
-                        ),
-                      ),
-                      // Overlay Pattern (optional subtle effect)
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Colors.transparent,
-                                Colors.black.withOpacity(0.1),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  titlePadding: const EdgeInsets.symmetric(horizontal: 20),
-                  title: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Festio LK',
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 28,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      Text(
-                        'Discover Cultural Treasures',
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w400,
-                          fontSize: 12,
-                          color: Colors.white70,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                    ],
+                  title: Text(
+                    'Festio LK',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 28,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -200,56 +149,16 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Search Bar with AI Button - Professional styling
                       Row(
                         children: [
                           Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1A1F3A),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.08),
-                                  width: 1.5,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: TextField(
-                                controller: _searchController,
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _searchQuery = value;
-                                  });
-                                },
-                                decoration: InputDecoration(
-                                  hintText: 'search_events'.tr(),
-                                  hintStyle: GoogleFonts.poppins(
-                                    color: Colors.white38,
-                                    fontSize: 15,
-                                  ),
-                                  prefixIcon: const Icon(
-                                    Icons.search,
-                                    color: Colors.white54,
-                                    size: 20,
-                                  ),
-                                  border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                    horizontal: 4,
-                                  ),
-                                ),
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (v) =>
+                                  setState(() => _searchQuery = v),
+                              decoration: InputDecoration(
+                                hintText: 'search_events'.tr(),
                               ),
                             ),
                           ),
@@ -595,9 +504,12 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
     required String imageUrl,
     required double juice,
   }) {
-    return InkWell(
+    return ListTile(
+      title: Text(title, style: const TextStyle(color: Colors.white)),
+      subtitle: Text(date, style: const TextStyle(color: Colors.white70)),
       onTap: () {
-        Navigator.of(context).push(
+        Navigator.push(
+          context,
           MaterialPageRoute(
             builder: (_) => ModernEventDetailScreen(
               title: title,

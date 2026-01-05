@@ -6,7 +6,8 @@ import '../config/app_config.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService? _authService = useFirebase ? AuthService() : null;
-  final MockAuthService? _mockAuthService = useFirebase ? null : MockAuthService();
+  final MockAuthService? _mockAuthService =
+      useFirebase ? null : MockAuthService();
   UserModel? _user;
   bool _isLoading = false;
 
@@ -43,7 +44,8 @@ class AuthProvider with ChangeNotifier {
       if (useFirebase && _authService != null) {
         _user = await _authService!.signInWithEmailAndPassword(email, password);
       } else if (_mockAuthService != null) {
-        _user = await _mockAuthService!.signInWithEmailAndPassword(email, password);
+        _user =
+            await _mockAuthService!.signInWithEmailAndPassword(email, password);
       }
       _isLoading = false;
       notifyListeners();
@@ -55,15 +57,18 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> register(String email, String password, String displayName) async {
+  Future<bool> register(
+      String email, String password, String displayName) async {
     _isLoading = true;
     notifyListeners();
 
     try {
       if (useFirebase && _authService != null) {
-        _user = await _authService!.registerWithEmailAndPassword(email, password, displayName);
+        _user = await _authService!
+            .registerWithEmailAndPassword(email, password, displayName);
       } else if (_mockAuthService != null) {
-        _user = await _mockAuthService!.registerWithEmailAndPassword(email, password, displayName);
+        _user = await _mockAuthService!
+            .registerWithEmailAndPassword(email, password, displayName);
       }
       _isLoading = false;
       notifyListeners();
@@ -117,4 +122,3 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 }
-
