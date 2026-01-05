@@ -188,6 +188,9 @@ class RecommendationProvider with ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }
 

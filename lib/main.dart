@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:festio_lk/core/theme/modern_theme.dart';
@@ -13,6 +14,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'app.dart'; // your app entry widget
 >>>>>>> Stashed changes
+=======
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'app.dart'; // your app entry widget
+>>>>>>> Stashed changes
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +27,7 @@ Future<void> main() async {
   );
   runApp(const MyApp());
 }
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 
 class MyApp extends StatelessWidget {
@@ -47,5 +54,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
