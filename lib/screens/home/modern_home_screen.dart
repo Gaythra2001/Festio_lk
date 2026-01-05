@@ -9,6 +9,7 @@ import '../recommendations/ai_recommendations_screen.dart';
 import '../../widgets/event_calendar.dart';
 import '../../widgets/juice_rating.dart';
 import '../../core/providers/notification_provider.dart';
+import '../../widgets/rating_tab.dart';
 
 class ModernHomeScreen extends StatefulWidget {
   const ModernHomeScreen({super.key});
@@ -37,7 +38,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       );
     });
   }
-  
+
   // Sample events data
   final List<Map<String, dynamic>> _allEvents = [
     {
@@ -45,7 +46,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'date': 'Aug 15, 2024',
       'location': 'Kandy, Sri Lanka',
       'category': 'Festival',
-      'imageUrl': 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800',
       'juice': 4.8,
     },
     {
@@ -53,7 +55,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'date': 'Aug 20, 2024',
       'location': 'Colombo, Sri Lanka',
       'category': 'Dance',
-      'imageUrl': 'https://images.unsplash.com/photo-1504609773096-104ff2c73ba4?w=800',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1504609773096-104ff2c73ba4?w=800',
       'juice': 4.2,
     },
     {
@@ -61,7 +64,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'date': 'Sep 5, 2024',
       'location': 'Galle, Sri Lanka',
       'category': 'Music',
-      'imageUrl': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800',
       'juice': 4.6,
     },
     {
@@ -69,7 +73,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'date': 'May 23, 2024',
       'location': 'Colombo, Sri Lanka',
       'category': 'Festival',
-      'imageUrl': 'https://images.unsplash.com/photo-1478145787956-f6f12c59624d?w=800',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1478145787956-f6f12c59624d?w=800',
       'juice': 3.9,
     },
     {
@@ -77,7 +82,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'date': 'Sep 10, 2024',
       'location': 'Kandy, Sri Lanka',
       'category': 'Theater',
-      'imageUrl': 'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=800',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=800',
       'juice': 3.5,
     },
     {
@@ -85,19 +91,20 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'date': 'Oct 2, 2024',
       'location': 'Negombo, Sri Lanka',
       'category': 'Music',
-      'imageUrl': 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800',
       'juice': 4.4,
     },
   ];
 
   List<Map<String, dynamic>> get _filteredEvents {
     var events = _allEvents;
-    
+
     // Filter by category
     if (_selectedCategory != 'All') {
       events = events.where((e) => e['category'] == _selectedCategory).toList();
     }
-    
+
     // Filter by search query
     if (_searchQuery.isNotEmpty) {
       events = events.where((e) {
@@ -107,7 +114,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
         return title.contains(query) || location.contains(query);
       }).toList();
     }
-    
+
     return events;
   }
 
@@ -187,7 +194,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                   ),
                 ),
               ),
-              
+
               // Content
               SliverToBoxAdapter(
                 child: Padding(
@@ -258,19 +265,22 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF667eea).withOpacity(0.4),
+                                  color:
+                                      const Color(0xFF667eea).withOpacity(0.4),
                                   blurRadius: 16,
                                   offset: const Offset(0, 6),
                                 ),
                               ],
                             ),
                             child: IconButton(
-                              icon: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 22),
+                              icon: const Icon(Icons.smart_toy_outlined,
+                                  color: Colors.white, size: 22),
                               onPressed: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const AIRecommendationsScreen(),
+                                    builder: (context) =>
+                                        const AIRecommendationsScreen(),
                                   ),
                                 );
                               },
@@ -279,9 +289,9 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Categories
                       Text(
                         'category'.tr(),
@@ -291,9 +301,9 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -306,9 +316,9 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Calendar Section
                       if (_showCalendar)
                         Column(
@@ -335,13 +345,13 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                             const SizedBox(height: 32),
                           ],
                         ),
-                      
+
                       // Featured Events
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            _searchQuery.isNotEmpty 
+                            _searchQuery.isNotEmpty
                                 ? 'Search Results (${_filteredEvents.length})'
                                 : _selectedCategory == 'All'
                                     ? 'Featured Events'
@@ -352,7 +362,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                               color: Colors.white,
                             ),
                           ),
-                          if (_searchQuery.isNotEmpty || _selectedCategory != 'All')
+                          if (_searchQuery.isNotEmpty ||
+                              _selectedCategory != 'All')
                             TextButton(
                               onPressed: () {
                                 setState(() {
@@ -370,9 +381,9 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                             ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Event Cards
                       if (_filteredEvents.isEmpty)
                         Center(
@@ -399,28 +410,78 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         )
                       else
                         ..._filteredEvents.map((event) => Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: _buildEventCard(
-                            title: event['title']!,
-                            date: event['date']!,
-                            location: event['location']!,
-                            imageUrl: event['imageUrl']!,
-                            juice: event['juice']! as double,
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: _buildEventCard(
+                                title: event['title']!,
+                                date: event['date']!,
+                                location: event['location']!,
+                                imageUrl: event['imageUrl']!,
+                                juice: event['juice']! as double,
+                              ),
+                            )),
+
+                      // Platform Ratings Section
+                      const SizedBox(height: 40),
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1F3A),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.1),
                           ),
-                        )),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFF667eea),
+                                        Color(0xFF764ba2)
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(Icons.star,
+                                      color: Colors.white, size: 24),
+                                ),
+                                const SizedBox(width: 16),
+                                Text(
+                                  'Platform Ratings',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            const SizedBox(
+                              height: 600,
+                              child: RatingTab(isPlatformRating: true),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 100),
                     ],
                   ),
                 ),
               ),
             ],
           ),
-          
+
           // AI Bot Overlay
-          if (_showAIBot)
-            _buildAIBotOverlay(),
+          if (_showAIBot) _buildAIBotOverlay(),
         ],
       ),
-      
+
       // Floating Action Button - Professional styling
       floatingActionButton: Container(
         decoration: BoxDecoration(
@@ -498,18 +559,20 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
             color: isSelected ? null : const Color(0xFF1A1F3A),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected 
-                  ? Colors.transparent 
+              color: isSelected
+                  ? Colors.transparent
                   : Colors.white.withOpacity(0.08),
               width: 1.5,
             ),
-            boxShadow: isSelected ? [
-              BoxShadow(
-                color: const Color(0xFF667eea).withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ] : null,
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF667eea).withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
           child: Text(
             label,
@@ -580,7 +643,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                   },
                 ),
               ),
-              
+
               // Gradient Overlay - Enhanced for better readability
               Positioned.fill(
                 child: Container(
@@ -597,7 +660,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                   ),
                 ),
               ),
-              
+
               // Content
               Positioned(
                 left: 20,
@@ -664,7 +727,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                   ],
                 ),
               ),
-              
+
               // Favorite Button with glass effect
               Positioned(
                 top: 16,
@@ -762,9 +825,9 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         color: Colors.white,
                       ),
                     ),
-                    
+
                     const SizedBox(height: 28),
-                    
+
                     Text(
                       'AI Event Recommender',
                       style: GoogleFonts.poppins(
@@ -774,9 +837,9 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         letterSpacing: 0.5,
                       ),
                     ),
-                    
+
                     const SizedBox(height: 12),
-                    
+
                     Text(
                       'Get personalized event recommendations based on your interests and location!',
                       textAlign: TextAlign.center,
@@ -787,9 +850,9 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         height: 1.5,
                       ),
                     ),
-                    
+
                     const SizedBox(height: 28),
-                    
+
                     // Recommendation Buttons
                     _buildAIButton(
                       'Recommend Events Near Me',
@@ -801,15 +864,16 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         });
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('🤖 AI found 6 events near you in Colombo!'),
+                            content: Text(
+                                '🤖 AI found 6 events near you in Colombo!'),
                             duration: Duration(seconds: 3),
                           ),
                         );
                       },
                     ),
-                    
+
                     const SizedBox(height: 14),
-                    
+
                     _buildAIButton(
                       'Based on My Interests',
                       Icons.favorite,
@@ -820,15 +884,16 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         });
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('🤖 AI recommends Music events for you!'),
+                            content:
+                                Text('🤖 AI recommends Music events for you!'),
                             duration: Duration(seconds: 3),
                           ),
                         );
                       },
                     ),
-                    
+
                     const SizedBox(height: 14),
-                    
+
                     _buildAIButton(
                       'Popular Right Now',
                       Icons.trending_up,
@@ -839,15 +904,16 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         });
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('🤖 Showing trending Festival events!'),
+                            content:
+                                Text('🤖 Showing trending Festival events!'),
                             duration: Duration(seconds: 3),
                           ),
                         );
                       },
                     ),
-                    
+
                     const SizedBox(height: 28),
-                    
+
                     // Close Button
                     TextButton(
                       onPressed: () {
