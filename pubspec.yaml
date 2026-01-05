@@ -58,7 +58,12 @@ flutter:
   assets:
     - assets/images/
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     - assets/icons/
+=======
+    - assets/images/poya/
+   # - assets/icons/
+>>>>>>> Stashed changes
 =======
     - assets/images/poya/
    # - assets/icons/
