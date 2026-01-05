@@ -43,18 +43,31 @@ class RecommendationProvider with ChangeNotifier {
 
   /// Load user preferences
   Future<void> loadUserPreferences(String userId) async {
-    if (!useFirebase) return;
+    if (!useFirebase) {
+      debugPrint('⚠️ Firebase disabled - skipping preference load');
+      return;
+    }
+
     try {
       final doc = await FirebaseFirestore.instance
           .collection('user_preferences')
           .doc(userId)
           .get();
-      if (doc.exists) {
+
+      if (doc.exists && doc.data() != null) {
         _userPreferences = UserPreferencesModel.fromMap(doc.data()!);
+        debugPrint(
+            '✅ User preferences loaded (${_userPreferences!.completionPercentage.toStringAsFixed(1)}% complete)');
+        notifyListeners();
+      } else {
+        debugPrint('ℹ️ No existing preferences found for user $userId');
+        _userPreferences = null;
         notifyListeners();
       }
     } catch (e) {
-      debugPrint('Error loading user preferences: $e');
+      debugPrint('❌ Error loading user preferences: $e');
+      _userPreferences = null;
+      notifyListeners();
     }
   }
 
@@ -72,19 +85,37 @@ class RecommendationProvider with ChangeNotifier {
   Future<void> saveUserPreferences(
       String userId, UserPreferencesModel preferences) async {
     try {
+      // Calculate completion percentage
+      final completionPercentage = _calculateCompletionPercentage(preferences);
+      final isComplete =
+          completionPercentage >= 60.0; // 60% minimum for completion
+
+      // Update preferences with completion data and timestamp
+      final updatedPreferences = preferences.copyWith(
+        updatedAt: DateTime.now(),
+        isComplete: isComplete,
+        completionPercentage: completionPercentage,
+      );
+
+      // Validate preferences
+      _validatePreferences(updatedPreferences);
+
       // Save to Firebase if enabled
       if (useFirebase) {
         await FirebaseFirestore.instance
             .collection('user_preferences')
             .doc(userId)
-            .set(preferences.toMap());
+            .set(updatedPreferences.toMap());
       }
 
       // Always update local state
-      _userPreferences = preferences;
+      _userPreferences = updatedPreferences;
       notifyListeners();
+
+      debugPrint(
+          '✅ User preferences saved successfully (${completionPercentage.toStringAsFixed(1)}% complete)');
     } catch (e) {
-      debugPrint('Error saving user preferences: $e');
+      debugPrint('❌ Error saving user preferences: $e');
       rethrow;
     }
   }
@@ -257,6 +288,71 @@ class RecommendationProvider with ChangeNotifier {
     return _userPreferences?.isComplete ?? false;
   }
 
+  /// Calculate preference completion percentage
+  double _calculateCompletionPercentage(UserPreferencesModel prefs) {
+    int filledFields = 0;
+    int totalFields = 0;
+
+    // Core fields (higher weight)
+    totalFields += 5;
+    if (prefs.age != null) filledFields++;
+    if (prefs.gender != null) filledFields++;
+    if (prefs.primaryArea != null) filledFields++;
+    if (prefs.favoriteEventTypes.isNotEmpty) filledFields++;
+    if (prefs.preferredEventTime != null) filledFields++;
+
+    // Important fields (medium weight)
+    totalFields += 5;
+    if (prefs.religion != null) filledFields++;
+    if (prefs.preferredAreas.isNotEmpty) filledFields++;
+    if (prefs.maxBudget != null) filledFields++;
+    if (prefs.favoriteGenres.isNotEmpty) filledFields++;
+    if (prefs.culturalInterests.isNotEmpty) filledFields++;
+
+    // Optional fields (lower weight)
+    totalFields += 5;
+    if (prefs.occupation != null) filledFields++;
+    if (prefs.educationLevel != null) filledFields++;
+    if (prefs.socialStyle != null) filledFields++;
+    if (prefs.favoriteArtists.isNotEmpty) filledFields++;
+    if (prefs.favoriteVenues.isNotEmpty) filledFields++;
+
+    return (filledFields / totalFields) * 100;
+  }
+
+  /// Validate preferences before saving
+  void _validatePreferences(UserPreferencesModel prefs) {
+    // Validate age range
+    if (prefs.age != null && (prefs.age! < 13 || prefs.age! > 120)) {
+      throw ArgumentError('Age must be between 13 and 120');
+    }
+
+    // Validate budget
+    if (prefs.minBudget != null && prefs.maxBudget != null) {
+      if (prefs.minBudget! > prefs.maxBudget!) {
+        throw ArgumentError('Minimum budget cannot exceed maximum budget');
+      }
+      if (prefs.minBudget! < 0 || prefs.maxBudget! < 0) {
+        throw ArgumentError('Budget values must be non-negative');
+      }
+    }
+
+    // Validate travel distance
+    if (prefs.maxTravelDistance != null && prefs.maxTravelDistance! < 0) {
+      throw ArgumentError('Travel distance must be non-negative');
+    }
+
+    // Validate adventure level
+    if (prefs.adventureLevel < 1 || prefs.adventureLevel > 5) {
+      throw ArgumentError('Adventure level must be between 1 and 5');
+    }
+
+    // Validate notification frequency
+    if (prefs.notificationFrequency < 0 || prefs.notificationFrequency > 10) {
+      throw ArgumentError('Notification frequency must be between 0 and 10');
+    }
+  }
+
   /// Get recommendation explanation for event
   String getRecommendationExplanation(String eventId) {
     final scoredEvent = _recommendations.firstWhere(
@@ -269,6 +365,122 @@ class RecommendationProvider with ChangeNotifier {
   /// Get events by score threshold
   List<ScoredEvent> getHighConfidenceRecommendations({double threshold = 0.7}) {
     return _recommendations.where((r) => r.score >= threshold).toList();
+  }
+
+  /// Update specific preference fields without replacing entire model
+  Future<void> updatePreferenceFields(
+    String userId,
+    Map<String, dynamic> updates,
+  ) async {
+    if (_userPreferences == null) {
+      debugPrint(
+          '⚠️ Cannot update preferences - no existing preferences loaded');
+      return;
+    }
+
+    try {
+      // Merge updates with existing preferences
+      final currentMap = _userPreferences!.toMap();
+      currentMap.addAll(updates);
+      currentMap['updatedAt'] = Timestamp.fromDate(DateTime.now());
+
+      final updatedPrefs = UserPreferencesModel.fromMap(currentMap);
+
+      // Save updated preferences
+      await saveUserPreferences(userId, updatedPrefs);
+
+      debugPrint('✅ Preference fields updated successfully');
+    } catch (e) {
+      debugPrint('❌ Error updating preference fields: $e');
+      rethrow;
+    }
+  }
+
+  /// Create default preferences for a new user
+  Future<void> createDefaultPreferences(String userId) async {
+    final defaultPrefs = UserPreferencesModel(
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      isComplete: false,
+      completionPercentage: 0.0,
+      // Set some sensible defaults
+      allowsPersonalizedNotifications: true,
+      allowsLocationBasedRecommendations: true,
+      sharesDataForResearch: false,
+      notificationFrequency: 3,
+      likesNewExperiences: true,
+      prefersFamiliarEvents: false,
+      adventureLevel: 3,
+      prefersFamilyFriendly: false,
+      prefersOutdoor: false,
+      prefersIndoor: false,
+      observesPoyaDays: false,
+      observesReligiousHolidays: false,
+    );
+
+    await saveUserPreferences(userId, defaultPrefs);
+    debugPrint('✅ Default preferences created for user $userId');
+  }
+
+  /// Get a summary of user preferences for display
+  Map<String, dynamic> getPreferencesSummary() {
+    if (_userPreferences == null) {
+      return {
+        'hasPreferences': false,
+        'isComplete': false,
+        'completionPercentage': 0.0,
+      };
+    }
+
+    return {
+      'hasPreferences': true,
+      'isComplete': _userPreferences!.isComplete,
+      'completionPercentage': _userPreferences!.completionPercentage,
+      'age': _userPreferences!.age,
+      'gender': _userPreferences!.gender,
+      'primaryArea': _userPreferences!.primaryArea,
+      'favoriteEventTypes': _userPreferences!.favoriteEventTypes,
+      'preferredEventTime': _userPreferences!.preferredEventTime,
+      'budgetRange': _userPreferences!.minBudget != null &&
+              _userPreferences!.maxBudget != null
+          ? '\$${_userPreferences!.minBudget} - \$${_userPreferences!.maxBudget}'
+          : 'Not set',
+      'updatedAt': _userPreferences!.updatedAt,
+    };
+  }
+
+  /// Check if preferences need updating (older than 30 days)
+  bool needsPreferenceUpdate() {
+    if (_userPreferences?.updatedAt == null) return true;
+
+    final daysSinceUpdate =
+        DateTime.now().difference(_userPreferences!.updatedAt!).inDays;
+    return daysSinceUpdate > 30;
+  }
+
+  /// Get preference quality score (0-100)
+  double getPreferenceQualityScore() {
+    if (_userPreferences == null) return 0.0;
+
+    double score = _userPreferences!.completionPercentage;
+
+    // Bonus for recent updates
+    if (_userPreferences!.updatedAt != null) {
+      final daysSinceUpdate =
+          DateTime.now().difference(_userPreferences!.updatedAt!).inDays;
+      if (daysSinceUpdate < 7) {
+        score += 5; // Fresh data bonus
+      } else if (daysSinceUpdate > 90) {
+        score -= 10; // Stale data penalty
+      }
+    }
+
+    // Bonus for detailed preferences
+    if (_userPreferences!.favoriteEventTypes.length >= 3) score += 5;
+    if (_userPreferences!.favoriteGenres.length >= 3) score += 5;
+    if (_userPreferences!.culturalInterests.isNotEmpty) score += 5;
+
+    return score.clamp(0.0, 100.0);
   }
 
   /// Clear all cached data

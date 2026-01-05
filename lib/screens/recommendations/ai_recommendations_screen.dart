@@ -11,6 +11,7 @@ import '../../core/models/user_model.dart';
 import '../../widgets/ai_chatbot_widget.dart';
 import '../profile/user_preferences_form_screen.dart';
 import '../events/modern_event_detail_screen.dart';
+import 'user_preference_input_screen.dart';
 
 class AIRecommendationsScreen extends StatefulWidget {
   const AIRecommendationsScreen({Key? key}) : super(key: key);
@@ -38,6 +39,10 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
         Provider.of<BookingProvider>(context, listen: false);
 
     if (authProvider.user != null) {
+      // Load user preferences first
+      await recommendationProvider.loadUserPreferences(authProvider.user!.id);
+
+      // Then load recommendations
       await recommendationProvider.loadAdvancedRecommendations(
         user: authProvider.user!,
         allEvents: eventProvider.events,
@@ -549,7 +554,6 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
     final recommendationProvider = Provider.of<RecommendationProvider>(context);
 
     return Center(
@@ -588,16 +592,16 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
             if (!recommendationProvider.hasCompletedPreferences())
               ElevatedButton.icon(
                 onPressed: () {
-                  if (authProvider.user != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => UserPreferencesFormScreen(
-                          userId: authProvider.user!.id,
-                        ),
-                      ),
-                    ).then((_) => _loadRecommendations());
-                  }
+                  debugPrint('🔧 Set Preferences button pressed');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const UserPreferenceInputScreen(),
+                    ),
+                  ).then((_) {
+                    debugPrint('👈 Returned from preferences screen');
+                    _loadRecommendations();
+                  });
                 },
                 icon: const Icon(Icons.edit),
                 label: const Text('Set Preferences'),
