@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
+import '../../widgets/rating_tab.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -124,11 +125,16 @@ class AboutScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-                _buildFeatureItem('AI-Powered Recommendations', 'Smart event suggestions based on your interests'),
-                _buildFeatureItem('Multi-Language Support', 'Available in English, Sinhala, and Tamil'),
-                _buildFeatureItem('Juice Rating System', 'Discover the most vibrant and engaging events'),
-                _buildFeatureItem('Easy Booking', 'Quick and secure event registration'),
-                _buildFeatureItem('Event Calendar', 'Never miss an important cultural celebration'),
+                _buildFeatureItem('AI-Powered Recommendations',
+                    'Smart event suggestions based on your interests'),
+                _buildFeatureItem('Multi-Language Support',
+                    'Available in English, Sinhala, and Tamil'),
+                _buildFeatureItem('Juice Rating System',
+                    'Discover the most vibrant and engaging events'),
+                _buildFeatureItem(
+                    'Easy Booking', 'Quick and secure event registration'),
+                _buildFeatureItem('Event Calendar',
+                    'Never miss an important cultural celebration'),
               ],
             ),
           ),
@@ -142,8 +148,57 @@ class AboutScreen extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(child: _buildStatCard('50K+', 'Users', Icons.people)),
               const SizedBox(width: 16),
-              Expanded(child: _buildStatCard('100+', 'Cities', Icons.location_city)),
+              Expanded(
+                  child: _buildStatCard('100+', 'Cities', Icons.location_city)),
             ],
+          ),
+
+          const SizedBox(height: 40),
+
+          // Platform Ratings Section
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1F3A),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child:
+                          const Icon(Icons.star, color: Colors.white, size: 24),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Platform Ratings & Reviews',
+                      style: GoogleFonts.poppins(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 600,
+                  child: const RatingTab(isPlatformRating: true),
+                ),
+              ],
+            ),
           ),
 
           const SizedBox(height: 20),

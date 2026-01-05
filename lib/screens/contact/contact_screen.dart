@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../widgets/rating_tab.dart';
 
 class ContactScreen extends StatefulWidget {
   const ContactScreen({super.key});
@@ -233,6 +234,53 @@ class _ContactScreenState extends State<ContactScreen> {
                 ),
               ),
             ],
+          ),
+
+          const SizedBox(height: 40),
+
+          // Platform Ratings Section
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1F3A),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.rate_review, color: Colors.white, size: 24),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Your Feedback Matters',
+                      style: GoogleFonts.poppins(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 600,
+                  child: const RatingTab(isPlatformRating: true),
+                ),
+              ],
+            ),
           ),
 
           const SizedBox(height: 20),
