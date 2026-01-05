@@ -1,5 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+enum UserType {
+  user,
+  organizer;
+
+  String get displayName {
+    switch (this) {
+      case UserType.user:
+        return 'Event Attendee';
+      case UserType.organizer:
+        return 'Event Organizer';
+    }
+  }
+}
+
 class UserModel {
   final String id;
   final String email;
@@ -9,6 +23,7 @@ class UserModel {
   final DateTime createdAt;
   final String? phoneNumber;
   final String preferredLanguage; // 'en', 'si', 'ta'
+  final UserType userType; // 'user' or 'organizer'
 
   UserModel({
     required this.id,
@@ -19,6 +34,7 @@ class UserModel {
     required this.createdAt,
     this.phoneNumber,
     this.preferredLanguage = 'en',
+    this.userType = UserType.user,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map, String id) {
@@ -31,6 +47,8 @@ class UserModel {
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       phoneNumber: map['phoneNumber'],
       preferredLanguage: map['preferredLanguage'] ?? 'en',
+      userType:
+          map['userType'] == 'organizer' ? UserType.organizer : UserType.user,
     );
   }
 
@@ -43,7 +61,10 @@ class UserModel {
       'createdAt': Timestamp.fromDate(createdAt),
       'phoneNumber': phoneNumber,
       'preferredLanguage': preferredLanguage,
+      'userType': userType.name,
     };
   }
-}
 
+  bool get isOrganizer => userType == UserType.organizer;
+  bool get isUser => userType == UserType.user;
+}
