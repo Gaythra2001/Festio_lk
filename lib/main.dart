@@ -1,41 +1,37 @@
 import 'package:flutter/material.dart';
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+import 'firebase_options.dart';
+
 import 'package:festio_lk/core/theme/modern_theme.dart';
 import 'package:festio_lk/screens/auth/modern_login_screen.dart';
+
 import 'package:festio_lk/core/providers/auth_provider.dart';
 import 'package:festio_lk/core/providers/event_provider.dart';
 import 'package:festio_lk/core/providers/booking_provider.dart';
 import 'package:festio_lk/core/providers/notification_provider.dart';
-=======
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'app.dart'; // your app entry widget
->>>>>>> Stashed changes
-=======
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'app.dart'; // your app entry widget
->>>>>>> Stashed changes
-=======
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'app.dart'; // your app entry widget
->>>>>>> Stashed changes
+import 'package:festio_lk/core/providers/user_data_provider.dart';
+import 'package:festio_lk/core/providers/recommendation_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [Locale('en'), Locale('si'), Locale('ta')],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en'),
+      child: const MyApp(),
+    ),
+  );
 }
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -48,6 +44,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => EventProvider()),
         ChangeNotifierProvider(create: (_) => BookingProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProvider(create: (_) => UserDataProvider()),
+        ChangeNotifierProvider(create: (_) => RecommendationProvider()),
       ],
       child: MaterialApp(
         title: 'Festio LK',
@@ -61,9 +59,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes

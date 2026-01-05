@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'dart:typed_data';
 import 'dart:ui';
 import '../../widgets/language_selector.dart';
+import '../../core/providers/user_data_provider.dart';
+import '../auth/modern_login_screen.dart';
 
 class ModernProfileScreen extends StatefulWidget {
   const ModernProfileScreen({super.key});
@@ -19,6 +22,29 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
   final _locationController = TextEditingController(text: 'Colombo, Sri Lanka');
 
   Uint8List? _avatarBytes;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load user data from provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userProvider =
+          Provider.of<UserDataProvider>(context, listen: false);
+      if (userProvider.isLoggedIn) {
+        setState(() {
+          if (userProvider.fullName != null) {
+            _nameController.text = userProvider.fullName!;
+          }
+          if (userProvider.email != null) {
+            _emailController.text = userProvider.email!;
+          }
+          if (userProvider.location != null) {
+            _locationController.text = userProvider.location!;
+          }
+        });
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -330,14 +356,14 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
                         icon: Icons.help_outline,
                         title: 'help_support'.tr(),
                         subtitle: 'contact_us'.tr(),
-                        onTap: () {},
+                        onTap: () => _showHelpAndSupportDialog(context),
                       ),
                       const SizedBox(height: 12),
                       _buildMenuItem(
                         icon: Icons.privacy_tip_outlined,
                         title: 'privacy_policy'.tr(),
                         subtitle: 'about'.tr(),
-                        onTap: () {},
+                        onTap: () => _showPrivacyPolicyDialog(context),
                       ),
 
                       const SizedBox(height: 28),
@@ -362,6 +388,192 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showHelpAndSupportDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1F3A),
+        title: Text(
+          'Help & Support',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'We are here to help you!',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _buildHelpItem(
+                'How to Register?',
+                'Visit the sign-up page and fill in your details: full name, email, phone, and location.',
+              ),
+              const SizedBox(height: 12),
+              _buildHelpItem(
+                'How to Discover Events?',
+                'Browse events from the home screen, search by keyword, or filter by category.',
+              ),
+              const SizedBox(height: 12),
+              _buildHelpItem(
+                'What is Juice Rating?',
+                'Juice rating shows the vibrancy and engagement level of events on a scale of 0-5.',
+              ),
+              const SizedBox(height: 12),
+              _buildHelpItem(
+                'How to Book an Event?',
+                'Click on any event to view details and confirm your booking.',
+              ),
+              const SizedBox(height: 12),
+              _buildHelpItem(
+                'Contact Support',
+                'Email: support@festio.lk\nPhone: +94 (0) 391 112 322',
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Close',
+              style: GoogleFonts.poppins(
+                color: const Color(0xFF667eea),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPrivacyPolicyDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1F3A),
+        title: Text(
+          'Privacy Policy',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildPolicySection(
+                'Data Collection',
+                'We collect personal information you provide including name, email, phone, and location to enhance your event discovery experience.',
+              ),
+              const SizedBox(height: 12),
+              _buildPolicySection(
+                'Data Usage',
+                'Your information is used to personalize recommendations, notify you about events, and improve our services.',
+              ),
+              const SizedBox(height: 12),
+              _buildPolicySection(
+                'Data Security',
+                'We implement industry-standard security measures to protect your personal data.',
+              ),
+              const SizedBox(height: 12),
+              _buildPolicySection(
+                'Third Parties',
+                'We do not share your data with third parties without your consent.',
+              ),
+              const SizedBox(height: 12),
+              _buildPolicySection(
+                'Your Rights',
+                'You have the right to access, modify, or delete your personal information at any time.',
+              ),
+              const SizedBox(height: 12),
+              _buildPolicySection(
+                'Contact',
+                'For privacy concerns, contact us at privacy@festio.lk',
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Accept',
+              style: GoogleFonts.poppins(
+                color: const Color(0xFF667eea),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHelpItem(String title, String description) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            color: const Color(0xFF667eea),
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          description,
+          style: GoogleFonts.poppins(
+            color: Colors.white70,
+            fontSize: 12,
+            height: 1.5,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPolicySection(String title, String content) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            color: const Color(0xFF667eea),
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          content,
+          style: GoogleFonts.poppins(
+            color: Colors.white70,
+            fontSize: 12,
+            height: 1.5,
+          ),
+        ),
+      ],
     );
   }
 
@@ -670,7 +882,64 @@ class _ModernProfileScreenState extends State<ModernProfileScreen> {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          // Show confirmation dialog
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: const Color(0xFF1A1F3A),
+              title: Text(
+                'Confirm Logout',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              content: Text(
+                'logout_confirmation'.tr(),
+                style: GoogleFonts.poppins(
+                  color: Colors.white70,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white70,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Logout user
+                    Provider.of<UserDataProvider>(context, listen: false)
+                        .logoutUser();
+
+                    // Close dialog
+                    Navigator.pop(context);
+
+                    // Navigate to login screen
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (_) => const ModernLoginScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                  child: Text(
+                    'Logout',
+                    style: GoogleFonts.poppins(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
