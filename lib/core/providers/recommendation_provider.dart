@@ -10,7 +10,7 @@ import '../services/ai/recommendation_engine.dart';
 import '../services/ai/advanced_recommendation_engine.dart';
 import '../services/ai/ai_chatbot_service.dart';
 import '../services/behavior_tracking_service.dart';
-import '../config/app_config.dart';
+import '../config/app_config.dart' show useFirebase;
 
 /// Enhanced Recommendation Provider with Advanced AI and Chatbot Integration
 class RecommendationProvider with ChangeNotifier {
