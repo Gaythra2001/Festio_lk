@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+<<<<<<< Updated upstream
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:festio_lk/core/theme/modern_theme.dart';
@@ -7,25 +8,20 @@ import 'package:festio_lk/core/providers/auth_provider.dart';
 import 'package:festio_lk/core/providers/event_provider.dart';
 import 'package:festio_lk/core/providers/booking_provider.dart';
 import 'package:festio_lk/core/providers/notification_provider.dart';
+=======
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'app.dart'; // your app entry widget
+>>>>>>> Stashed changes
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await EasyLocalization.ensureInitialized();
-  
-  runApp(
-    EasyLocalization(
-      supportedLocales: const [
-        Locale('en'),
-        Locale('si'),
-        Locale('ta'),
-      ],
-      path: 'assets/translations',
-      fallbackLocale: const Locale('en'),
-      startLocale: const Locale('en'),
-      child: const MyApp(),
-    ),
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
   );
+  runApp(const MyApp());
 }
+<<<<<<< Updated upstream
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -51,3 +47,5 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+=======
+>>>>>>> Stashed changes
