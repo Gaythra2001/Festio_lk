@@ -3,13 +3,15 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/user_data_provider.dart';
+import '../../core/models/user_model.dart';
 import 'modern_login_screen.dart';
 
 class ModernRegistrationScreen extends StatefulWidget {
   const ModernRegistrationScreen({super.key});
 
   @override
-  State<ModernRegistrationScreen> createState() => _ModernRegistrationScreenState();
+  State<ModernRegistrationScreen> createState() =>
+      _ModernRegistrationScreenState();
 }
 
 class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
@@ -23,6 +25,7 @@ class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
   bool _agreeToTerms = false;
+  UserType _selectedUserType = UserType.user;
 
   Future<void> _handleRegistration() async {
     // Validation
@@ -64,10 +67,15 @@ class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
           fullName: _fullNameController.text,
           phone: _phoneController.text,
           location: _locationController.text,
+          userType: _selectedUserType,
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration successful! Please login.')),
+          SnackBar(
+            content: Text(_selectedUserType == UserType.organizer
+                ? 'Organizer account created! Please login.'
+                : 'User account created! Please login.'),
+          ),
         );
 
         // Navigate back to login
@@ -212,6 +220,40 @@ class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
 
                   const SizedBox(height: 32),
 
+                  // User Type Selection
+                  Text(
+                    'I am registering as:',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildUserTypeCard(
+                          type: UserType.user,
+                          icon: Icons.event_seat,
+                          title: 'Event Attendee',
+                          description: 'Discover & attend events',
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildUserTypeCard(
+                          type: UserType.organizer,
+                          icon: Icons.business_center,
+                          title: 'Event Organizer',
+                          description: 'Create & manage events',
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
                   // Full Name Field
                   _buildTextField(
                     controller: _fullNameController,
@@ -291,8 +333,8 @@ class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
                         color: Colors.white70,
                       ),
                       onPressed: () {
-                        setState(
-                            () => _obscureConfirmPassword = !_obscureConfirmPassword);
+                        setState(() =>
+                            _obscureConfirmPassword = !_obscureConfirmPassword);
                       },
                     ),
                   ),
@@ -348,8 +390,8 @@ class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
                               height: 24,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
                           : Text(
@@ -468,6 +510,66 @@ class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildUserTypeCard({
+    required UserType type,
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    final isSelected = _selectedUserType == type;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedUserType = type;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF667eea).withOpacity(0.2)
+              : Colors.white.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF667eea)
+                : Colors.white.withOpacity(0.1),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 32,
+              color: isSelected ? const Color(0xFF667eea) : Colors.white70,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? Colors.white : Colors.white70,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              description,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 10,
+                color: Colors.white54,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

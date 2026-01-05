@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../models/user_model.dart';
 
 class UserDataProvider extends ChangeNotifier {
   String? _email;
@@ -6,6 +7,7 @@ class UserDataProvider extends ChangeNotifier {
   String? _location;
   String? _phone;
   bool _isLoggedIn = false;
+  UserType _userType = UserType.user;
 
   // Getters
   String? get email => _email;
@@ -13,6 +15,7 @@ class UserDataProvider extends ChangeNotifier {
   String? get location => _location;
   String? get phone => _phone;
   bool get isLoggedIn => _isLoggedIn;
+  UserType get userType => _userType;
 
   // Register user
   void registerUser({
@@ -20,11 +23,13 @@ class UserDataProvider extends ChangeNotifier {
     required String fullName,
     required String phone,
     required String location,
+    UserType userType = UserType.user,
   }) {
     _email = email;
     _fullName = fullName;
     _phone = phone;
     _location = location;
+    _userType = userType;
     _isLoggedIn = true;
     notifyListeners();
   }
