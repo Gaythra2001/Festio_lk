@@ -31,6 +31,34 @@
 
   <title>festio_lk</title>
   <link rel="manifest" href="manifest.json">
+  
+  <!-- Disable right-click -->
+  <script>
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      return false;
+    });
+    
+    // Disable text selection
+    document.addEventListener('selectstart', function(e) {
+      if (window.location.pathname.includes('search-results')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+    
+    // Disable keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+      if (e.keyCode == 123 || 
+          (e.ctrlKey && e.shiftKey && e.keyCode == 73) ||
+          (e.ctrlKey && e.shiftKey && e.keyCode == 74) ||
+          (e.ctrlKey && e.keyCode == 85)) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
