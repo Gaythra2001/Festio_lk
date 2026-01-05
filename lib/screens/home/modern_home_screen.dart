@@ -7,7 +7,11 @@ import '../events/modern_event_detail_screen.dart';
 import '../submission/event_submission_screen.dart';
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import '../profile/modern_profile_screen.dart';
+=======
+import '../ai_recommendations_screen.dart';
+>>>>>>> Stashed changes
 =======
 import '../ai_recommendations_screen.dart';
 >>>>>>> Stashed changes
@@ -314,10 +318,13 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                               onPressed: () {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                                 setState(() {
                                   _showAIBot = true;
                                 });
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                                 try {
@@ -336,6 +343,9 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                                   );
                                 }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
