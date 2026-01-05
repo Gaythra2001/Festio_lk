@@ -7,7 +7,8 @@ class MockFirestoreService {
     EventModel(
       id: '1',
       title: 'Traditional Kandyan Dance Festival',
-      description: 'Experience the rich cultural heritage of Sri Lanka through traditional Kandyan dance performances.',
+      description:
+          'Experience the rich cultural heritage of Sri Lanka through traditional Kandyan dance performances.',
       startDate: DateTime.now().add(const Duration(days: 7)),
       endDate: DateTime.now().add(const Duration(days: 7)),
       location: 'Kandy, Sri Lanka',
@@ -22,7 +23,8 @@ class MockFirestoreService {
     EventModel(
       id: '2',
       title: 'Vesak Festival Celebration',
-      description: 'Join us for a beautiful Vesak celebration with lanterns, dansal, and Buddhist teachings.',
+      description:
+          'Join us for a beautiful Vesak celebration with lanterns, dansal, and Buddhist teachings.',
       startDate: DateTime.now().add(const Duration(days: 14)),
       endDate: DateTime.now().add(const Duration(days: 14)),
       location: 'Colombo, Sri Lanka',
@@ -37,7 +39,8 @@ class MockFirestoreService {
     EventModel(
       id: '3',
       title: 'Traditional Drumming Workshop',
-      description: 'Learn traditional Sri Lankan drumming techniques from master musicians.',
+      description:
+          'Learn traditional Sri Lankan drumming techniques from master musicians.',
       startDate: DateTime.now().add(const Duration(days: 21)),
       endDate: DateTime.now().add(const Duration(days: 21)),
       location: 'Galle, Sri Lanka',
@@ -54,7 +57,8 @@ class MockFirestoreService {
   final List<BookingModel> _mockBookings = [];
 
   Stream<List<EventModel>> getApprovedEvents() {
-    return Stream.value(_mockEvents.where((e) => e.isApproved && !e.isSpam).toList());
+    return Stream.value(
+        _mockEvents.where((e) => e.isApproved && !e.isSpam).toList());
   }
 
   Future<List<EventModel>> getUpcomingEvents() async {
@@ -67,7 +71,7 @@ class MockFirestoreService {
   Future<String> submitEvent(EventModel event) async {
     // Simulate network delay
     await Future.delayed(const Duration(seconds: 1));
-    
+
     final newEvent = EventModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       title: event.title,
@@ -81,9 +85,10 @@ class MockFirestoreService {
       organizerName: event.organizerName,
       imageUrl: event.imageUrl,
       submittedAt: DateTime.now(),
-      isApproved: false, // Needs approval in real app
+      isApproved: event.isApproved, // Use the approval status from the event
+      ticketPrice: event.ticketPrice,
     );
-    
+
     _mockEvents.add(newEvent);
     return newEvent.id;
   }
@@ -121,7 +126,8 @@ class MockFirestoreService {
     );
   }
 
-  Future<void> updateBookingStatus(String bookingId, BookingStatus status) async {
+  Future<void> updateBookingStatus(
+      String bookingId, BookingStatus status) async {
     final index = _mockBookings.indexWhere((b) => b.id == bookingId);
     if (index != -1) {
       final booking = _mockBookings[index];
@@ -145,4 +151,3 @@ class MockFirestoreService {
     _mockBookings.removeWhere((b) => b.id == bookingId);
   }
 }
-

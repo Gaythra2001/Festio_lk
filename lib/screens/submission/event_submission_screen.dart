@@ -1,5 +1,12 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../core/providers/event_provider.dart';
+import '../../core/providers/auth_provider.dart';
+import '../../core/models/event_model.dart';
 
 class EventSubmissionScreen extends StatefulWidget {
   const EventSubmissionScreen({super.key});
@@ -14,12 +21,14 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen> {
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
   final _priceController = TextEditingController();
-  
+  final ImagePicker _imagePicker = ImagePicker();
+
   String _selectedCategory = 'Festival';
   String _selectedLanguage = 'English';
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 7));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 18, minute: 0);
   bool _isSubmitting = false;
+  XFile? _selectedImage;
 
   final List<String> _categories = [
     'Festival',
@@ -86,42 +95,165 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen> {
     }
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = pickedFile;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error picking image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1F3A),
+        title: Text(
+          'Select Image Source',
+          style: GoogleFonts.poppins(color: Colors.white),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: Colors.white),
+              title: Text('Camera',
+                  style: GoogleFonts.poppins(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: Colors.white),
+              title: Text('Gallery',
+                  style: GoogleFonts.poppins(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _submitEvent() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isSubmitting = true;
       });
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      try {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final eventProvider =
+            Provider.of<EventProvider>(context, listen: false);
 
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Event "${_titleController.text}" submitted successfully!',
-                    style: GoogleFonts.poppins(),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
-          ),
+        // Create event date/time
+        final eventDateTime = DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          _selectedDate.day,
+          _selectedTime.hour,
+          _selectedTime.minute,
         );
 
-        // Go back to home
-        Navigator.of(context).pop();
+        // Create event model
+        final event = EventModel(
+          id: '',
+          title: _titleController.text,
+          description: _descriptionController.text,
+          startDate: eventDateTime,
+          endDate: eventDateTime.add(const Duration(hours: 3)),
+          location: _locationController.text,
+          category: _selectedCategory,
+          organizerId: authProvider.user?.id ?? 'demo_user',
+          organizerName: authProvider.user?.displayName ?? 'Demo User',
+          submittedAt: DateTime.now(),
+          ticketPrice: _priceController.text.isNotEmpty
+              ? double.tryParse(_priceController.text)
+              : null,
+          isApproved: true, // Auto-approve for now
+        );
+
+        // Submit event with image
+        final File? imageFile = _selectedImage != null && !kIsWeb
+            ? File(_selectedImage!.path)
+            : null;
+        final success = await eventProvider.submitEvent(event, imageFile);
+
+        if (mounted) {
+          setState(() {
+            _isSubmitting = false;
+          });
+
+          if (success) {
+            // Reload upcoming events on home page
+            await eventProvider.loadUpcomingEvents();
+
+            // Show success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.white),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Event "${_titleController.text}" submitted successfully!',
+                        style: GoogleFonts.poppins(),
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+
+            // Go back to home
+            Navigator.of(context).pop();
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to submit event. Please try again.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isSubmitting = false;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -163,7 +295,8 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.celebration, color: Colors.white, size: 32),
+                    const Icon(Icons.celebration,
+                        color: Colors.white, size: 32),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
@@ -218,7 +351,107 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 24),
 
+              // Event Image
+              Text(
+                'Event Image',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: _showImageSourceDialog,
+                child: Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A1F3A),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.1),
+                      width: 2,
+                    ),
+                  ),
+                  child: _selectedImage != null
+                      ? Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: kIsWeb
+                                  ? Image.network(
+                                      _selectedImage!.path,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.file(
+                                      File(_selectedImage!.path),
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
+                            ),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: IconButton(
+                                icon: const Icon(Icons.close,
+                                    color: Colors.white),
+                                style: IconButton.styleFrom(
+                                  backgroundColor: Colors.black54,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedImage = null;
+                                  });
+                                },
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 8,
+                              right: 8,
+                              child: IconButton(
+                                icon:
+                                    const Icon(Icons.edit, color: Colors.white),
+                                style: IconButton.styleFrom(
+                                  backgroundColor: Colors.black54,
+                                ),
+                                onPressed: _showImageSourceDialog,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.add_photo_alternate,
+                              size: 64,
+                              color: Colors.white.withOpacity(0.3),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Tap to add event image',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white54,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Camera or Gallery',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white38,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
               const SizedBox(height: 24),
 
               // Event Title
@@ -331,15 +564,18 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFF1A1F3A),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.white.withOpacity(0.1)),
+                              border: Border.all(
+                                  color: Colors.white.withOpacity(0.1)),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.calendar_today, color: Colors.white54),
+                                const Icon(Icons.calendar_today,
+                                    color: Colors.white54),
                                 const SizedBox(width: 12),
                                 Text(
                                   '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                                  style: GoogleFonts.poppins(color: Colors.white),
+                                  style:
+                                      GoogleFonts.poppins(color: Colors.white),
                                 ),
                               ],
                             ),
@@ -369,15 +605,18 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFF1A1F3A),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.white.withOpacity(0.1)),
+                              border: Border.all(
+                                  color: Colors.white.withOpacity(0.1)),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.access_time, color: Colors.white54),
+                                const Icon(Icons.access_time,
+                                    color: Colors.white54),
                                 const SizedBox(width: 12),
                                 Text(
                                   _selectedTime.format(context),
-                                  style: GoogleFonts.poppins(color: Colors.white),
+                                  style:
+                                      GoogleFonts.poppins(color: Colors.white),
                                 ),
                               ],
                             ),
@@ -503,8 +742,8 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen> {
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: GoogleFonts.poppins(color: Colors.white38),
-          prefixIcon: prefixIcon != null 
-              ? Icon(prefixIcon, color: Colors.white54) 
+          prefixIcon: prefixIcon != null
+              ? Icon(prefixIcon, color: Colors.white54)
               : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.all(16),

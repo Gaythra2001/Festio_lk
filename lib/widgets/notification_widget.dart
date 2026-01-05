@@ -5,8 +5,9 @@ import '../core/providers/notification_provider.dart';
 
 class NotificationBell extends StatelessWidget {
   final VoidCallback? onTap;
+  final Color? iconColor;
 
-  const NotificationBell({super.key, this.onTap});
+  const NotificationBell({super.key, this.onTap, this.iconColor});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +16,11 @@ class NotificationBell extends StatelessWidget {
         return Stack(
           children: [
             IconButton(
-              icon: const Icon(Icons.notifications_outlined),
+              icon: Icon(
+                Icons.notifications_outlined,
+                color: iconColor ?? Colors.white,
+                size: 22,
+              ),
               onPressed: onTap ??
                   () {
                     showNotificationPanel(context);
@@ -28,15 +33,23 @@ class NotificationBell extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: const BoxDecoration(
-                    color: Colors.red,
+                    color: Color(0xFFff9a9e),
                     shape: BoxShape.circle,
                   ),
-                  child: Text(
-                    notificationProvider.unreadCount.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Center(
+                    child: Text(
+                      notificationProvider.unreadCount > 9
+                          ? '9+'
+                          : notificationProvider.unreadCount.toString(),
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
