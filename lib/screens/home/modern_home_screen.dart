@@ -504,9 +504,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
     required String imageUrl,
     required double juice,
   }) {
-    return ListTile(
-      title: Text(title, style: const TextStyle(color: Colors.white)),
-      subtitle: Text(date, style: const TextStyle(color: Colors.white70)),
+    return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
