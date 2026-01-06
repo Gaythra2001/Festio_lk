@@ -327,7 +327,9 @@ class NotificationItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              _getIconForType(notification.type),
+              notification.iconData != null
+                  ? _iconFromString(notification.iconData!)
+                  : _getIconForType(notification.type),
               color: Colors.white,
               size: 20,
             ),
@@ -378,6 +380,21 @@ class NotificationItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  IconData _iconFromString(String key) {
+    switch (key) {
+      case 'campaign':
+        return Icons.campaign;
+      case 'local_offer':
+        return Icons.local_offer;
+      case 'star':
+        return Icons.star;
+      case 'event':
+        return Icons.event;
+      default:
+        return Icons.notifications;
+    }
   }
 
   IconData _getIconForType(String type) {
