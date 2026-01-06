@@ -7,6 +7,7 @@ import 'dart:ui';
 import '../events/modern_event_detail_screen.dart';
 import '../submission/event_submission_screen.dart';
 import '../recommendations/ai_recommendations_screen.dart';
+import '../organizer/organizer_promotion_screen.dart';
 
 import '../../widgets/event_calendar.dart';
 import '../../widgets/juice_rating.dart';
@@ -184,37 +185,80 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                           ),
                           const SizedBox(width: 12),
                           // AI Bot Button - Professional styling
-                          Container(
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color:
-                                      const Color(0xFF667eea).withOpacity(0.4),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: IconButton(
-                              icon: const Icon(Icons.smart_toy_outlined,
-                                  color: Colors.white, size: 22),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const AIRecommendationsScreen(),
+                          Row(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFF667eea),
+                                      Color(0xFF764ba2)
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   ),
-                                );
-                              },
-                              tooltip: 'AI Recommendations',
-                            ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF667eea)
+                                          .withOpacity(0.4),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: IconButton(
+                                  icon: const Icon(Icons.smart_toy_outlined,
+                                      color: Colors.white, size: 22),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const AIRecommendationsScreen(),
+                                      ),
+                                    );
+                                  },
+                                  tooltip: 'AI Recommendations',
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFF8fd3f4),
+                                      Color(0xFF84fab0)
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF84fab0)
+                                          .withOpacity(0.35),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: IconButton(
+                                  icon: const Icon(Icons.campaign_outlined,
+                                      color: Colors.white, size: 22),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const OrganizerPromotionScreen(),
+                                      ),
+                                    );
+                                  },
+                                  tooltip: 'Organizer Dashboard',
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),

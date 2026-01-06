@@ -15,6 +15,7 @@ import 'package:festio_lk/core/providers/notification_provider.dart';
 import 'package:festio_lk/core/providers/user_data_provider.dart';
 import 'package:festio_lk/core/providers/recommendation_provider.dart';
 import 'package:festio_lk/core/providers/rating_provider.dart';
+import 'package:festio_lk/core/providers/promotion_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +46,13 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => EventProvider()),
         ChangeNotifierProvider(create: (_) => BookingProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProxyProvider<NotificationProvider, PromotionProvider>(
+          create: (context) => PromotionProvider(
+            Provider.of<NotificationProvider>(context, listen: false),
+          ),
+          update: (context, notif, previous) =>
+              previous ?? PromotionProvider(notif),
+        ),
         ChangeNotifierProvider(create: (_) => UserDataProvider()),
         ChangeNotifierProvider(create: (_) => RecommendationProvider()),
         ChangeNotifierProvider(create: (_) => RatingProvider()),
