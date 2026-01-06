@@ -6,7 +6,11 @@ import '../config/app_config.dart';
 /// Service for managing ratings and reviews
 class RatingService {
   FirebaseFirestore? _firestoreInstance;
-  
+
+  // Local storage for demo mode
+  final List<RatingModel> _localEventRatings = [];
+  final List<RatingModel> _localPlatformRatings = [];
+
   FirebaseFirestore? get _firestore {
     if (!useFirebase) return null;
     _firestoreInstance ??= FirebaseFirestore.instance;
@@ -20,7 +24,13 @@ class RatingService {
   /// Submit a rating for an event or platform
   Future<void> submitRating(RatingModel rating) async {
     if (!useFirebase) {
-      debugPrint('⚠️ Firebase disabled - rating not saved');
+      // Store in local memory for demo mode
+      if (rating.eventId != null) {
+        _localEventRatings.add(rating);
+      } else {
+        _localPlatformRatings.add(rating);
+      }
+      debugPrint('✅ Rating submitted successfully (demo mode)');
       return;
     }
 
@@ -87,7 +97,15 @@ class RatingService {
   /// Get ratings for a specific event
   Future<List<RatingModel>> getEventRatings(String eventId) async {
     if (!useFirebase) {
-      return _getMockEventRatings(eventId);
+      // Combine mock data with locally submitted ratings
+      final mockRatings = _getMockEventRatings(eventId);
+      final localSubmitted =
+          _localEventRatings.where((r) => r.eventId == eventId).toList();
+
+      // Sort by creation date (newest first)
+      final allRatings = [...mockRatings, ...localSubmitted];
+      allRatings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return allRatings;
     }
 
     try {
@@ -109,7 +127,14 @@ class RatingService {
   /// Get platform ratings (overall app ratings)
   Future<List<RatingModel>> getPlatformRatings() async {
     if (!useFirebase) {
-      return _getMockPlatformRatings();
+      // Combine mock data with locally submitted ratings
+      final mockRatings = _getMockPlatformRatings();
+      final localSubmitted = _localPlatformRatings;
+
+      // Sort by creation date (newest first)
+      final allRatings = [...mockRatings, ...localSubmitted];
+      allRatings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return allRatings.take(50).toList();
     }
 
     try {
@@ -162,7 +187,9 @@ class RatingService {
   /// Get rating statistics for an event
   Future<RatingStats> getEventStats(String eventId) async {
     if (!useFirebase) {
-      return _getMockEventStats();
+      // Calculate stats dynamically from mock + local ratings
+      final allRatings = await getEventRatings(eventId);
+      return _calculateStatsFromRatings(allRatings);
     }
 
     try {
@@ -190,7 +217,9 @@ class RatingService {
   /// Get platform rating statistics
   Future<RatingStats> getPlatformStats() async {
     if (!useFirebase) {
-      return _getMockPlatformStats();
+      // Calculate stats dynamically from mock + local ratings
+      final allRatings = await getPlatformRatings();
+      return _calculateStatsFromRatings(allRatings);
     }
 
     try {
@@ -333,6 +362,59 @@ class RatingService {
     );
   }
 
+  /// Calculate statistics from a list of ratings (for demo mode)
+  RatingStats _calculateStatsFromRatings(List<RatingModel> ratings) {
+    if (ratings.isEmpty) {
+      return RatingStats(
+        averageRating: 0.0,
+        totalRatings: 0,
+        ratingDistribution: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0},
+      );
+    }
+
+    // Calculate distribution
+    final distribution = <int, int>{5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+    double totalRating = 0;
+    int verifiedCount = 0;
+    int withTextCount = 0;
+    int withImagesCount = 0;
+    final tagCounts = <String, int>{};
+
+    for (final rating in ratings) {
+      totalRating += rating.rating;
+      distribution[rating.rating.round()] =
+          (distribution[rating.rating.round()] ?? 0) + 1;
+
+      if (rating.isVerifiedBooking) verifiedCount++;
+      if (rating.review != null && rating.review!.isNotEmpty) withTextCount++;
+      if (rating.images.isNotEmpty) withImagesCount++;
+
+      for (final tag in rating.tags) {
+        tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
+      }
+    }
+
+    // Get top tags
+    final sortedTags = tagCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final topTags = sortedTags.take(5).map((e) => e.key).toList();
+
+    // Calculate recommendation score (4+ stars)
+    final recommendCount = (distribution[5] ?? 0) + (distribution[4] ?? 0);
+    final recommendationScore = (recommendCount / ratings.length) * 100;
+
+    return RatingStats(
+      averageRating: totalRating / ratings.length,
+      totalRatings: ratings.length,
+      ratingDistribution: distribution,
+      verifiedRatings: verifiedCount,
+      reviewsWithText: withTextCount,
+      reviewsWithImages: withImagesCount,
+      topTags: topTags,
+      recommendationScore: recommendationScore,
+    );
+  }
+
   // ===== MOCK DATA FOR DEMO MODE =====
 
   List<RatingModel> _getMockEventRatings(String eventId) {
@@ -392,42 +474,5 @@ class RatingService {
         helpfulCount: 15,
       ),
     ];
-  }
-
-  RatingStats _getMockEventStats() {
-    return RatingStats(
-      averageRating: 4.6,
-      totalRatings: 156,
-      ratingDistribution: {5: 98, 4: 42, 3: 12, 2: 3, 1: 1},
-      verifiedRatings: 134,
-      reviewsWithText: 89,
-      reviewsWithImages: 23,
-      topTags: [
-        'Great venue',
-        'Well organized',
-        'Good entertainment',
-        'Great atmosphere'
-      ],
-      recommendationScore: 89.7,
-    );
-  }
-
-  RatingStats _getMockPlatformStats() {
-    return RatingStats(
-      averageRating: 4.7,
-      totalRatings: 2543,
-      ratingDistribution: {5: 1821, 4: 567, 3: 123, 2: 25, 1: 7},
-      verifiedRatings: 2401,
-      reviewsWithText: 1876,
-      reviewsWithImages: 345,
-      topTags: [
-        'Easy to use',
-        'Great events',
-        'User friendly',
-        'Good support',
-        'Reliable'
-      ],
-      recommendationScore: 93.9,
-    );
   }
 }

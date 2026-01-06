@@ -606,19 +606,18 @@ class _RatingTabState extends State<RatingTab>
   void _showRatingDialog() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-    if (authProvider.user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please login to write a review')),
-      );
-      return;
-    }
+    // Use demo user if not logged in
+    final userId = authProvider.user?.id ??
+        'demo_user_${DateTime.now().millisecondsSinceEpoch}';
+    final userName = authProvider.user?.displayName ?? 'Guest User';
+    final userPhotoUrl = authProvider.user?.photoUrl;
 
     showDialog(
       context: context,
       builder: (context) => _RatingDialog(
-        userId: authProvider.user!.id,
-        userName: authProvider.user!.displayName ?? 'Anonymous',
-        userPhotoUrl: authProvider.user!.photoUrl,
+        userId: userId,
+        userName: userName,
+        userPhotoUrl: userPhotoUrl,
         eventId: widget.eventId,
         eventName: widget.eventName,
       ),
