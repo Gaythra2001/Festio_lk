@@ -9,6 +9,8 @@ class NotificationModel {
   bool isRead;
   final String? actionUrl;
   final String? iconData;
+  final Map<String, dynamic>?
+      metadata; // Store additional data like event details
 
   NotificationModel({
     required this.id,
@@ -19,6 +21,7 @@ class NotificationModel {
     this.isRead = false,
     this.actionUrl,
     this.iconData,
+    this.metadata,
   });
 }
 
@@ -39,6 +42,7 @@ class NotificationProvider with ChangeNotifier {
     required String type,
     String? actionUrl,
     String? iconData,
+    Map<String, dynamic>? metadata,
   }) {
     final notification = NotificationModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -49,6 +53,7 @@ class NotificationProvider with ChangeNotifier {
       isRead: false,
       actionUrl: actionUrl,
       iconData: iconData,
+      metadata: metadata,
     );
 
     _notifications.insert(0, notification);
@@ -57,8 +62,7 @@ class NotificationProvider with ChangeNotifier {
 
   // Mark notification as read
   void markAsRead(String notificationId) {
-    final index =
-        _notifications.indexWhere((n) => n.id == notificationId);
+    final index = _notifications.indexWhere((n) => n.id == notificationId);
     if (index != -1) {
       _notifications[index].isRead = true;
       notifyListeners();
@@ -110,12 +114,15 @@ class NotificationProvider with ChangeNotifier {
     );
   }
 
-  void addNewEventNotification(String eventTitle) {
+  void addNewEventNotification(String eventTitle,
+      {Map<String, dynamic>? eventData}) {
     addNotification(
       title: 'New Event Available',
-      message: 'A new event $eventTitle matching your interests is now available',
+      message:
+          'A new event $eventTitle matching your interests is now available',
       type: 'event',
       iconData: 'event',
+      metadata: eventData,
     );
   }
 
