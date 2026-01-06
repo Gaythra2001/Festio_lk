@@ -6,13 +6,14 @@ import 'dart:ui';
 
 import '../events/modern_event_detail_screen.dart';
 import '../submission/event_submission_screen.dart';
-import '../profile/modern_profile_screen.dart';
 import '../recommendations/ai_recommendations_screen.dart';
 
 import '../../widgets/event_calendar.dart';
 import '../../widgets/juice_rating.dart';
 import '../../core/providers/notification_provider.dart';
+import '../../core/providers/event_provider.dart';
 import '../../widgets/rating_tab.dart';
+import 'package:intl/intl.dart';
 
 class ModernHomeScreen extends StatefulWidget {
   const ModernHomeScreen({super.key});
@@ -38,6 +39,10 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
         'Welcome Back!',
         'Check out new cultural events in your area',
       );
+
+      // Load upcoming events from provider
+      final eventProvider = Provider.of<EventProvider>(context, listen: false);
+      eventProvider.loadUpcomingEvents();
     });
   }
 
@@ -100,7 +105,22 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
   ];
 
   List<Map<String, dynamic>> get _filteredEvents {
-    var events = _allEvents;
+    // Get events from provider
+    final eventProvider = Provider.of<EventProvider>(context, listen: false);
+    final providerEvents = eventProvider.upcomingEvents.map((event) {
+      return {
+        'title': event.title,
+        'date': DateFormat('MMM dd, yyyy').format(event.startDate),
+        'location': event.location,
+        'category': event.category,
+        'imageUrl': event.imageUrl ??
+            'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800',
+        'juice': 4.5, // Default rating
+      };
+    }).toList();
+
+    // Combine with hardcoded sample events
+    var events = [...providerEvents, ..._allEvents];
 
     // Filter by category
     if (_selectedCategory != 'All') {
@@ -242,13 +262,17 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            EventCalendar(
-                              events: [], // Pass actual events from state
-                              onDateSelected: (date) {
-                                // Handle date selection
-                              },
-                              onEventsForDateChanged: (events) {
-                                // Handle events for selected date
+                            Consumer<EventProvider>(
+                              builder: (context, eventProvider, child) {
+                                return EventCalendar(
+                                  events: eventProvider.upcomingEvents,
+                                  onDateSelected: (date) {
+                                    // Handle date selection
+                                  },
+                                  onEventsForDateChanged: (events) {
+                                    // Handle events for selected date
+                                  },
+                                );
                               },
                             ),
                             const SizedBox(height: 32),
