@@ -5,6 +5,7 @@ import '../../core/providers/event_provider.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/models/event_model.dart';
 import '../../core/routes/app_routes.dart';
+import 'organizer_promotion_screen.dart';
 
 class OrganizerDashboardScreen extends StatefulWidget {
   const OrganizerDashboardScreen({super.key});
@@ -306,10 +307,24 @@ class _CreateEventTab extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: const Icon(
-                  Icons.celebration,
-                  size: 60,
-                  color: Colors.white,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: const [
+                    Icon(
+                      Icons.celebration,
+                      size: 60,
+                      color: Colors.white,
+                    ),
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Icon(
+                        Icons.campaign,
+                        size: 24,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),
@@ -349,6 +364,35 @@ class _CreateEventTab extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF667eea),
                     foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const OrganizerPromotionScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.campaign, size: 22),
+                  label: Text(
+                    'Promote Event',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFF667eea)),
+                    foregroundColor: const Color(0xFF667eea),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),

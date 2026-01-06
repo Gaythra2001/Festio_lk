@@ -85,7 +85,7 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
   Widget _buildInfoSection() {
     return Consumer<RecommendationProvider>(
       builder: (context, provider, child) {
-        final summary = provider.getPreferencesSummary();
+        // final summary = provider.getPreferencesSummary(); // Unused
 
         return Padding(
           padding: EdgeInsets.all(16),
