@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/providers/notification_provider.dart';
+import '../screens/events/modern_event_detail_screen.dart';
 
 class NotificationBell extends StatelessWidget {
   final VoidCallback? onTap;
@@ -131,8 +132,7 @@ class NotificationPanel extends StatelessWidget {
                                 notificationProvider.markAllAsRead();
                               },
                               style: OutlinedButton.styleFrom(
-                                foregroundColor:
-                                    const Color(0xFF667eea),
+                                foregroundColor: const Color(0xFF667eea),
                                 side: const BorderSide(
                                   color: Color(0xFF667eea),
                                 ),
@@ -159,8 +159,7 @@ class NotificationPanel extends StatelessWidget {
                                     ),
                                     actions: [
                                       TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context),
+                                        onPressed: () => Navigator.pop(context),
                                         child: const Text('Cancel'),
                                       ),
                                       TextButton(
@@ -229,8 +228,31 @@ class NotificationPanel extends StatelessWidget {
                                   .deleteNotification(notification.id);
                             },
                             onTap: () {
-                              notificationProvider
-                                  .markAsRead(notification.id);
+                              notificationProvider.markAsRead(notification.id);
+
+                              // Navigate to event details if it's an event notification
+                              if (notification.type == 'event' &&
+                                  notification.metadata != null) {
+                                Navigator.pop(
+                                    context); // Close notification panel
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ModernEventDetailScreen(
+                                      title:
+                                          notification.metadata!['title'] ?? '',
+                                      date:
+                                          notification.metadata!['date'] ?? '',
+                                      location:
+                                          notification.metadata!['location'] ??
+                                              '',
+                                      imageUrl: notification
+                                              .metadata!['imageUrl'] ??
+                                          'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3',
+                                    ),
+                                  ),
+                                );
+                              }
                             },
                           );
                         },

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/providers/event_provider.dart';
 import '../../core/providers/auth_provider.dart';
+import '../../core/providers/notification_provider.dart';
 import '../../core/models/event_model.dart';
 
 class EventSubmissionScreen extends StatefulWidget {
@@ -210,6 +211,24 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen> {
             // Reload upcoming events on home page
             await eventProvider.loadUpcomingEvents();
 
+            // Send notification to users about new event
+            final notificationProvider =
+                Provider.of<NotificationProvider>(context, listen: false);
+
+            // Prepare event data for navigation
+            final eventData = {
+              'title': _titleController.text,
+              'date':
+                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+              'location': _locationController.text,
+              'imageUrl': '', // Will be updated if image upload is implemented
+            };
+
+            notificationProvider.addNewEventNotification(
+              _titleController.text,
+              eventData: eventData,
+            );
+
             // Show success message
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -219,14 +238,14 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Event "${_titleController.text}" submitted successfully!',
+                        'Event "${_titleController.text}" submitted successfully! Users have been notified.',
                         style: GoogleFonts.poppins(),
                       ),
                     ),
                   ],
                 ),
                 backgroundColor: Colors.green,
-                duration: const Duration(seconds: 3),
+                duration: const Duration(seconds: 4),
               ),
             );
 
