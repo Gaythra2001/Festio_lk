@@ -219,14 +219,14 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
         final File? imageFile = _selectedImage != null && !kIsWeb
             ? File(_selectedImage!.path)
             : null;
-        final success = await eventProvider.submitEvent(event, imageFile);
+        final newEventId = await eventProvider.submitEvent(event, imageFile);
 
         if (mounted) {
           setState(() {
             _isSubmitting = false;
           });
 
-          if (success) {
+          if (newEventId != null && newEventId.isNotEmpty) {
             // Reload upcoming events on home page
             await eventProvider.loadUpcomingEvents();
 
@@ -268,7 +268,7 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
               ),
             );
 
-            // Go back to home
+            // Go back to previous screen
             Navigator.of(context).pop();
           } else {
             ScaffoldMessenger.of(context).showSnackBar(

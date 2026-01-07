@@ -153,7 +153,7 @@ class EventProvider with ChangeNotifier {
     }).toList();
   }
 
-  Future<bool> submitEvent(EventModel event, File? imageFile) async {
+  Future<String?> submitEvent(EventModel event, File? imageFile) async {
     _isLoading = true;
     notifyListeners();
 
@@ -197,19 +197,20 @@ class EventProvider with ChangeNotifier {
         ticketUrl: event.ticketUrl,
       );
 
+      String? newId;
       if (useFirebase && _firestoreService != null) {
-        await _firestoreService!.submitEvent(eventWithImage);
+        newId = await _firestoreService!.submitEvent(eventWithImage);
       } else if (_mockFirestoreService != null) {
-        await _mockFirestoreService!.submitEvent(eventWithImage);
+        newId = await _mockFirestoreService!.submitEvent(eventWithImage);
       }
       _isLoading = false;
       notifyListeners();
-      return true;
+      return newId;
     } catch (e) {
       _isLoading = false;
       notifyListeners();
       debugPrint('Error submitting event: $e');
-      return false;
+      return null;
     }
   }
 }

@@ -3,11 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/promotion_provider.dart';
 import '../../core/providers/event_provider.dart';
+import '../../core/providers/auth_provider.dart';
 import '../../core/models/promotion_model.dart';
 import '../../core/models/event_model.dart';
 
 class OrganizerPromotionScreen extends StatefulWidget {
-  const OrganizerPromotionScreen({super.key});
+  final String? initialEventId;
+  const OrganizerPromotionScreen({super.key, this.initialEventId});
 
   @override
   State<OrganizerPromotionScreen> createState() =>
@@ -31,6 +33,11 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
     _langController = TabController(length: 3, vsync: this);
     Future.microtask(() {
       context.read<PromotionProvider>().load();
+      if (widget.initialEventId != null && widget.initialEventId!.isNotEmpty) {
+        setState(() {
+          _selectedEventId = widget.initialEventId!;
+        });
+      }
     });
   }
 
@@ -61,6 +68,8 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
             _buildSectionTitle('Choose Event'),
             const SizedBox(height: 8),
             _buildEventDropdown(events),
+            const SizedBox(height: 12),
+            if (events.isNotEmpty) _buildSuggestions(events),
             const SizedBox(height: 16),
             _buildSectionTitle('Languages'),
             const SizedBox(height: 8),
@@ -148,6 +157,109 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
               .toList(),
         ),
       ),
+    );
+  }
+
+  Widget _buildSuggestions(List<EventModel> allEvents) {
+    final auth = context.read<AuthProvider>();
+    final myId = auth.user?.id ?? 'demo_user';
+    final myEvents = allEvents
+        .where((e) => e.organizerId == myId)
+        .toList()
+      ..sort((a, b) => (b.submittedAt ?? b.startDate)
+          .compareTo(a.submittedAt ?? a.startDate));
+
+    if (myEvents.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Suggested (your recent events)'),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 88,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: myEvents.length.clamp(0, 10),
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (ctx, i) {
+              final ev = myEvents[i];
+              final selected = _selectedEventId == ev.id;
+              return GestureDetector(
+                onTap: () => setState(() => _selectedEventId = ev.id),
+                child: Container(
+                  width: 220,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? const Color(0xFF667eea).withOpacity(0.15)
+                        : const Color(0xFF1A1F3A),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: selected
+                          ? const Color(0xFF667eea)
+                          : Colors.white.withOpacity(0.1),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: const Color(0xFF0F1530),
+                          image: ev.imageUrl != null && ev.imageUrl!.isNotEmpty
+                              ? DecorationImage(
+                                  image: NetworkImage(ev.imageUrl!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: (ev.imageUrl == null || ev.imageUrl!.isEmpty)
+                            ? const Icon(Icons.event, color: Colors.white54)
+                            : null,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              ev.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.poppins(
+                                  color: Colors.white, fontSize: 13),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              ev.location,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.poppins(
+                                  color: Colors.white70, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Icon(
+                        selected ? Icons.check_circle : Icons.outlined_flag,
+                        size: 18,
+                        color: selected
+                            ? const Color(0xFF667eea)
+                            : Colors.white54,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -455,8 +567,16 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
     final ok = await context.read<PromotionProvider>().save(p);
     if (ok) {
       context.read<PromotionProvider>().publish(p, iconData: _iconKey);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Promotion published')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Promotion published! Users have been notified.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+        // Navigate to home page
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
     }
   }
 }
