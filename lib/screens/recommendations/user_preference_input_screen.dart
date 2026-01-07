@@ -62,15 +62,15 @@ class _UserPreferenceInputScreenState extends State<UserPreferenceInputScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF0A0E27),
       appBar: AppBar(
         title: const Text(
           'Set Your Preferences',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black87),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -86,13 +86,13 @@ class _UserPreferenceInputScreenState extends State<UserPreferenceInputScreen> {
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   'We\'ll find the perfect events for you',
-                  style: TextStyle(fontSize: 16, color: Colors.black54),
+                  style: TextStyle(fontSize: 16, color: Colors.white70),
                 ),
                 const SizedBox(height: 32),
 
@@ -173,13 +173,13 @@ class _UserPreferenceInputScreenState extends State<UserPreferenceInputScreen> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 12),
                 const Text(
                   'Select all that apply',
-                  style: TextStyle(fontSize: 14, color: Colors.black54),
+                  style: TextStyle(fontSize: 14, color: Colors.white70),
                 ),
                 const SizedBox(height: 16),
 
@@ -188,10 +188,10 @@ class _UserPreferenceInputScreenState extends State<UserPreferenceInputScreen> {
                   return CheckboxListTile(
                     title: Text(
                       eventType,
-                      style: const TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16, color: Colors.white),
                     ),
                     value: _eventTypes[eventType],
-                    activeColor: const Color(0xFF1A73E8),
+                    activeColor: const Color(0xFF667eea),
                     onChanged: (bool? value) {
                       setState(() {
                         _eventTypes[eventType] = value ?? false;
@@ -208,21 +208,29 @@ class _UserPreferenceInputScreenState extends State<UserPreferenceInputScreen> {
                 SizedBox(
                   width: double.infinity,
                   height: 56,
-                  child: ElevatedButton(
-                    onPressed: _submitPreferences,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A73E8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF667eea), Color(0xFF764ba2)],
                       ),
-                      elevation: 2,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Text(
-                      'Get Recommendations',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                    child: ElevatedButton(
+                      onPressed: _submitPreferences,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Get Recommendations',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -252,28 +260,30 @@ class _UserPreferenceInputScreenState extends State<UserPreferenceInputScreen> {
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 8),
         TextFormField(
+          style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(icon, color: const Color(0xFF1A73E8)),
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+            prefixIcon: Icon(icon, color: const Color(0xFF667eea)),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.grey),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF1A73E8), width: 2),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF667eea), width: 2),
             ),
             filled: true,
-            fillColor: Colors.grey.shade50,
+            fillColor: const Color(0xFF1A1F3A),
           ),
           keyboardType: keyboardType,
           onChanged: onChanged,
@@ -299,28 +309,31 @@ class _UserPreferenceInputScreenState extends State<UserPreferenceInputScreen> {
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
+          style: const TextStyle(color: Colors.white),
+          dropdownColor: const Color(0xFF1A1F3A),
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(icon, color: const Color(0xFF1A73E8)),
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+            prefixIcon: Icon(icon, color: const Color(0xFF667eea)),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.grey),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF1A73E8), width: 2),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF667eea), width: 2),
             ),
             filled: true,
-            fillColor: Colors.grey.shade50,
+            fillColor: const Color(0xFF1A1F3A),
           ),
           items: items
               .map((area) => DropdownMenuItem(
