@@ -116,9 +116,11 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0A0E27),
       appBar: AppBar(
-        title: Text('Personalize Your Experience'),
-        backgroundColor: Theme.of(context).primaryColor,
+        title: const Text('Personalize Your Experience', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: Column(
         children: [
@@ -153,7 +155,11 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
 
   Widget _buildProgressIndicator() {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1F3A),
+        border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.1))),
+      ),
       child: Column(
         children: [
           Row(
@@ -161,26 +167,27 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               return Expanded(
                 child: Container(
                   height: 4,
-                  margin: EdgeInsets.symmetric(horizontal: 2),
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
                   decoration: BoxDecoration(
-                    color: index <= _currentPage
-                        ? Theme.of(context).primaryColor
-                        : Colors.grey[300],
+                    gradient: index <= _currentPage
+                        ? const LinearGradient(colors: [Color(0xFF667eea), Color(0xFF764ba2)])
+                        : null,
+                    color: index <= _currentPage ? null : Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               );
             }),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             'Step ${_currentPage + 1} of $_totalPages',
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            style: const TextStyle(fontSize: 12, color: Colors.white70),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             _getPageTitle(),
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ],
       ),
@@ -209,27 +216,39 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
   // Page 1: Personal Information
   Widget _buildPage1PersonalInfo() {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Tell us about yourself',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
-          SizedBox(height: 8),
-          Text(
+          const SizedBox(height: 8),
+          const Text(
             'This helps us personalize your event recommendations',
-            style: TextStyle(color: Colors.grey[600]),
+            style: TextStyle(color: Colors.white70),
           ),
           SizedBox(height: 24),
 
           // Age
           TextFormField(
             initialValue: _age?.toString(),
+            style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               labelText: 'Age',
-              border: OutlineInputBorder(),
+              labelStyle: const TextStyle(color: Colors.white70),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF667eea), width: 2),
+              ),
+              filled: true,
+              fillColor: const Color(0xFF1A1F3A),
             ),
             keyboardType: TextInputType.number,
             onChanged: (value) => _age = int.tryParse(value),
@@ -239,9 +258,22 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           // Gender
           DropdownButtonFormField<String>(
             value: _gender,
+            style: const TextStyle(color: Colors.white),
+            dropdownColor: const Color(0xFF1A1F3A),
             decoration: InputDecoration(
               labelText: 'Gender',
-              border: OutlineInputBorder(),
+              labelStyle: const TextStyle(color: Colors.white70),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF667eea), width: 2),
+              ),
+              filled: true,
+              fillColor: const Color(0xFF1A1F3A),
             ),
             items: ['male', 'female', 'other', 'prefer_not_to_say']
                 .map((g) => DropdownMenuItem(
@@ -256,9 +288,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           // Religion
           DropdownButtonFormField<String>(
             value: _religion,
+            style: TextStyle(color: Colors.black87),
             decoration: InputDecoration(
               labelText: 'Religion (Optional)',
+              labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
             ),
             items: [
               'buddhism',
@@ -280,9 +316,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           // Occupation
           TextFormField(
             initialValue: _occupation,
+            style: TextStyle(color: Colors.black87),
             decoration: InputDecoration(
               labelText: 'Occupation (Optional)',
+              labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
             ),
             onChanged: (value) => _occupation = value,
           ),
@@ -291,9 +331,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           // Education Level
           DropdownButtonFormField<String>(
             value: _educationLevel,
+            style: TextStyle(color: Colors.black87),
             decoration: InputDecoration(
               labelText: 'Education Level (Optional)',
+              labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
             ),
             items: [
               'high_school',
@@ -358,9 +402,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           // Primary Area
           DropdownButtonFormField<String>(
             value: _primaryArea,
+            style: TextStyle(color: Colors.black87),
             decoration: InputDecoration(
               labelText: 'Primary Location/District',
+              labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
             ),
             items: sriLankanDistricts
                 .map((d) =>
@@ -422,9 +470,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               Expanded(
                 child: TextFormField(
                   initialValue: _minBudget?.toInt().toString(),
+                  style: TextStyle(color: Colors.black87),
                   decoration: InputDecoration(
                     labelText: 'Min Budget (LKR)',
+                    labelStyle: TextStyle(color: Colors.black54),
                     border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                   keyboardType: TextInputType.number,
                   onChanged: (value) => _minBudget = double.tryParse(value),
@@ -434,9 +486,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               Expanded(
                 child: TextFormField(
                   initialValue: _maxBudget?.toInt().toString(),
+                  style: TextStyle(color: Colors.black87),
                   decoration: InputDecoration(
                     labelText: 'Max Budget (LKR)',
+                    labelStyle: TextStyle(color: Colors.black54),
                     border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                   keyboardType: TextInputType.number,
                   onChanged: (value) => _maxBudget = double.tryParse(value),
@@ -449,9 +505,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           // Budget Flexibility
           DropdownButtonFormField<String>(
             value: _budgetFlexibility,
+            style: TextStyle(color: Colors.black87),
             decoration: InputDecoration(
               labelText: 'Budget Flexibility',
+              labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
             ),
             items: ['strict', 'flexible', 'very_flexible']
                 .map((b) => DropdownMenuItem(
@@ -624,9 +684,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           // Preferred Event Time
           DropdownButtonFormField<String>(
             value: _preferredEventTime,
+            style: TextStyle(color: Colors.black87),
             decoration: InputDecoration(
               labelText: 'Preferred Event Time',
+              labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
             ),
             items: ['morning', 'afternoon', 'evening', 'night', 'weekend']
                 .map((t) => DropdownMenuItem(
@@ -674,10 +738,15 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           // Group Size
           TextFormField(
             initialValue: _groupSize?.toString(),
+            style: TextStyle(color: Colors.black87),
             decoration: InputDecoration(
               labelText: 'Typical Group Size',
+              labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
               hintText: 'How many people do you usually go with?',
+              hintStyle: TextStyle(color: Colors.black38),
+              filled: true,
+              fillColor: Colors.white,
             ),
             keyboardType: TextInputType.number,
             onChanged: (value) => _groupSize = int.tryParse(value),
@@ -745,9 +814,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           SizedBox(height: 16),
           DropdownButtonFormField<String>(
             value: _socialStyle,
+            style: TextStyle(color: Colors.black87),
             decoration: InputDecoration(
               labelText: 'Social Style',
+              labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
             ),
             items: ['introverted', 'extroverted', 'ambivert']
                 .map((s) => DropdownMenuItem(
@@ -831,9 +904,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           // Language Preference
           DropdownButtonFormField<String>(
             value: _languagePreference,
+            style: TextStyle(color: Colors.black87),
             decoration: InputDecoration(
               labelText: 'Preferred Language for Events',
+              labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
             ),
             items: ['en', 'si', 'ta', 'multi'].map((lang) {
               String label;
