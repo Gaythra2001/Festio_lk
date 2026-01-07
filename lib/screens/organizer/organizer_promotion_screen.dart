@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/providers/promotion_provider.dart';
 import '../../core/providers/event_provider.dart';
 import '../../core/providers/auth_provider.dart';
+import '../../core/providers/notification_provider.dart';
 import '../../core/models/promotion_model.dart';
 import '../../core/models/event_model.dart';
 
@@ -26,6 +27,47 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
   final _message = {'en': '', 'si': '', 'ta': ''};
   String? _imageUrl;
   String _iconKey = 'campaign';
+  bool _isPaidPromotion = false;
+  String _selectedTier = 'basic';
+  final Map<String, Map<String, dynamic>> _promotionTiers = {
+    'basic': {
+      'name': 'Basic',
+      'price': 1500.0,
+      'duration': 3,
+      'features': [
+        '3 days promotion',
+        'Standard visibility',
+        'Email notification'
+      ],
+      'color': Color(0xFF4CAF50),
+    },
+    'standard': {
+      'name': 'Standard',
+      'price': 3500.0,
+      'duration': 7,
+      'features': [
+        '7 days promotion',
+        'Enhanced visibility',
+        'Email + Push notifications',
+        'Featured badge'
+      ],
+      'color': Color(0xFF2196F3),
+    },
+    'premium': {
+      'name': 'Premium',
+      'price': 7000.0,
+      'duration': 14,
+      'features': [
+        '14 days promotion',
+        'Maximum visibility',
+        'All notification channels',
+        'Featured badge',
+        'Homepage spotlight',
+        'Priority support'
+      ],
+      'color': Color(0xFFFF9800),
+    },
+  };
 
   @override
   void initState() {
@@ -65,6 +107,16 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _buildSectionTitle('Promotion Type'),
+            const SizedBox(height: 8),
+            _buildPromotionTypeSelector(),
+            const SizedBox(height: 16),
+            if (_isPaidPromotion) ...[
+              _buildSectionTitle('Select Promotion Package'),
+              const SizedBox(height: 8),
+              _buildPromotionTiers(),
+              const SizedBox(height: 16),
+            ],
             _buildSectionTitle('Choose Event'),
             const SizedBox(height: 8),
             _buildEventDropdown(events),
@@ -133,6 +185,232 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
             color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
       );
 
+  Widget _buildPromotionTypeSelector() {
+    return Row(
+      children: [
+        Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() {
+              _isPaidPromotion = false;
+            }),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: !_isPaidPromotion
+                    ? const Color(0xFF667eea)
+                    : const Color(0xFF1A1F3A),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: !_isPaidPromotion
+                      ? const Color(0xFF667eea)
+                      : Colors.white.withOpacity(0.1),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.campaign_outlined,
+                    color: !_isPaidPromotion ? Colors.white : Colors.white70,
+                    size: 32,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Free Promotion',
+                    style: GoogleFonts.poppins(
+                      color: !_isPaidPromotion ? Colors.white : Colors.white70,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Standard reach',
+                    style: GoogleFonts.poppins(
+                      color:
+                          !_isPaidPromotion ? Colors.white70 : Colors.white54,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() {
+              _isPaidPromotion = true;
+            }),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: _isPaidPromotion
+                    ? const LinearGradient(
+                        colors: [Color(0xFFFF9800), Color(0xFFFF6F00)],
+                      )
+                    : null,
+                color: !_isPaidPromotion ? const Color(0xFF1A1F3A) : null,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _isPaidPromotion
+                      ? const Color(0xFFFF9800)
+                      : Colors.white.withOpacity(0.1),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.workspace_premium,
+                    color: _isPaidPromotion ? Colors.white : Colors.white70,
+                    size: 32,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Paid Promotion',
+                    style: GoogleFonts.poppins(
+                      color: _isPaidPromotion ? Colors.white : Colors.white70,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Maximum visibility',
+                    style: GoogleFonts.poppins(
+                      color: _isPaidPromotion ? Colors.white70 : Colors.white54,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPromotionTiers() {
+    return Column(
+      children: _promotionTiers.entries.map((entry) {
+        final tier = entry.key;
+        final data = entry.value;
+        final isSelected = _selectedTier == tier;
+
+        return GestureDetector(
+          onTap: () => setState(() {
+            _selectedTier = tier;
+            _end = _start.add(Duration(days: data['duration'] as int));
+          }),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? (data['color'] as Color).withOpacity(0.15)
+                  : const Color(0xFF1A1F3A),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected
+                    ? (data['color'] as Color)
+                    : Colors.white.withOpacity(0.1),
+                width: 2,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: data['color'] as Color,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        tier == 'basic'
+                            ? Icons.star_border
+                            : tier == 'standard'
+                                ? Icons.star_half
+                                : Icons.star,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            data['name'] as String,
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            '${data['duration']} days promotion',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      'Rs ${(data['price'] as double).toStringAsFixed(0)}',
+                      style: GoogleFonts.poppins(
+                        color: data['color'] as Color,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: (data['features'] as List<String>).map((feature) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.check_circle,
+                            color: data['color'] as Color,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            feature,
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   Widget _buildEventDropdown(List<EventModel> events) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -163,9 +441,7 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
   Widget _buildSuggestions(List<EventModel> allEvents) {
     final auth = context.read<AuthProvider>();
     final myId = auth.user?.id ?? 'demo_user';
-    final myEvents = allEvents
-        .where((e) => e.organizerId == myId)
-        .toList()
+    final myEvents = allEvents.where((e) => e.organizerId == myId).toList()
       ..sort((a, b) => (b.submittedAt ?? b.startDate)
           .compareTo(a.submittedAt ?? a.startDate));
 
@@ -248,9 +524,8 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
                       Icon(
                         selected ? Icons.check_circle : Icons.outlined_flag,
                         size: 18,
-                        color: selected
-                            ? const Color(0xFF667eea)
-                            : Colors.white54,
+                        color:
+                            selected ? const Color(0xFF667eea) : Colors.white54,
                       ),
                     ],
                   ),
@@ -527,6 +802,25 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
           .showSnackBar(const SnackBar(content: Text('Select an event')));
       return;
     }
+
+    // Get event title for notification
+    final eventProvider = context.read<EventProvider>();
+    final events = eventProvider.upcomingEvents;
+    final event = events.firstWhere((e) => e.id == _selectedEventId,
+        orElse: () => EventModel(
+              id: _selectedEventId,
+              title: 'Unknown Event',
+              description: '',
+              startDate: DateTime.now(),
+              endDate: DateTime.now(),
+              location: '',
+              category: 'Other',
+              organizerId: '',
+              organizerName: 'Unknown',
+              submittedAt: DateTime.now(),
+            ));
+
+    final tierData = _isPaidPromotion ? _promotionTiers[_selectedTier] : null;
     final p = PromotionModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       eventId: _selectedEventId,
@@ -538,11 +832,22 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
       endDate: _end,
       createdAt: DateTime.now(),
       status: 'draft',
+      isPaid: _isPaidPromotion,
+      promotionTier: _isPaidPromotion ? _selectedTier : null,
+      paidAmount: _isPaidPromotion ? (tierData?['price'] as double?) : null,
+      paymentStatus: _isPaidPromotion ? 'pending' : null,
+      paymentDate: null,
     );
+
     final ok = await context.read<PromotionProvider>().save(p);
     if (ok) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Draft saved')));
+      // Add notification
+      context.read<NotificationProvider>().addPromotionDraftSaved(event.title);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Draft saved')));
+      }
     }
   }
 
@@ -552,6 +857,32 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
           .showSnackBar(const SnackBar(content: Text('Select an event')));
       return;
     }
+
+    // Get event title for notification
+    final eventProvider = context.read<EventProvider>();
+    final events = eventProvider.upcomingEvents;
+    final event = events.firstWhere((e) => e.id == _selectedEventId,
+        orElse: () => EventModel(
+              id: _selectedEventId,
+              title: 'Unknown Event',
+              description: '',
+              startDate: DateTime.now(),
+              endDate: DateTime.now(),
+              location: '',
+              category: 'Other',
+              organizerId: '',
+              organizerName: 'Unknown',
+              submittedAt: DateTime.now(),
+            ));
+
+    // Show payment dialog for paid promotions
+    if (_isPaidPromotion) {
+      final tierData = _promotionTiers[_selectedTier]!;
+      final confirmed = await _showPaymentDialog(tierData);
+      if (confirmed != true) return;
+    }
+
+    final tierData = _isPaidPromotion ? _promotionTiers[_selectedTier] : null;
     final p = PromotionModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       eventId: _selectedEventId,
@@ -563,20 +894,391 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
       endDate: _end,
       createdAt: DateTime.now(),
       status: 'active',
+      isPaid: _isPaidPromotion,
+      promotionTier: _isPaidPromotion ? _selectedTier : null,
+      paidAmount: _isPaidPromotion ? (tierData?['price'] as double?) : null,
+      paymentStatus: _isPaidPromotion ? 'completed' : null,
+      paymentDate: _isPaidPromotion ? DateTime.now() : null,
     );
     final ok = await context.read<PromotionProvider>().save(p);
     if (ok) {
       context.read<PromotionProvider>().publish(p, iconData: _iconKey);
+
+      // Add notification
+      context.read<NotificationProvider>().addPromotionPublished(
+            event.title,
+            _isPaidPromotion,
+            tier: _isPaidPromotion ? _selectedTier : null,
+            amount: _isPaidPromotion ? (tierData?['price'] as double?) : null,
+          );
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Promotion published! Users have been notified.'),
-            duration: Duration(seconds: 3),
-          ),
+        // Show success modal
+        await _showPromotionSuccessModal(
+          context,
+          event.title,
+          _isPaidPromotion,
+          tier: _selectedTier,
+          amount: _isPaidPromotion ? (tierData?['price'] as double?) : null,
         );
+
         // Navigate to home page
         Navigator.of(context).popUntil((route) => route.isFirst);
       }
     }
+  }
+
+  Future<void> _showPromotionSuccessModal(
+    BuildContext context,
+    String eventTitle,
+    bool isPaid, {
+    String? tier,
+    double? amount,
+  }) {
+    return showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1F3A),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  // Success icon
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isPaid
+                            ? [const Color(0xFFFF9800), const Color(0xFFFF6F00)]
+                            : [
+                                const Color(0xFF667eea),
+                                const Color(0xFF764ba2)
+                              ],
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isPaid ? Icons.workspace_premium : Icons.check_circle,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Title
+                  Text(
+                    isPaid
+                        ? '✨ Premium Promotion Live!'
+                        : 'Promotion Published!',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Event title
+                  Text(
+                    eventTitle,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white70,
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Details card
+                  if (isPaid)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF667eea).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF667eea),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Package',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF667eea),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  tier?.toUpperCase() ?? 'PREMIUM',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Divider(
+                            color: Colors.white.withOpacity(0.1),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Amount Paid',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                'Rs ${amount?.toStringAsFixed(0) ?? '0'}',
+                                style: GoogleFonts.poppins(
+                                  color: const Color(0xFF667eea),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 20),
+
+                  // Features list
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'What Happens Next',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildFeatureItem(
+                          Icons.notifications_active,
+                          'Users notified',
+                          'Event followers will receive notifications',
+                        ),
+                        const SizedBox(height: 10),
+                        _buildFeatureItem(
+                          Icons.trending_up,
+                          'Live on platform',
+                          'Your promotion is now visible to target users',
+                        ),
+                        if (isPaid) ...[
+                          const SizedBox(height: 10),
+                          _buildFeatureItem(
+                            Icons.star,
+                            'Featured badge',
+                            'Your event gets priority visibility',
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Close button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF667eea),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Great! Got it',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem(IconData icon, String title, String subtitle) {
+    return Row(
+      children: [
+        Icon(icon, color: const Color(0xFF667eea), size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: GoogleFonts.poppins(
+                  color: Colors.white54,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<bool?> _showPaymentDialog(Map<String, dynamic> tierData) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1F3A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.payment, color: tierData['color'] as Color),
+            const SizedBox(width: 12),
+            Text(
+              'Confirm Payment',
+              style: GoogleFonts.poppins(color: Colors.white),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Promotion Package',
+              style: GoogleFonts.poppins(
+                color: Colors.white70,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${tierData['name']} - ${tierData['duration']} days',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: (tierData['color'] as Color).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: tierData['color'] as Color),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Total Amount',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    'Rs ${(tierData['price'] as double).toStringAsFixed(2)}',
+                    style: GoogleFonts.poppins(
+                      color: tierData['color'] as Color,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Payment Method: Demo Mode (Auto-approved)',
+              style: GoogleFonts.poppins(
+                color: Colors.white54,
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.poppins(color: Colors.white70),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: tierData['color'] as Color,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Confirm Payment',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

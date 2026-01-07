@@ -134,4 +134,78 @@ class NotificationProvider with ChangeNotifier {
       iconData: 'info',
     );
   }
+
+  // Promotion notifications
+  void addPromotionDraftSaved(String eventTitle) {
+    addNotification(
+      title: 'Promotion Draft Saved',
+      message: 'Your promotion for "$eventTitle" has been saved as draft',
+      type: 'promotion',
+      iconData: 'save',
+      metadata: {'status': 'draft', 'eventTitle': eventTitle},
+    );
+  }
+
+  void addPromotionPublished(String eventTitle, bool isPaid,
+      {String? tier, double? amount}) {
+    final message = isPaid
+        ? 'Your $tier promotion for "$eventTitle" is now LIVE! Payment confirmed.'
+        : 'Your promotion for "$eventTitle" is now LIVE!';
+
+    addNotification(
+      title: isPaid ? 'Paid Promotion Published ✨' : 'Promotion Published',
+      message: message,
+      type: 'promotion',
+      iconData: isPaid ? 'workspace_premium' : 'campaign',
+      metadata: {
+        'status': 'active',
+        'eventTitle': eventTitle,
+        'isPaid': isPaid,
+        'tier': tier,
+        'amount': amount,
+      },
+    );
+  }
+
+  void addPromotionPaymentPending(String eventTitle, String tier, double amount) {
+    addNotification(
+      title: 'Promotion Payment Pending',
+      message:
+          'Your $tier promotion for "$eventTitle" is pending payment (Rs $amount)',
+      type: 'promotion',
+      iconData: 'payment',
+      metadata: {
+        'status': 'pending_payment',
+        'eventTitle': eventTitle,
+        'tier': tier,
+        'amount': amount,
+      },
+    );
+  }
+
+  void addPromotionEnded(String eventTitle) {
+    addNotification(
+      title: 'Promotion Ended',
+      message: 'Your promotion for "$eventTitle" has ended',
+      type: 'promotion',
+      iconData: 'event_available',
+      metadata: {'status': 'completed', 'eventTitle': eventTitle},
+    );
+  }
+
+  void addPromotionEngagementMetric(String eventTitle,
+      {required int views, required int clicks}) {
+    addNotification(
+      title: 'Promotion Performance Update',
+      message:
+          '"$eventTitle" - $views views, $clicks clicks in the last 24 hours',
+      type: 'promotion_metric',
+      iconData: 'trending_up',
+      metadata: {
+        'eventTitle': eventTitle,
+        'views': views,
+        'clicks': clicks,
+      },
+    );
+  }
 }
