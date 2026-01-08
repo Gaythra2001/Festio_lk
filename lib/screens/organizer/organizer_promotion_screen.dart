@@ -442,8 +442,7 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
     final auth = context.read<AuthProvider>();
     final myId = auth.user?.id ?? 'demo_user';
     final myEvents = allEvents.where((e) => e.organizerId == myId).toList()
-      ..sort((a, b) => (b.submittedAt ?? b.startDate)
-          .compareTo(a.submittedAt ?? a.startDate));
+      ..sort((a, b) => b.submittedAt.compareTo(a.submittedAt));
 
     if (myEvents.isEmpty) return const SizedBox.shrink();
 

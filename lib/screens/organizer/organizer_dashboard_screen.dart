@@ -6,6 +6,7 @@ import '../../core/providers/auth_provider.dart';
 import '../../core/models/event_model.dart';
 import '../../core/routes/app_routes.dart';
 import 'organizer_promotion_screen.dart';
+import 'organizer_profile_management_screen.dart';
 
 class OrganizerDashboardScreen extends StatefulWidget {
   const OrganizerDashboardScreen({super.key});
@@ -586,6 +587,19 @@ class _ProfileTab extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             _ProfileOption(
+              icon: Icons.manage_accounts,
+              title: 'Manage Profile',
+              subtitle: 'Edit business info & verification',
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const OrganizerProfileManagementScreen(),
+                  ),
+                );
+              },
+            ),
+            _ProfileOption(
               icon: Icons.settings,
               title: 'Settings',
               onTap: () {},
@@ -615,11 +629,13 @@ class _ProfileTab extends StatelessWidget {
 class _ProfileOption extends StatelessWidget {
   final IconData icon;
   final String title;
+  final String? subtitle;
   final VoidCallback onTap;
 
   const _ProfileOption({
     required this.icon,
     required this.title,
+    this.subtitle,
     required this.onTap,
   });
 
@@ -637,6 +653,15 @@ class _ProfileOption extends StatelessWidget {
           title,
           style: GoogleFonts.poppins(color: Colors.white),
         ),
+        subtitle: subtitle != null
+            ? Text(
+                subtitle!,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  color: Colors.white54,
+                ),
+              )
+            : null,
         trailing: const Icon(Icons.arrow_forward_ios,
             size: 16, color: Colors.white54),
         onTap: onTap,
