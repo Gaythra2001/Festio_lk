@@ -8,5 +8,7 @@ class AppRoutes {
   static const String eventSubmission = '/event-submission';
   static const String bookings = '/bookings';
   static const String profile = '/profile';
+  static const String organizerProfile = '/organizer-profile';
+  static const String modernOrganizerProfile = '/modern-organizer-profile';
 }
 
