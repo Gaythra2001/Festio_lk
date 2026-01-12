@@ -15,24 +15,29 @@ class ModernRegistrationScreen extends StatefulWidget {
 }
 
 class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
-  final _fullNameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _locationController = TextEditingController();
+  final _nicPassportController = TextEditingController();
+  final _countryController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
   bool _agreeToTerms = false;
+  String _verificationMethod = 'Email'; // Email or SMS
   UserType _selectedUserType = UserType.user;
 
   Future<void> _handleRegistration() async {
     // Validation
-    if (_fullNameController.text.isEmpty ||
+    if (_firstNameController.text.isEmpty ||
+        _lastNameController.text.isEmpty ||
         _emailController.text.isEmpty ||
         _phoneController.text.isEmpty ||
-        _locationController.text.isEmpty ||
+        _nicPassportController.text.isEmpty ||
+        _countryController.text.isEmpty ||
         _passwordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -64,9 +69,9 @@ class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
         // Register user in provider
         Provider.of<UserDataProvider>(context, listen: false).registerUser(
           email: _emailController.text,
-          fullName: _fullNameController.text,
+          fullName: '${_firstNameController.text} ${_lastNameController.text}',
           phone: _phoneController.text,
-          location: _locationController.text,
+          location: _countryController.text,
           userType: _selectedUserType,
         );
 
@@ -100,10 +105,12 @@ class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
 
   @override
   void dispose() {
-    _fullNameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
-    _locationController.dispose();
+    _nicPassportController.dispose();
+    _countryController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -254,12 +261,53 @@ class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Full Name Field
+                  // First Name Field
                   _buildTextField(
-                    controller: _fullNameController,
-                    hintText: 'John Doe',
-                    label: 'Full Name',
+                    controller: _firstNameController,
+                    hintText: 'John',
+                    label: '*First Name',
                     prefixIcon: Icons.person_outline,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Last Name Field
+                  _buildTextField(
+                    controller: _lastNameController,
+                    hintText: 'Doe',
+                    label: '*Last Name',
+                    prefixIcon: Icons.person_outline,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Contact Number Field
+                  _buildTextField(
+                    controller: _phoneController,
+                    hintText: '+94 (70) 123 4567',
+                    label: '*Contact Number',
+                    prefixIcon: Icons.phone_outlined,
+                    keyboardType: TextInputType.phone,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // NIC/Passport Field
+                  _buildTextField(
+                    controller: _nicPassportController,
+                    hintText: '123456789V or A12345678',
+                    label: '*NIC/Passport',
+                    prefixIcon: Icons.card_giftcard_outlined,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Country Field
+                  _buildTextField(
+                    controller: _countryController,
+                    hintText: 'Sri Lanka',
+                    label: '*Country',
+                    prefixIcon: Icons.public_outlined,
                   ),
 
                   const SizedBox(height: 16),
@@ -268,30 +316,61 @@ class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
                   _buildTextField(
                     controller: _emailController,
                     hintText: 'john@example.com',
-                    label: 'Email',
+                    label: '*Email',
                     prefixIcon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                   ),
 
                   const SizedBox(height: 16),
 
-                  // Phone Field
-                  _buildTextField(
-                    controller: _phoneController,
-                    hintText: '+94 (70) 123 4567',
-                    label: 'Phone',
-                    prefixIcon: Icons.phone_outlined,
-                    keyboardType: TextInputType.phone,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Location Field
-                  _buildTextField(
-                    controller: _locationController,
-                    hintText: 'Colombo, Sri Lanka',
-                    label: 'Location',
-                    prefixIcon: Icons.location_on_outlined,
+                  // Verification Method
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '*Verification Method',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white70,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white24),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: DropdownButton<String>(
+                            value: _verificationMethod,
+                            isExpanded: true,
+                            underline: const SizedBox(),
+                            dropdownColor: const Color(0xFF1A1F3A),
+                            items: ['Email', 'SMS']
+                                .map((method) => DropdownMenuItem(
+                                      value: method,
+                                      child: Text(
+                                        method,
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _verificationMethod = value ?? 'Email';
+                              });
+                            },
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
 
                   const SizedBox(height: 16),
@@ -300,7 +379,7 @@ class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
                   _buildTextField(
                     controller: _passwordController,
                     hintText: '••••••••',
-                    label: 'Password',
+                    label: '*Password',
                     prefixIcon: Icons.lock_outline,
                     obscureText: _obscurePassword,
                     suffixIcon: IconButton(
@@ -322,7 +401,7 @@ class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
                   _buildTextField(
                     controller: _confirmPasswordController,
                     hintText: '••••••••',
-                    label: 'Confirm Password',
+                    label: '*Confirm Password',
                     prefixIcon: Icons.lock_outline,
                     obscureText: _obscureConfirmPassword,
                     suffixIcon: IconButton(

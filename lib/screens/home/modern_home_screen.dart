@@ -13,7 +13,6 @@ import '../../widgets/event_calendar.dart';
 import '../../widgets/juice_rating.dart';
 import '../../core/providers/notification_provider.dart';
 import '../../core/providers/event_provider.dart';
-import '../../widgets/rating_tab.dart';
 import '../../widgets/app_footer.dart';
 import 'package:intl/intl.dart';
 
@@ -398,55 +397,6 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                               ),
                             )),
 
-                      // Platform Ratings Section
-                      const SizedBox(height: 40),
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1A1F3A),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.1),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Color(0xFF667eea),
-                                        Color(0xFF764ba2)
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(Icons.star,
-                                      color: Colors.white, size: 24),
-                                ),
-                                const SizedBox(width: 16),
-                                Text(
-                                  'Platform Ratings',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-                            const SizedBox(
-                              height: 600,
-                              child: RatingTab(isPlatformRating: true),
-                            ),
-                          ],
-                        ),
-                      ),
                       const SizedBox(height: 40),
                       const AppFooter(),
                       const SizedBox(height: 40),
