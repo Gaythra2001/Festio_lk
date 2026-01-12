@@ -14,6 +14,7 @@ import '../../widgets/juice_rating.dart';
 import '../../core/providers/notification_provider.dart';
 import '../../core/providers/event_provider.dart';
 import '../../widgets/rating_tab.dart';
+import '../../widgets/app_footer.dart';
 import 'package:intl/intl.dart';
 
 class ModernHomeScreen extends StatefulWidget {
@@ -446,7 +447,9 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 100),
+                      const SizedBox(height: 40),
+                      const AppFooter(),
+                      const SizedBox(height: 40),
                     ],
                   ),
                 ),

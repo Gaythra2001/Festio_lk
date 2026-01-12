@@ -58,5 +58,4 @@ flutter:
   assets:
     - assets/images/
     - assets/images/poya/
-    - assets/icons/
     - assets/translations/
