@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../widgets/rating_tab.dart';
+import '../../widgets/app_footer.dart';
 
 class ContactScreen extends StatefulWidget {
   const ContactScreen({super.key});
@@ -284,6 +285,7 @@ class _ContactScreenState extends State<ContactScreen> {
           ),
 
           const SizedBox(height: 20),
+          const AppFooter(),
         ],
       ),
     );
