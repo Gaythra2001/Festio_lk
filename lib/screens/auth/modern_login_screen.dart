@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../navigation/main_navigation_screen.dart';
 import '../../widgets/language_selector.dart';
 import '../../core/providers/user_data_provider.dart';
-import 'modern_registration_screen.dart';
+import 'registration_type_selection_screen.dart';
 
 class ModernLoginScreen extends StatefulWidget {
   const ModernLoginScreen({super.key});
@@ -308,7 +308,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                   builder: (_) =>
-                                      const ModernRegistrationScreen()),
+                                      const RegistrationTypeSelectionScreen()),
                             );
                           },
                           child: Text(
