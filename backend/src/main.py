@@ -4,7 +4,10 @@ from contextlib import asynccontextmanager
 import uvicorn
 
 from config.settings import settings
-from routes import auth, events, bookings, users, organizers, recommendations
+from routes import (
+    auth, events, bookings, users, organizers, recommendations,
+    research_behavior, research_features, research_models, research_evaluation
+)
 
 
 @asynccontextmanager
@@ -41,6 +44,12 @@ app.include_router(events.router, prefix="/api/events", tags=["Events"])
 app.include_router(bookings.router, prefix="/api/bookings", tags=["Bookings"])
 app.include_router(organizers.router, prefix="/api/organizers", tags=["Organizers"])
 app.include_router(recommendations.router, prefix="/api/recommendations", tags=["AI Recommendations"])
+
+# Research routers
+app.include_router(research_behavior.router)
+app.include_router(research_features.router)
+app.include_router(research_models.router)
+app.include_router(research_evaluation.router)
 
 
 @app.get("/")
