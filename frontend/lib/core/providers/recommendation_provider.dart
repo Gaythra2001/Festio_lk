@@ -10,6 +10,7 @@ import '../services/ai/recommendation_engine.dart';
 import '../services/ai/advanced_recommendation_engine.dart';
 import '../services/ai/ai_chatbot_service.dart';
 import '../services/behavior_tracking_service.dart';
+import '../services/ml_recommendation_service.dart';
 import '../config/app_config.dart' show useFirebase;
 
 /// Enhanced Recommendation Provider with Advanced AI and Chatbot Integration
@@ -20,24 +21,35 @@ class RecommendationProvider with ChangeNotifier {
   final AIEventChatbotService _chatbotService = AIEventChatbotService();
   final UserBehaviorTrackingService _behaviorService =
       UserBehaviorTrackingService();
+  final MLRecommendationService _mlService = MLRecommendationService();
 
   List<ScoredEvent> _recommendations = [];
   List<EventModel> _legacyRecommendations = [];
+  List<RecommendationModel> _mlRecommendations = [];
   UserPreferencesModel? _userPreferences;
   UserBehaviorModel? _userBehavior;
   bool _isLoading = false;
   bool _useAdvancedEngine = true; // Toggle between old and new engine
+  bool _useMLEngine = false; // Toggle ML-based recommendations
 
   List<ScoredEvent> get recommendations => _recommendations;
   List<EventModel> get legacyRecommendations => _legacyRecommendations;
+  List<RecommendationModel> get mlRecommendations => _mlRecommendations;
   UserPreferencesModel? get userPreferences => _userPreferences;
   UserBehaviorModel? get userBehavior => _userBehavior;
   bool get isLoading => _isLoading;
   bool get useAdvancedEngine => _useAdvancedEngine;
+  bool get useMLEngine => _useMLEngine;
 
   /// Toggle between advanced and legacy recommendation engine
   void toggleEngine() {
     _useAdvancedEngine = !_useAdvancedEngine;
+    notifyListeners();
+  }
+
+  /// Toggle ML-based recommendations
+  void toggleMLEngine() {
+    _useMLEngine = !_useMLEngine;
     notifyListeners();
   }
 
@@ -173,7 +185,10 @@ class RecommendationProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      if (_useAdvancedEngine) {
+      if (_useMLEngine) {
+        // Use ML-based collaborative filtering
+        await loadMLRecommendations(userId: user.id);
+      } else if (_useAdvancedEngine) {
         // Use advanced engine
         await loadAdvancedRecommendations(
           user: user,
@@ -197,6 +212,92 @@ class RecommendationProvider with ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  /// Load ML-based recommendations from backend
+  Future<void> loadMLRecommendations({
+    required String userId,
+    int limit = 10,
+    bool excludeViewed = true,
+  }) async {
+    try {
+      _mlRecommendations = await _mlService.getRecommendations(
+        userId: userId,
+        limit: limit,
+        excludeViewed: excludeViewed,
+      );
+      
+      debugPrint('✅ Loaded ${_mlRecommendations.length} ML recommendations for user $userId');
+    } catch (e) {
+      debugPrint('❌ Error loading ML recommendations: $e');
+      _mlRecommendations = [];
+    }
+  }
+
+  /// Get similar events using ML
+  Future<List<RecommendationModel>> getSimilarEvents({
+    required String eventId,
+    int limit = 5,
+  }) async {
+    try {
+      return await _mlService.getSimilarEvents(
+        eventId: eventId,
+        limit: limit,
+      );
+    } catch (e) {
+      debugPrint('Error getting similar events: $e');
+      return [];
+    }
+  }
+
+  /// Record user interaction for ML training
+  Future<void> recordInteraction({
+    required String userId,
+    required String eventId,
+    required String interactionType,
+    double? rating,
+  }) async {
+    try {
+      await _mlService.recordInteraction(
+        userId: userId,
+        eventId: eventId,
+        interactionType: interactionType,
+        rating: rating,
+      );
+      
+      // Note: Behavior tracking uses specific methods for each interaction type
+      // The generic trackInteraction doesn't exist, so we skip it here
+      debugPrint('✅ Recorded interaction: $interactionType for event $eventId');
+    } catch (e) {
+      debugPrint('Error recording interaction: $e');
+    }
+  }
+
+  /// Provide feedback on recommendation
+  Future<void> provideFeedback({
+    required String userId,
+    required String eventId,
+    required bool liked,
+  }) async {
+    try {
+      await _mlService.provideFeedback(
+        userId: userId,
+        eventId: eventId,
+        liked: liked,
+      );
+    } catch (e) {
+      debugPrint('Error providing feedback: $e');
+    }
+  }
+
+  /// Get ML model statistics
+  Future<Map<String, dynamic>?> getModelStats() async {
+    try {
+      return await _mlService.getModelStats();
+    } catch (e) {
+      debugPrint('Error getting model stats: $e');
+      return null;
+    }
   }
 
   // ============ CHATBOT METHODS ============
