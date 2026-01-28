@@ -16,6 +16,7 @@ import 'package:festio_lk/core/providers/user_data_provider.dart';
 import 'package:festio_lk/core/providers/recommendation_provider.dart';
 import 'package:festio_lk/core/providers/rating_provider.dart';
 import 'package:festio_lk/core/providers/promotion_provider.dart';
+import 'package:festio_lk/core/providers/interaction_tracking_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,6 +57,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserDataProvider()),
         ChangeNotifierProvider(create: (_) => RecommendationProvider()),
         ChangeNotifierProvider(create: (_) => RatingProvider()),
+        ChangeNotifierProvider(create: (_) => InteractionTrackingProvider()),
       ],
       child: MaterialApp(
         title: 'Festio LK',

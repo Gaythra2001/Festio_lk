@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../widgets/event_calendar.dart';
 import '../../core/models/event_model.dart';
+import '../../core/providers/auth_provider.dart';
+import '../../core/providers/event_provider.dart';
+import '../../core/providers/recommendation_provider.dart';
+import '../../core/services/ml_recommendation_service.dart';
+import 'modern_event_detail_screen.dart';
 
 class _Event {
   _Event({
@@ -43,6 +49,11 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   final List<String> _categories = ['All', 'Festival', 'Dance', 'Music', 'Theater', 'Art', 'Food', 'Poya Days'];
   late final TabController _tabController;
   late final List<_Event> _events;
+  final MLRecommendationService _mlService = MLRecommendationService();
+  late Future<List<RecommendationModel>> _mlFuture;
+  String _currentUserId = 'guest_user';
+  final ScrollController _scrollController = ScrollController();
+  final Map<String, GlobalKey> _dateKeys = {};
 
   List<_Event> _getBaseEvents() => [
     _Event(
@@ -152,6 +163,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
     super.initState();
     _events = [..._getBaseEvents(), ..._generatePoyaDays()];
     _tabController = TabController(length: 2, vsync: this);
+    _mlFuture = Future.value(<RecommendationModel>[]); // Hydrated once auth/user context is available
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         setState(() {});
@@ -160,9 +172,61 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final auth = context.read<AuthProvider>();
+    final resolvedUserId = auth.user?.id ?? 'guest_user';
+
+    if (resolvedUserId != _currentUserId) {
+      _currentUserId = resolvedUserId;
+      setState(() {
+        _mlFuture = _loadMlRecommendations(resolvedUserId);
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _tabController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<List<RecommendationModel>> _loadMlRecommendations(String userId) {
+    return _mlService.getRecommendations(userId: userId, limit: 6, excludeViewed: true);
+  }
+
+  EventModel? _findEventForRec(String eventId, List<EventModel> events) {
+    try {
+      return events.firstWhere((event) => event.id == eventId);
+    } catch (_) {
+      // fall through
+    }
+
+    try {
+      return events.firstWhere((event) => event.title.toLowerCase() == eventId.toLowerCase());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _scrollToDate(DateTime date) {
+    final dateKey = '${date.year}-${date.month}-${date.day}';
+    final key = _dateKeys[dateKey];
+    
+    if (key?.currentContext != null) {
+      Scrollable.ensureVisible(
+        key!.currentContext!,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        alignment: 0.1,
+      );
+    }
+  }
+
+  void _scrollToToday() {
+    final now = DateTime.now();
+    _scrollToDate(now);
   }
 
   EventModel _convertToEventModel(_Event event) {
@@ -201,26 +265,76 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
       ..sort((a, b) => b.date.compareTo(a.date));
 
     return SingleChildScrollView(
+      controller: _scrollController,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          Text(
-            'Events',
-            style: GoogleFonts.poppins(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+          // Header with Today button
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Events',
+                      style: GoogleFonts.poppins(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Discover cultural events happening around you',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.white60,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: _scrollToToday,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF667eea).withOpacity(0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.today, color: Colors.white, size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Today',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Discover cultural events happening around you',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.white60,
-            ),
-          ),
+
+          const SizedBox(height: 24),
+
+          _buildMlRecommendationsCard(),
 
           const SizedBox(height: 24),
 
@@ -243,6 +357,9 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
             ),
             child: EventCalendar(
               events: filteredEvents.map(_convertToEventModel).toList(),
+              onDateSelected: (date) {
+                _scrollToDate(date);
+              },
             ),
           ),
 
@@ -408,21 +525,123 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   }
 
   Widget _buildEventsGrid(List<_Event> events) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.75,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      ),
-      itemCount: events.length,
-      itemBuilder: (context, index) {
-        final event = events[index];
-        return _buildEventCard(event);
-      },
+    // Group events by date for section headers
+    final Map<String, List<_Event>> eventsByDate = {};
+    for (final event in events) {
+      final dateKey = '${event.date.year}-${event.date.month}-${event.date.day}';
+      eventsByDate.putIfAbsent(dateKey, () => []).add(event);
+    }
+
+    final dateKeys = eventsByDate.keys.toList()..sort();
+    
+    return Column(
+      children: [
+        for (int i = 0; i < dateKeys.length; i++) ..._buildDateSection(dateKeys[i], eventsByDate[dateKeys[i]]!, i),
+      ],
     );
+  }
+
+  List<Widget> _buildDateSection(String dateKey, List<_Event> dateEvents, int sectionIndex) {
+    final firstEvent = dateEvents.first;
+    final date = firstEvent.date;
+    
+    // Create or reuse GlobalKey for this date
+    _dateKeys.putIfAbsent(dateKey, () => GlobalKey());
+    final key = _dateKeys[dateKey]!;
+    
+    final now = DateTime.now();
+    final isToday = date.year == now.year && 
+                   date.month == now.month && 
+                   date.day == now.day;
+    
+    return [
+      Container(
+        key: key,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        margin: EdgeInsets.only(bottom: 12, top: sectionIndex > 0 ? 24 : 0),
+        decoration: BoxDecoration(
+          gradient: isToday 
+            ? const LinearGradient(
+                colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+              )
+            : null,
+          color: isToday ? null : Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isToday 
+              ? Colors.transparent 
+              : Colors.white.withOpacity(0.08),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.calendar_today,
+              size: 14,
+              color: isToday ? Colors.white : Colors.white70,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              DateFormat('EEEE, MMMM d, yyyy').format(date),
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isToday ? Colors.white : Colors.white70,
+              ),
+            ),
+            if (isToday) ... [
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Today',
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFF23C864).withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '${dateEvents.length}',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF23C864),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.75,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: dateEvents.length,
+        itemBuilder: (context, index) {
+          return _buildEventCard(dateEvents[index]);
+        },
+      ),
+    ];
   }
 
   Widget _buildEmptyState(String title) {
@@ -712,6 +931,434 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                   ],
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMlRecommendationsCard() {
+    final eventProvider = context.watch<EventProvider>();
+    final recommendationProvider = context.read<RecommendationProvider>();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF141A33), Color(0xFF1F2747)],
+        ),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                height: 36,
+                width: 36,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                  ),
+                ),
+                child: const Icon(Icons.psychology, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'AI Recommendations',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      'Personalized picks powered by the ML model',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _mlFuture = _loadMlRecommendations(_currentUserId);
+                  });
+                },
+                icon: const Icon(Icons.refresh, color: Colors.white70),
+                tooltip: 'Refresh recommendations',
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          FutureBuilder<List<RecommendationModel>>(
+            future: _mlFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Row(
+                  children: const [
+                    SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    SizedBox(width: 12),
+                    Text('Loading recommendations...', style: TextStyle(color: Colors.white70)),
+                  ],
+                );
+              }
+
+              if (snapshot.hasError) {
+                return Text(
+                  'Could not load recommendations',
+                  style: GoogleFonts.poppins(color: Colors.redAccent, fontSize: 13),
+                );
+              }
+
+              final recs = snapshot.data ?? [];
+              if (recs.isEmpty) {
+                return Text(
+                  'No recommendations available. Try again later.',
+                  style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13),
+                );
+              }
+
+              return Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: recs.map((rec) {
+                  final matchedEvent = _findEventForRec(rec.eventId, eventProvider.events);
+                  if (matchedEvent != null) {
+                    return _buildRecommendedEventCard(
+                      context: context,
+                      event: matchedEvent,
+                      rec: rec,
+                      recProvider: recommendationProvider,
+                    );
+                  }
+                  return _buildRecommendationPlaceholder(rec);
+                }).toList(),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecommendedEventCard({
+    required BuildContext context,
+    required EventModel event,
+    required RecommendationModel rec,
+    required RecommendationProvider recProvider,
+  }) {
+    return _RecommendationCard(
+      event: event,
+      rec: rec,
+      recProvider: recProvider,
+      userId: _currentUserId,
+    );
+  }
+
+  Widget _buildRecommendationPlaceholder(RecommendationModel rec) {
+    return Container(
+      width: 180,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            rec.eventId,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            rec.reason,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+              color: Colors.white70,
+              fontSize: 12,
+              height: 1.3,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Score: ${rec.score.toStringAsFixed(2)}',
+            style: GoogleFonts.poppins(color: Colors.white60, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RecommendationCard extends StatefulWidget {
+  final EventModel event;
+  final RecommendationModel rec;
+  final RecommendationProvider recProvider;
+  final String userId;
+
+  const _RecommendationCard({
+    required this.event,
+    required this.rec,
+    required this.recProvider,
+    required this.userId,
+  });
+
+  @override
+  State<_RecommendationCard> createState() => _RecommendationCardState();
+}
+
+class _RecommendationCardState extends State<_RecommendationCard> {
+  bool? _feedbackGiven; // true = liked, false = disliked, null = no feedback
+  bool _isProcessing = false;
+
+  Future<void> _handleFeedback(bool liked) async {
+    if (_isProcessing) return;
+    
+    setState(() {
+      _isProcessing = true;
+      _feedbackGiven = liked;
+    });
+
+    try {
+      await widget.recProvider.recordInteraction(
+        userId: widget.userId,
+        eventId: widget.event.id,
+        interactionType: liked ? 'like' : 'dislike',
+      );
+      
+      await widget.recProvider.provideFeedback(
+        userId: widget.userId,
+        eventId: widget.event.id,
+        liked: liked,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              liked ? '👍 Thanks for the feedback!' : '👎 We\'ll improve our recommendations',
+              style: GoogleFonts.poppins(),
+            ),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: liked ? const Color(0xFF23C864) : const Color(0xFFff6b6b),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _feedbackGiven = null;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        // Record click interaction
+        await widget.recProvider.recordInteraction(
+          userId: widget.userId,
+          eventId: widget.event.id,
+          interactionType: 'click',
+        );
+
+        // Track event view
+        await widget.recProvider.trackEventView(widget.userId, widget.event);
+
+        if (!mounted) return;
+        
+        // Navigate to rich detail screen
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ModernEventDetailScreen(
+              title: widget.event.title,
+              date: DateFormat('MMM d, yyyy').format(widget.event.startDate),
+              location: widget.event.location,
+              imageUrl: widget.event.imageUrl ?? 'https://via.placeholder.com/800x400',
+              eventId: widget.event.id,
+            ),
+          ),
+        );
+
+        // Track view end when returning
+        if (mounted) {
+          await widget.recProvider.trackEventViewEnd(widget.userId, widget.event.id);
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 220,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: _feedbackGiven == true
+              ? const Color(0xFF23C864).withOpacity(0.1)
+              : _feedbackGiven == false
+                  ? const Color(0xFFff6b6b).withOpacity(0.1)
+                  : Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: _feedbackGiven == true
+                ? const Color(0xFF23C864).withOpacity(0.3)
+                : _feedbackGiven == false
+                    ? const Color(0xFFff6b6b).withOpacity(0.3)
+                    : Colors.white.withOpacity(0.08),
+            width: _feedbackGiven != null ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: _feedbackGiven == true
+                  ? const Color(0xFF23C864).withOpacity(0.2)
+                  : _feedbackGiven == false
+                      ? const Color(0xFFff6b6b).withOpacity(0.2)
+                      : Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF23C864).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    widget.rec.score.toStringAsFixed(2),
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF23C864),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: _isProcessing ? null : () => _handleFeedback(true),
+                  icon: Icon(
+                    _feedbackGiven == true ? Icons.thumb_up : Icons.thumb_up_alt_outlined,
+                    size: 18,
+                    color: _feedbackGiven == true
+                        ? const Color(0xFF23C864)
+                        : Colors.white70,
+                  ),
+                  tooltip: 'Like this recommendation',
+                ),
+                IconButton(
+                  onPressed: _isProcessing ? null : () => _handleFeedback(false),
+                  icon: Icon(
+                    _feedbackGiven == false ? Icons.thumb_down : Icons.thumb_down_alt_outlined,
+                    size: 18,
+                    color: _feedbackGiven == false
+                        ? const Color(0xFFff6b6b)
+                        : Colors.white70,
+                  ),
+                  tooltip: 'Not relevant',
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              widget.event.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.location_on_outlined, size: 14, color: Colors.white60),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    widget.event.location,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              widget.rec.reason,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.poppins(
+                color: Colors.white70,
+                fontSize: 12,
+                height: 1.3,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    DateFormat('MMM d, yyyy').format(widget.event.startDate),
+                    style: GoogleFonts.poppins(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+                const Spacer(),
+                const Icon(Icons.chevron_right, color: Colors.white70, size: 20),
+              ],
             ),
           ],
         ),
