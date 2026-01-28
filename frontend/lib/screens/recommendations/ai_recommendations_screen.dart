@@ -6,6 +6,7 @@ import '../../core/providers/recommendation_provider.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/event_provider.dart';
 import '../../core/providers/booking_provider.dart';
+import '../../core/providers/interaction_tracking_provider.dart';
 import '../../core/services/ai/advanced_recommendation_engine.dart';
 import '../../core/models/user_model.dart';
 import '../../widgets/ai_chatbot_widget.dart';
@@ -23,6 +24,7 @@ class AIRecommendationsScreen extends StatefulWidget {
 
 class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
   bool _showExplanations = true;
+  bool _showMetrics = false;
 
   @override
   void initState() {
@@ -37,8 +39,13 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
     final eventProvider = Provider.of<EventProvider>(context, listen: false);
     final bookingProvider =
         Provider.of<BookingProvider>(context, listen: false);
+    final trackingProvider =
+        Provider.of<InteractionTrackingProvider>(context, listen: false);
 
     if (authProvider.user != null) {
+      // Initialize tracking session
+      trackingProvider.initializeSession(authProvider.user!.id);
+      
       // Load user preferences first
       await recommendationProvider.loadUserPreferences(authProvider.user!.id);
 
@@ -50,7 +57,32 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
         allUserBookings: {},
         maxRecommendations: 20,
       );
+
+      // Record recommended events for tracking
+      trackingProvider.recordRecommendations(
+        recommendationProvider.recommendations
+            .map((r) => r.event.id)
+            .toList(),
+      );
+
+      // Fetch user analytics
+      await trackingProvider.fetchUserAnalytics(
+        userId: authProvider.user!.id,
+        daysBack: 30,
+      );
+
+      // Fetch metrics
+      await trackingProvider.fetchMetrics(daysBack: 7);
     }
+  }
+
+  @override
+  void dispose() {
+    final trackingProvider =
+        Provider.of<InteractionTrackingProvider>(context, listen: false);
+    // End session when leaving screen
+    trackingProvider.endSession();
+    super.dispose();
   }
 
   @override
@@ -79,6 +111,15 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
             },
           ),
           IconButton(
+            icon: Icon(_showMetrics ? Icons.analytics : Icons.analytics_outlined),
+            tooltip: 'Toggle Metrics',
+            onPressed: () {
+              setState(() {
+                _showMetrics = !_showMetrics;
+              });
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.settings),
             tooltip: 'Preferences',
             onPressed: () {
@@ -103,8 +144,8 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
           ),
         ],
       ),
-      body: Consumer<RecommendationProvider>(
-        builder: (context, provider, child) {
+      body: Consumer2<RecommendationProvider, InteractionTrackingProvider>(
+        builder: (context, provider, trackingProvider, child) {
           if (provider.isLoading) {
             return Center(
               child: Column(
@@ -135,6 +176,12 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
             color: Colors.purple,
             child: CustomScrollView(
               slivers: [
+                // Metrics banner if enabled
+                if (_showMetrics)
+                  SliverToBoxAdapter(
+                    child: _buildMetricsBanner(trackingProvider),
+                  ),
+
                 // Header with stats
                 SliverToBoxAdapter(
                   child: _buildHeader(provider),
@@ -268,10 +315,18 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
               Provider.of<AuthProvider>(context, listen: false);
           final recommendationProvider =
               Provider.of<RecommendationProvider>(context, listen: false);
+          final trackingProvider =
+              Provider.of<InteractionTrackingProvider>(context, listen: false);
 
           if (authProvider.user != null) {
             recommendationProvider.trackEventClick(
                 authProvider.user!.id, event);
+            
+            // Log interaction
+            trackingProvider.logEventClick(
+              eventId: event.id,
+              channel: 'recommendations_tab',
+            );
           }
 
           // Navigate to event details
@@ -298,22 +353,41 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(20)),
                   child: event.imageUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: event.imageUrl!,
-                          height: 180,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
+                      ? GestureDetector(
+                          onTap: () {
+                            // Log impression when image is tapped
+                            final trackingProvider =
+                                Provider.of<InteractionTrackingProvider>(
+                                    context,
+                                    listen: false);
+                            final authProvider =
+                                Provider.of<AuthProvider>(context,
+                                    listen: false);
+
+                            if (authProvider.user != null) {
+                              trackingProvider.logEventView(
+                                eventId: event.id,
+                                channel: 'recommendations_tab',
+                              );
+                            }
+                          },
+                          child: CachedNetworkImage(
+                            imageUrl: event.imageUrl!,
                             height: 180,
-                            color: Colors.grey[800],
-                            child: const Center(
-                                child: CircularProgressIndicator()),
-                          ),
-                          errorWidget: (context, url, error) => Container(
-                            height: 180,
-                            color: Colors.grey[800],
-                            child: const Icon(Icons.event,
-                                size: 50, color: Colors.white54),
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              height: 180,
+                              color: Colors.grey[800],
+                              child: const Center(
+                                  child: CircularProgressIndicator()),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              height: 180,
+                              color: Colors.grey[800],
+                              child: const Icon(Icons.event,
+                                  size: 50, color: Colors.white54),
+                            ),
                           ),
                         )
                       : Container(
@@ -646,7 +720,111 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
-  Future<void> _openChatbot() async {
+  Widget _buildMetricsBanner(InteractionTrackingProvider trackingProvider) {
+    final metrics = trackingProvider.recentMetrics;
+    final analytics = trackingProvider.userAnalytics;
+
+    if (metrics == null && analytics == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1F3A),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.purple.withOpacity(0.3)),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            if (metrics != null) ...[
+              _buildMetricCard(
+                'CTR',
+                '${metrics['ctr']?.toStringAsFixed(1) ?? 0}%',
+                Icons.touch_app,
+              ),
+              const SizedBox(width: 12),
+              _buildMetricCard(
+                'Booking Rate',
+                '${metrics['booking_rate']?.toStringAsFixed(1) ?? 0}%',
+                Icons.event_seat,
+              ),
+              const SizedBox(width: 12),
+              _buildMetricCard(
+                'NDCG@10',
+                '${((metrics['ndcg_10'] ?? 0) * 100).toStringAsFixed(0)}%',
+                Icons.trending_up,
+              ),
+              const SizedBox(width: 12),
+              _buildMetricCard(
+                'Recall@10',
+                '${((metrics['recall_10'] ?? 0) * 100).toStringAsFixed(0)}%',
+                Icons.checklist,
+              ),
+            ],
+            if (analytics != null) ...[
+              const SizedBox(width: 12),
+              _buildMetricCard(
+                'Your Interactions',
+                '${analytics['total_interactions'] ?? 0}',
+                Icons.favorite,
+              ),
+              const SizedBox(width: 12),
+              _buildMetricCard(
+                'Avg Rating',
+                '${analytics['avg_rating'] ?? 0}',
+                Icons.star,
+              ),
+              const SizedBox(width: 12),
+              _buildMetricCard(
+                'Bookings',
+                '${analytics['bookings'] ?? 0}',
+                Icons.bookmark,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetricCard(String label, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.purple.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.purple.withOpacity(0.2)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.purple, size: 20),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            label,
+            style: GoogleFonts.outfit(
+              color: Colors.white70,
+              fontSize: 10,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openChatbot() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final eventProvider = Provider.of<EventProvider>(context, listen: false);
     final bookingProvider =

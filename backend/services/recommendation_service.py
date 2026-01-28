@@ -40,6 +40,15 @@ class RecommendationService:
         
         Args:
             interactions: List of dicts with keys: user_id, event_id, rating
+                Optional feature columns supported for feature engineering:
+                - interaction_type (view, click, bookmark, booking, rating, promotion_click, notification_click)
+                - timestamp (ISO 8601 string)
+                - channel (e.g., 'events_tab', 'calendar', 'promotion', 'notification')
+                - is_promotion_click (bool)
+                - calendar_selected (bool)
+                - organizer_trust_score (0-100)
+                - rating_value (explicit rating 1-5 if available)
+                - notification_action (sent/open/click)
             n_factors: Number of latent factors for SVD
         
         Returns:
@@ -54,6 +63,9 @@ class RecommendationService:
             if not all(col in df.columns for col in required_cols):
                 raise ValueError(f"Missing required columns. Need: {required_cols}")
             
+            # Feature engineering to enrich rating signal
+            df = self._apply_feature_engineering(df)
+
             # Build user-item matrix
             self.model.build_user_item_matrix(df)
             
@@ -76,6 +88,70 @@ class RecommendationService:
                 "status": "error",
                 "message": str(e)
             }
+
+    def _apply_feature_engineering(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Apply feature engineering to implicit interactions to enrich the rating signal.
+        Features considered:
+        - Recency/frequency per channel
+        - Promotion response rate
+        - Calendar-date preference
+        - Organizer trust score
+        - Rating bias/propensity
+        - Notification engagement rate
+        """
+        engineered = df.copy()
+
+        # Recency decay (30-day half-life-ish)
+        if 'timestamp' in engineered.columns:
+            ts = pd.to_datetime(engineered['timestamp'], errors='coerce')
+        else:
+            ts = pd.Series([datetime.utcnow()] * len(engineered))
+
+        now = datetime.utcnow()
+        recency_days = (now - ts).dt.total_seconds() / 86400.0
+        recency_weight = np.exp(-recency_days.clip(lower=0) / 30.0)
+
+        # Frequency per user/channel (0.9 - 1.1)
+        channel_series = engineered.get('channel', pd.Series(['generic'] * len(engineered)))
+        freq_counts = channel_series.groupby([engineered['user_id'], channel_series]).transform('count')
+        freq_weight = 0.9 + 0.2 * (freq_counts / freq_counts.max().replace(0, 1))
+
+        # Promotion response (clicks) boost
+        promo_flag = engineered.get('is_promotion_click', pd.Series([False] * len(engineered))).fillna(False)
+        promo_weight = np.where(promo_flag, 1.15, 1.0)
+
+        # Calendar preference boost
+        calendar_flag = engineered.get('calendar_selected', pd.Series([False] * len(engineered))).fillna(False)
+        calendar_weight = np.where(calendar_flag, 1.10, 1.0)
+
+        # Organizer trust score (0-100 -> 0.9-1.2)
+        trust_series = engineered.get('organizer_trust_score', pd.Series([70] * len(engineered))).fillna(70)
+        trust_weight = 0.9 + (trust_series.clip(0, 100) / 100.0) * 0.3
+
+        # Rating bias/propensity: deviation from user's mean rating
+        rating_values = engineered.get('rating_value', engineered['rating']).fillna(engineered['rating'])
+        user_mean = rating_values.groupby(engineered['user_id']).transform('mean')
+        rating_bias = (rating_values - user_mean).abs()
+        rating_bias_weight = 1.0 + rating_bias.clip(0, 2) * 0.05  # up to +10%
+
+        # Notification engagement weight
+        notification_action = engineered.get('notification_action', pd.Series(['none'] * len(engineered))).fillna('none')
+        notif_weight = notification_action.apply(
+            lambda x: 1.2 if str(x).lower() in ['open', 'click'] else 1.0
+        )
+
+        # Combine weights and stabilize
+        combined_weight = (
+            recency_weight * freq_weight * promo_weight * calendar_weight * trust_weight * rating_bias_weight * notif_weight
+        )
+        combined_weight = np.clip(combined_weight, 0.5, 2.0)
+
+        # Apply to ratings and clip to 0.5-5.0
+        engineered['rating'] = (engineered['rating'].astype(float) * combined_weight).clip(0.5, 5.0)
+
+        # Keep only required training columns
+        return engineered[['user_id', 'event_id', 'rating']]
     
     def get_recommendations(
         self,
