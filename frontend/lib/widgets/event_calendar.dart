@@ -142,15 +142,23 @@ class _EventCalendarState extends State<EventCalendar> {
                 color: const Color(0xFFff9a9e),
                 fontWeight: FontWeight.w500,
               ),
-              markersMaxCount: 3,
-              markerDecoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF8fd3f4), Color(0xFF84fab0)],
+              markersMaxCount: 1,
+              markersAlignment: Alignment.bottomCenter,
+              markerDecoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF23C864), Color(0xFF84fab0)],
                 ),
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF23C864).withOpacity(0.5),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              markerSize: 6,
-              markerMargin: const EdgeInsets.symmetric(horizontal: 1),
+              markerSize: 7,
+              markerMargin: const EdgeInsets.symmetric(horizontal: 0.5, vertical: 1),
             ),
             headerStyle: HeaderStyle(
               formatButtonVisible: false,
