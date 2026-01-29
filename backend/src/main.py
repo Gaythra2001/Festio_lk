@@ -2,11 +2,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
+import sys
+from pathlib import Path
+
+# Add backend directory to Python path
+backend_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(backend_dir))
 
 from config.settings import settings
 from routes import (
     auth, events, bookings, users, organizers, recommendations,
-    research_behavior, research_features, research_models
+    research_behavior, research_features, research_models, promotion_ma_epom,
+    trust_and_budget
     # research_evaluation  # Temporarily disabled due to file corruption
 )
 
@@ -51,6 +58,12 @@ app.include_router(research_behavior.router)
 app.include_router(research_features.router)
 app.include_router(research_models.router)
 # app.include_router(research_evaluation.router)  # Temporarily disabled
+
+# Multilingual Promotion routers
+app.include_router(promotion_ma_epom.router)
+
+# Trust Assessment & Budget Planning routers
+app.include_router(trust_and_budget.router)
 
 
 @app.get("/")

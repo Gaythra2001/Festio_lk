@@ -8,6 +8,7 @@ import '../events/modern_event_detail_screen.dart';
 import '../submission/event_submission_screen.dart';
 import '../recommendations/ai_recommendations_screen.dart';
 import '../organizer/organizer_promotion_screen.dart';
+import '../ai/trust_and_budget_screens.dart';
 
 import '../../widgets/event_calendar.dart';
 import '../../widgets/juice_rating.dart';
@@ -256,6 +257,78 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                                     );
                                   },
                                   tooltip: 'Organizer Dashboard',
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFFfa709a),
+                                      Color(0xFFfee140)
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFfa709a)
+                                          .withOpacity(0.35),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: IconButton(
+                                  icon: const Icon(Icons.verified_user_outlined,
+                                      color: Colors.white, size: 22),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const TrustAssessmentScreen(),
+                                      ),
+                                    );
+                                  },
+                                  tooltip: 'Trust Assessment',
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFFa8edea),
+                                      Color(0xFFfed6e3)
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFa8edea)
+                                          .withOpacity(0.35),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: IconButton(
+                                  icon: const Icon(Icons.account_balance_wallet_outlined,
+                                      color: Colors.white, size: 22),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const BudgetPlanningScreen(),
+                                      ),
+                                    );
+                                  },
+                                  tooltip: 'Budget Planning',
                                 ),
                               ),
                             ],

@@ -17,5 +17,9 @@ class AppRoutes {
   static const String researchFeatures = '/research/features';
   static const String researchModels = '/research/models';
   static const String researchEvaluation = '/research/evaluation';
+  
+  // AI Components routes
+  static const String trustAssessment = '/ai/trust-assessment';
+  static const String budgetPlanning = '/ai/budget-planning';
 }
 

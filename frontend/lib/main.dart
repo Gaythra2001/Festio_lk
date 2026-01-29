@@ -7,6 +7,8 @@ import 'firebase_options.dart';
 
 import 'package:festio_lk/core/theme/modern_theme.dart';
 import 'package:festio_lk/screens/auth/modern_login_screen.dart';
+import 'package:festio_lk/screens/ai/trust_and_budget_screens.dart';
+import 'package:festio_lk/core/routes/app_routes.dart';
 
 import 'package:festio_lk/core/providers/auth_provider.dart';
 import 'package:festio_lk/core/providers/event_provider.dart';
@@ -67,6 +69,10 @@ class MyApp extends StatelessWidget {
         supportedLocales: context.supportedLocales,
         locale: context.locale,
         home: const ModernLoginScreen(),
+        routes: {
+          AppRoutes.trustAssessment: (context) => const TrustAssessmentScreen(),
+          AppRoutes.budgetPlanning: (context) => const BudgetPlanningScreen(),
+        },
       ),
     );
   }
