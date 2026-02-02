@@ -116,7 +116,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
 
   Widget _buildChatbotFAB(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final organizerId = authProvider.currentUser?.id ?? 'unknown';
+    final organizerId = authProvider.user?.id ?? 'unknown';
 
     return FloatingActionButton(
       onPressed: () => _openChatbot(context, organizerId),
