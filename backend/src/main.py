@@ -13,7 +13,7 @@ from config.settings import settings
 from routes import (
     auth, events, bookings, users, organizers, recommendations,
     research_behavior, research_features, research_models, promotion_ma_epom,
-    trust_and_budget
+    trust_and_budget, organizer_ml_routes, organizer_chatbot_routes
     # research_evaluation  # Temporarily disabled due to file corruption
 )
 
@@ -64,6 +64,12 @@ app.include_router(promotion_ma_epom.router)
 
 # Trust Assessment & Budget Planning routers
 app.include_router(trust_and_budget.router)
+
+# Organizer ML routers
+app.include_router(organizer_ml_routes.router)
+
+# Organizer Chatbot routers
+app.include_router(organizer_chatbot_routes.router)
 
 
 @app.get("/")

@@ -8,6 +8,8 @@ import '../../core/providers/promotion_provider.dart';
 import '../../core/providers/event_provider.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/notification_provider.dart';
+import '../../core/providers/organizer_chatbot_provider.dart';
+import 'organizer_chatbot_widget.dart';
 
 /// Modern Organizer Dashboard - Component 2: MA-EPOM (Multilingual Event Promotion Optimization)
 class ModernOrganizerDashboard extends StatefulWidget {
@@ -108,6 +110,43 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
       extendBodyBehindAppBar: true,
       appBar: _buildModernAppBar(),
       body: _buildBody(),
+      floatingActionButton: _buildChatbotFAB(context),
+    );
+  }
+
+  Widget _buildChatbotFAB(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final organizerId = authProvider.currentUser?.id ?? 'unknown';
+
+    return FloatingActionButton(
+      onPressed: () => _openChatbot(context, organizerId),
+      backgroundColor: Color(0xFF00D4FF),
+      child: Icon(Icons.chat_bubble, color: Colors.white),
+      tooltip: 'AI Assistant',
+    );
+  }
+
+  void _openChatbot(BuildContext context, String organizerId) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ChangeNotifierProvider(
+        create: (_) => OrganizerChatbotProvider(
+          organizerId: organizerId,
+          eventId: _selectedEventId.isNotEmpty ? _selectedEventId : 'all',
+        ),
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.9,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) => OrganizerChatbotWidget(
+            organizerId: organizerId,
+            eventId: _selectedEventId.isNotEmpty ? _selectedEventId : 'all',
+            onClose: () => Navigator.pop(context),
+          ),
+        ),
+      ),
     );
   }
 
