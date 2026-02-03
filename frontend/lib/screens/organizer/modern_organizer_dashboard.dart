@@ -9,6 +9,7 @@ import '../../core/providers/event_provider.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/notification_provider.dart';
 import '../../core/providers/organizer_chatbot_provider.dart';
+import '../../core/services/ai/revenue_optimization_service.dart';
 import 'organizer_chatbot_widget.dart';
 
 /// Modern Organizer Dashboard - Component 2: MA-EPOM (Multilingual Event Promotion Optimization)
@@ -29,6 +30,12 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
   String _selectedEventId = '';
   String _selectedLanguage = 'en';
   bool _isLoading = false;
+  bool _isRevenueLoading = false;
+  String? _revenueError;
+  Map<String, dynamic>? _revenueOptimization;
+
+  final RevenueOptimizationService _revenueOptimizationService =
+      RevenueOptimizationService();
 
   final Map<String, Map<String, dynamic>> _promotionTiers = {
     'starter': {
@@ -244,12 +251,248 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
             children: [
               _buildStatsSection(),
               const SizedBox(height: 32),
+              _buildRevenueOptimizationSection(),
+              const SizedBox(height: 32),
               _buildPromotionTiersSection(),
               const SizedBox(height: 32),
               _buildLanguagePromotionSection(),
               const SizedBox(height: 32),
               _buildCampaignAnalyticsSection(),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _loadRevenueOptimization() async {
+    if (_isRevenueLoading) return;
+    setState(() {
+      _isRevenueLoading = true;
+      _revenueError = null;
+    });
+
+    final authProvider = context.read<AuthProvider>();
+    final organizerId = authProvider.user?.id ?? 'unknown';
+    final eventId = _selectedEventId.isNotEmpty ? _selectedEventId : 'default';
+
+    try {
+      final result = await _revenueOptimizationService.optimizeRevenue(
+        organizerId: organizerId,
+        eventId: eventId,
+        currentPrice: 2500,
+        ticketsSold: 180,
+        ticketsAvailable: 400,
+        daysUntilEvent: 10,
+        competitorAvgPrice: 2700,
+        marketingBoost: 0.35,
+        demandGrowthRate: 0.2,
+      );
+
+      setState(() {
+        _revenueOptimization = result;
+      });
+    } catch (e) {
+      setState(() {
+        _revenueError = 'Failed to optimize revenue: $e';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRevenueLoading = false;
+        });
+      }
+    }
+  }
+
+  Widget _buildRevenueOptimizationSection() {
+    final data = _revenueOptimization;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF00D4FF).withOpacity(0.12),
+            const Color(0xFF764BA2).withOpacity(0.08),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1.5,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Revenue Optimization Engine',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 20,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Dynamic pricing and revenue lift predictions',
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: Colors.white.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: _isRevenueLoading ? null : _loadRevenueOptimization,
+                      icon: _isRevenueLoading
+                          ? SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Icon(Icons.auto_graph, color: Colors.white, size: 18),
+                      label: Text(
+                        _isRevenueLoading ? 'Optimizing...' : 'Generate',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00D4FF),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                if (_revenueError != null)
+                  Text(
+                    _revenueError!,
+                    style: GoogleFonts.poppins(
+                      color: Colors.redAccent,
+                      fontSize: 12,
+                    ),
+                  )
+                else if (data == null)
+                  Text(
+                    'Tap Generate to get AI-driven pricing recommendations and revenue projections.',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 13,
+                    ),
+                  )
+                else
+                  Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              icon: Icons.price_change,
+                              title: 'Recommended Price',
+                              value: '₨${data['recommended_price']}',
+                              color: const Color(0xFF00E5FF),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildStatCard(
+                              icon: Icons.trending_up,
+                              title: 'Revenue Lift',
+                              value: '₨${data['expected_revenue_optimized']}',
+                              color: const Color(0xFF764BA2),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              icon: Icons.percent,
+                              title: 'Price Change',
+                              value: '${data['price_change_pct']}%',
+                              color: const Color(0xFF00D4FF),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildStatCard(
+                              icon: Icons.insights,
+                              title: 'Demand Index',
+                              value: '${data['demand_index']}',
+                              color: const Color(0xFF00D9FF),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      if (data['reasons'] != null)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Why this recommendation?',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ...List<Widget>.from(
+                              (data['reasons'] as List<dynamic>).map(
+                                (reason) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 6),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.check_circle,
+                                          size: 14, color: const Color(0xFF00D4FF)),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          reason.toString(),
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            color: Colors.white.withOpacity(0.8),
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                    ],
+                  ),
+              ],
+            ),
           ),
         ),
       ),

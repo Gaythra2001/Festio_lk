@@ -13,7 +13,8 @@ from config.settings import settings
 from routes import (
     auth, events, bookings, users, organizers, recommendations,
     research_behavior, research_features, research_models, promotion_ma_epom,
-    trust_and_budget, organizer_ml_routes, organizer_chatbot_routes
+    trust_and_budget, organizer_ml_routes, organizer_chatbot_routes,
+    revenue_optimization
     # research_evaluation  # Temporarily disabled due to file corruption
 )
 
@@ -70,6 +71,9 @@ app.include_router(organizer_ml_routes.router)
 
 # Organizer Chatbot routers
 app.include_router(organizer_chatbot_routes.router)
+
+# Revenue Optimization routers
+app.include_router(revenue_optimization.router)
 
 
 @app.get("/")
