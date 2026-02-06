@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class RevenueOptimizationService {
   final String baseUrl;
 
-  RevenueOptimizationService({this.baseUrl = 'http://localhost:8000'});
+  RevenueOptimizationService({String? baseUrl})
+      : baseUrl = baseUrl ?? (kIsWeb ? 'http://127.0.0.1:8000' : 'http://10.0.2.2:8000');
 
   Future<Map<String, dynamic>> optimizeRevenue({
     required String organizerId,
