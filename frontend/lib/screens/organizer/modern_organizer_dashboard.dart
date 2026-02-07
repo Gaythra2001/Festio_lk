@@ -10,6 +10,7 @@ import '../../core/providers/auth_provider.dart';
 import '../../core/providers/notification_provider.dart';
 import '../../core/providers/organizer_chatbot_provider.dart';
 import '../../core/services/ai/revenue_optimization_service.dart';
+import '../../core/services/analytics_api_service.dart';
 import 'organizer_chatbot_widget.dart';
 
 /// Modern Organizer Dashboard - Component 2: MA-EPOM (Multilingual Event Promotion Optimization)
@@ -34,9 +35,11 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
   String? _revenueError;
   String? _revenueNotice;
   Map<String, dynamic>? _revenueOptimization;
+  Map<String, dynamic>? _analyticsSummary;
 
   final RevenueOptimizationService _revenueOptimizationService =
       RevenueOptimizationService();
+  final AnalyticsApiService _analyticsApiService = AnalyticsApiService();
 
   final Map<String, Map<String, dynamic>> _promotionTiers = {
     'starter': {
@@ -101,7 +104,52 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
     _fadeController.forward();
     Future.microtask(() {
       context.read<PromotionProvider>().load();
+      _trackDashboardView();
+      _loadAnalyticsSummary();
     });
+  }
+
+  Future<void> _trackDashboardView() async {
+    final authProvider = context.read<AuthProvider>();
+    final organizerId = authProvider.user?.id ?? 'unknown';
+    try {
+      await _analyticsApiService.trackEvent(
+        organizerId: organizerId,
+        eventId: _selectedEventId.isNotEmpty ? _selectedEventId : null,
+        eventType: 'organizer_dashboard_view',
+        metadata: {
+          'screen': 'modern_organizer_dashboard',
+        },
+      );
+    } catch (_) {}
+  }
+
+  Future<void> _loadAnalyticsSummary() async {
+    final authProvider = context.read<AuthProvider>();
+    final organizerId = authProvider.user?.id ?? 'unknown';
+    try {
+      final summary = await _analyticsApiService.getSummary(
+        organizerId: organizerId,
+        eventId: _selectedEventId.isNotEmpty ? _selectedEventId : null,
+        windowDays: 30,
+      );
+      if (mounted) {
+        setState(() {
+          _analyticsSummary = summary;
+        });
+      }
+    } catch (_) {}
+  }
+
+  int _getAnalyticsCount(String eventType) {
+    if (_analyticsSummary == null) return 0;
+    final counts = _analyticsSummary!['event_type_counts'];
+    if (counts is Map) {
+      final value = counts[eventType];
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+    }
+    return 0;
   }
 
   @override
@@ -279,6 +327,17 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
     final eventId = _selectedEventId.isNotEmpty ? _selectedEventId : 'default';
 
     try {
+      await _analyticsApiService.trackEvent(
+        organizerId: organizerId,
+        eventId: eventId,
+        eventType: 'revenue_optimization_generate',
+        metadata: {
+          'source': 'dashboard_button',
+        },
+      );
+    } catch (_) {}
+
+    try {
       final result = await _revenueOptimizationService.optimizeRevenue(
         organizerId: organizerId,
         eventId: eventId,
@@ -294,6 +353,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
       setState(() {
         _revenueOptimization = result;
       });
+      _loadAnalyticsSummary();
     } catch (e) {
       setState(() {
         _revenueNotice = 'Preview data shown (backend unreachable).';
@@ -432,6 +492,38 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                 else
                   Column(
                     children: [
+                      if (_analyticsSummary != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.analytics,
+                                    size: 16,
+                                    color: const Color(0xFF00D4FF)),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Last 30 days: ${_analyticsSummary!['total_events']} tracked actions',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: Colors.white.withOpacity(0.8),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       Row(
                         children: [
                           Expanded(
@@ -1143,6 +1235,16 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
   }
 
   Widget _buildCampaignAnalyticsSection() {
+    final impressions = _analyticsSummary != null
+      ? _getAnalyticsCount('organizer_dashboard_view')
+      : null;
+    final clicks = _analyticsSummary != null
+      ? _getAnalyticsCount('revenue_optimization_generate')
+      : null;
+    final conversions = _analyticsSummary != null
+      ? _getAnalyticsCount('promotion_tier_selected')
+      : null;
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -1179,7 +1281,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                 const SizedBox(height: 24),
                 _buildAnalyticsRow(
                   'Impressions',
-                  '24,583',
+                  impressions != null ? impressions.toString() : '24,583',
                   Icons.visibility,
                   const Color(0xFF00D4FF),
                   '↑ 12.5%',
@@ -1187,7 +1289,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                 const SizedBox(height: 16),
                 _buildAnalyticsRow(
                   'Clicks',
-                  '2,134',
+                  clicks != null ? clicks.toString() : '2,134',
                   Icons.touch_app,
                   const Color(0xFF764BA2),
                   '↑ 8.2%',
@@ -1195,7 +1297,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                 const SizedBox(height: 16),
                 _buildAnalyticsRow(
                   'Conversions',
-                  '856',
+                  conversions != null ? conversions.toString() : '856',
                   Icons.check_circle,
                   const Color(0xFF00E5FF),
                   '↑ 15.3%',
@@ -1222,7 +1324,8 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () {
-                          _showSuccessSnackbar('Loading detailed analytics...');
+                          _loadAnalyticsSummary();
+                          _showSuccessSnackbar('Refreshing analytics...');
                         },
                         child: Center(
                           child: Text(
@@ -1412,8 +1515,25 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                               child: Material(
                                 color: Colors.transparent,
                                 child: InkWell(
-                                  onTap: () {
+                                  onTap: () async {
                                     Navigator.pop(context);
+                                    try {
+                                      final authProvider =
+                                          context.read<AuthProvider>();
+                                      final organizerId =
+                                          authProvider.user?.id ?? 'unknown';
+                                      await _analyticsApiService.trackEvent(
+                                        organizerId: organizerId,
+                                        eventId: _selectedEventId.isNotEmpty
+                                            ? _selectedEventId
+                                            : null,
+                                        eventType: 'promotion_tier_selected',
+                                        metadata: {
+                                          'tier': tierName,
+                                        },
+                                      );
+                                      _loadAnalyticsSummary();
+                                    } catch (_) {}
                                     _showSuccessSnackbar(
                                         '$tierName tier selected successfully!');
                                   },
