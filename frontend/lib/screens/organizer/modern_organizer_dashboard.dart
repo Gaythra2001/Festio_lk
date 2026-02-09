@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'dart:ui';
 
 import '../../core/providers/promotion_provider.dart';
-import '../../core/providers/event_provider.dart';
 import '../../core/providers/auth_provider.dart';
-import '../../core/providers/notification_provider.dart';
 import '../../core/providers/organizer_chatbot_provider.dart';
 import '../../core/services/ai/revenue_optimization_service.dart';
 import '../../core/services/analytics_api_service.dart';
@@ -28,10 +25,8 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
     with TickerProviderStateMixin {
   late TabController _tabController;
   late AnimationController _fadeController;
-  int _selectedTab = 0;
   String _selectedEventId = '';
   String _selectedLanguage = 'en';
-  bool _isLoading = false;
   bool _isRevenueLoading = false;
   String? _revenueError;
   String? _revenueNotice;
@@ -95,11 +90,6 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
     },
   };
 
-  final Map<String, String> _languageNames = {
-    'en': 'English',
-    'si': 'Sinhala',
-    'ta': 'Tamil'
-  };
 
   @override
   void initState() {

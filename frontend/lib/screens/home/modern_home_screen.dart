@@ -7,7 +7,6 @@ import 'dart:ui';
 import '../events/modern_event_detail_screen.dart';
 import '../submission/event_submission_screen.dart';
 import '../recommendations/ai_recommendations_screen.dart';
-import '../organizer/organizer_promotion_screen.dart';
 import '../organizer/modern_organizer_dashboard.dart';
 import '../ai/trust_and_budget_screens.dart';
 
