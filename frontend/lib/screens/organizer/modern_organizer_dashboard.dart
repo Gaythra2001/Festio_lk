@@ -11,6 +11,7 @@ import '../../core/providers/notification_provider.dart';
 import '../../core/providers/organizer_chatbot_provider.dart';
 import '../../core/services/ai/revenue_optimization_service.dart';
 import '../../core/services/analytics_api_service.dart';
+import '../../core/routes/app_routes.dart';
 import 'organizer_chatbot_widget.dart';
 
 /// Modern Organizer Dashboard - Component 2: MA-EPOM (Multilingual Event Promotion Optimization)
@@ -36,6 +37,13 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
   String? _revenueNotice;
   Map<String, dynamic>? _revenueOptimization;
   Map<String, dynamic>? _analyticsSummary;
+  double _currentPrice = 2500;
+  double _ticketsSold = 180;
+  double _ticketsAvailable = 400;
+  double _daysUntilEvent = 10;
+  double _competitorAvgPrice = 2700;
+  double _marketingBoost = 0.35;
+  double _demandGrowthRate = 0.2;
 
   final RevenueOptimizationService _revenueOptimizationService =
       RevenueOptimizationService();
@@ -244,6 +252,13 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
       ),
       centerTitle: true,
       actions: [
+        IconButton(
+          onPressed: () {
+            Navigator.of(context).pushNamed(AppRoutes.adminEventApprovals);
+          },
+          icon: const Icon(Icons.admin_panel_settings, color: Colors.white),
+          tooltip: 'Admin Panel',
+        ),
         Padding(
           padding: const EdgeInsets.only(right: 16),
           child: Center(
@@ -341,13 +356,13 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
       final result = await _revenueOptimizationService.optimizeRevenue(
         organizerId: organizerId,
         eventId: eventId,
-        currentPrice: 2500,
-        ticketsSold: 180,
-        ticketsAvailable: 400,
-        daysUntilEvent: 10,
-        competitorAvgPrice: 2700,
-        marketingBoost: 0.35,
-        demandGrowthRate: 0.2,
+        currentPrice: _currentPrice,
+        ticketsSold: _ticketsSold.toInt(),
+        ticketsAvailable: _ticketsAvailable.toInt(),
+        daysUntilEvent: _daysUntilEvent.toInt(),
+        competitorAvgPrice: _competitorAvgPrice,
+        marketingBoost: _marketingBoost,
+        demandGrowthRate: _demandGrowthRate,
       );
 
       setState(() {
@@ -369,17 +384,51 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
   }
 
   Map<String, dynamic> _buildRevenuePreview() {
+    final sellThrough = _ticketsAvailable > 0
+        ? (_ticketsSold / _ticketsAvailable).clamp(0.0, 1.0)
+        : 0.0;
+    final demandIndex = (1 + _demandGrowthRate + (sellThrough - 0.5) * 0.6)
+        .clamp(0.6, 1.6);
+    final recommended = _currentPrice * demandIndex;
     return {
-      'recommended_price': 3200.0,
-      'expected_revenue_optimized': 1275000.0,
-      'price_change_pct': 6.67,
-      'demand_index': 1.18,
+      'recommended_price': recommended.toStringAsFixed(0),
+      'expected_revenue_optimized': (recommended * _ticketsAvailable)
+          .toStringAsFixed(0),
+      'price_change_pct':
+          (((recommended - _currentPrice) / _currentPrice) * 100)
+              .toStringAsFixed(2),
+      'demand_index': demandIndex.toStringAsFixed(2),
       'reasons': [
         'Strong demand momentum detected',
         'Marketing lift is increasing conversion',
         'Event is approaching; adjust price for conversion'
       ]
     };
+  }
+
+  double _sellThroughRate() {
+    if (_ticketsAvailable <= 0) return 0;
+    return (_ticketsSold / _ticketsAvailable).clamp(0.0, 1.0);
+  }
+
+  double _demandPulse() {
+    final sellThrough = _sellThroughRate();
+    return (1 + _demandGrowthRate + (sellThrough - 0.5) * 0.6 + _marketingBoost * 0.4)
+        .clamp(0.6, 1.8);
+  }
+
+  Color _demandColor(double value) {
+    if (value >= 1.2) return const Color(0xFF00E5FF);
+    if (value >= 1.0) return const Color(0xFF00D4FF);
+    if (value >= 0.85) return Colors.orangeAccent;
+    return Colors.redAccent;
+  }
+
+  String _demandLabel(double value) {
+    if (value >= 1.2) return 'Surging';
+    if (value >= 1.0) return 'Healthy';
+    if (value >= 0.85) return 'Soft';
+    return 'Weak';
   }
 
   Widget _buildRevenueOptimizationSection() {
@@ -464,6 +513,12 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
+                _buildRevenueSignals(),
+                const SizedBox(height: 12),
+                _buildMiniTrendChart(),
+                const SizedBox(height: 16),
+                _buildRevenueInputs(),
                 const SizedBox(height: 20),
                 if (_revenueError != null)
                   Text(
@@ -612,6 +667,326 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildRevenueSignals() {
+    final sellThrough = _sellThroughRate();
+    final pulse = _demandPulse();
+    final demandColor = _demandColor(pulse);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: demandColor.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.bolt, size: 18, color: demandColor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Live Demand Signals',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    _buildSignalChip(
+                      label: 'Demand Pulse',
+                      value: '${pulse.toStringAsFixed(2)} · ${_demandLabel(pulse)}',
+                      color: demandColor,
+                    ),
+                    _buildSignalChip(
+                      label: 'Sell-through',
+                      value: '${(sellThrough * 100).toStringAsFixed(0)}%',
+                      color: const Color(0xFF00D4FF),
+                    ),
+                    _buildSignalChip(
+                      label: 'Marketing Lift',
+                      value: '+${(_marketingBoost * 100).toStringAsFixed(0)}%',
+                      color: const Color(0xFF764BA2),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSignalChip({
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.6)),
+      ),
+      child: RichText(
+        text: TextSpan(
+          text: '$label: ',
+          style: GoogleFonts.poppins(fontSize: 11, color: Colors.white70),
+          children: [
+            TextSpan(
+              text: value,
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRevenueInputs() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Real-time inputs',
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          _buildSliderRow(
+            label: 'Current ticket price',
+            valueLabel: '₨${_currentPrice.toStringAsFixed(0)}',
+            value: _currentPrice,
+            min: 500,
+            max: 8000,
+            divisions: 75,
+            onChanged: (v) => setState(() => _currentPrice = v),
+          ),
+          _buildSliderRow(
+            label: 'Tickets sold',
+            valueLabel: _ticketsSold.toStringAsFixed(0),
+            value: _ticketsSold,
+            min: 0,
+            max: _ticketsAvailable < 50 ? 50 : _ticketsAvailable,
+            divisions: 50,
+            onChanged: (v) => setState(() => _ticketsSold = v),
+          ),
+          _buildSliderRow(
+            label: 'Tickets available',
+            valueLabel: _ticketsAvailable.toStringAsFixed(0),
+            value: _ticketsAvailable,
+            min: 50,
+            max: 2000,
+            divisions: 39,
+            onChanged: (v) => setState(() {
+              _ticketsAvailable = v;
+              if (_ticketsSold > v) _ticketsSold = v;
+            }),
+          ),
+          _buildSliderRow(
+            label: 'Days until event',
+            valueLabel: _daysUntilEvent.toStringAsFixed(0),
+            value: _daysUntilEvent,
+            min: 1,
+            max: 60,
+            divisions: 59,
+            onChanged: (v) => setState(() => _daysUntilEvent = v),
+          ),
+          _buildSliderRow(
+            label: 'Competitor avg price',
+            valueLabel: '₨${_competitorAvgPrice.toStringAsFixed(0)}',
+            value: _competitorAvgPrice,
+            min: 500,
+            max: 8000,
+            divisions: 75,
+            onChanged: (v) => setState(() => _competitorAvgPrice = v),
+          ),
+          _buildSliderRow(
+            label: 'Marketing boost',
+            valueLabel: '+${(_marketingBoost * 100).toStringAsFixed(0)}%',
+            value: _marketingBoost,
+            min: 0,
+            max: 1,
+            divisions: 20,
+            onChanged: (v) => setState(() => _marketingBoost = v),
+          ),
+          _buildSliderRow(
+            label: 'Demand growth rate',
+            valueLabel: '+${(_demandGrowthRate * 100).toStringAsFixed(0)}%',
+            value: _demandGrowthRate,
+            min: -0.2,
+            max: 0.6,
+            divisions: 40,
+            onChanged: (v) => setState(() => _demandGrowthRate = v),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniTrendChart() {
+    final pulse = _demandPulse();
+    final trend = List<double>.generate(10, (index) {
+      final drift = (index - 5) * 0.03;
+      final marketingShift = (_marketingBoost - 0.3) * 0.25;
+      final value = (pulse + drift + marketingShift).clamp(0.6, 1.8);
+      return value.toDouble();
+    });
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Demand trend (next 10 days)',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _demandColor(pulse).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  _demandLabel(pulse),
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: _demandColor(pulse),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 90,
+            child: CustomPaint(
+              painter: _MiniTrendPainter(
+                values: trend,
+                color: const Color(0xFF00D4FF),
+              ),
+              child: Container(),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(
+              trend.length,
+              (index) => Text(
+                'D${index + 1}',
+                style: GoogleFonts.poppins(
+                  fontSize: 9,
+                  color: Colors.white38,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSliderRow({
+    required String label,
+    required String valueLabel,
+    required double value,
+    required double min,
+    required double max,
+    int divisions = 10,
+    required ValueChanged<double> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.white70,
+                  ),
+                ),
+              ),
+              Text(
+                valueLabel,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: const Color(0xFF00D4FF),
+              inactiveTrackColor: Colors.white.withOpacity(0.15),
+              thumbColor: const Color(0xFF00D4FF),
+              overlayColor: const Color(0xFF00D4FF).withOpacity(0.2),
+            ),
+            child: Slider(
+              value: value.clamp(min, max),
+              min: min,
+              max: max,
+              divisions: divisions,
+              onChanged: onChanged,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1582,5 +1957,64 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
         duration: const Duration(seconds: 2),
       ),
     );
+  }
+}
+
+class _MiniTrendPainter extends CustomPainter {
+  final List<double> values;
+  final Color color;
+
+  _MiniTrendPainter({
+    required this.values,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (values.isEmpty) return;
+
+    final maxVal = values.reduce((a, b) => a > b ? a : b);
+    final minVal = values.reduce((a, b) => a < b ? a : b);
+    final range = (maxVal - minVal).abs();
+    final safeRange = range < 0.0001 ? 1 : range;
+
+    final linePaint = Paint()
+      ..color = color
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final fillPaint = Paint()
+      ..color = color.withOpacity(0.15)
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    final fillPath = Path();
+
+    for (int i = 0; i < values.length; i++) {
+      final x = size.width * (i / (values.length - 1));
+      final normalized = (values[i] - minVal) / safeRange;
+      final y = size.height - (normalized * size.height);
+
+      if (i == 0) {
+        path.moveTo(x, y);
+        fillPath.moveTo(x, size.height);
+        fillPath.lineTo(x, y);
+      } else {
+        path.lineTo(x, y);
+        fillPath.lineTo(x, y);
+      }
+    }
+
+    fillPath.lineTo(size.width, size.height);
+    fillPath.close();
+
+    canvas.drawPath(fillPath, fillPaint);
+    canvas.drawPath(path, linePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniTrendPainter oldDelegate) {
+    return oldDelegate.values != values || oldDelegate.color != color;
   }
 }

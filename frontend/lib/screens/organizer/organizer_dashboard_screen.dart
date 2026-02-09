@@ -23,6 +23,10 @@ class _OrganizerDashboardScreenState extends State<OrganizerDashboardScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      final organizerId = auth.user?.id ?? '';
+      Provider.of<EventProvider>(context, listen: false)
+          .loadOrganizerEvents(organizerId);
       Provider.of<EventProvider>(context, listen: false).loadUpcomingEvents();
     });
   }
@@ -83,9 +87,10 @@ class _MyEventsTab extends StatelessWidget {
     final eventProvider = Provider.of<EventProvider>(context);
 
     // Filter events created by this organizer
-    final myEvents = eventProvider.events.where((event) {
-      return event.organizerId == (authProvider.user?.id ?? '');
-    }).toList();
+    final organizerId = authProvider.user?.id ?? '';
+    final myEvents = eventProvider.organizerEvents
+        .where((event) => event.organizerId == organizerId)
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -98,7 +103,7 @@ class _MyEventsTab extends StatelessWidget {
       backgroundColor: const Color(0xFF0A0E27),
       body: RefreshIndicator(
         onRefresh: () async {
-          await eventProvider.loadUpcomingEvents();
+          eventProvider.loadOrganizerEvents(organizerId);
         },
         child: myEvents.isEmpty
             ? Center(
@@ -197,20 +202,34 @@ class _EventCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: event.isApproved
+                      color: event.status == 'approved'
                           ? Colors.green.withOpacity(0.2)
-                          : Colors.orange.withOpacity(0.2),
+                          : event.status == 'rejected'
+                              ? Colors.red.withOpacity(0.2)
+                              : Colors.orange.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: event.isApproved ? Colors.green : Colors.orange,
+                        color: event.status == 'approved'
+                            ? Colors.green
+                            : event.status == 'rejected'
+                                ? Colors.red
+                                : Colors.orange,
                       ),
                     ),
                     child: Text(
-                      event.isApproved ? 'Active' : 'Pending',
+                      event.status == 'approved'
+                          ? 'Published'
+                          : event.status == 'rejected'
+                              ? 'Rejected'
+                              : 'Pending (Private)',
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: event.isApproved ? Colors.green : Colors.orange,
+                        color: event.status == 'approved'
+                            ? Colors.green
+                            : event.status == 'rejected'
+                                ? Colors.red
+                                : Colors.orange,
                       ),
                     ),
                   ),
