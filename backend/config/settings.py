@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     ]
     
     # Database
-    DATABASE_URL: str = ""
+    DATABASE_URL: str = "postgresql://user:password@localhost:5432/festio_lk"
     MONGODB_URL: str = ""
     
     # Firebase

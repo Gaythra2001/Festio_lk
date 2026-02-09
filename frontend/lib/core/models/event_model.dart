@@ -26,6 +26,8 @@ class EventModel {
   final int trustScore;
   final DateTime submittedAt;
   final DateTime? approvedAt;
+  final String status; // pending, approved, rejected
+  final String? rejectionReason;
   final int? maxAttendees;
   final double? ticketPrice;
   final String? ticketUrl;
@@ -56,12 +58,17 @@ class EventModel {
     this.trustScore = 0,
     required this.submittedAt,
     this.approvedAt,
+    String? status,
+    this.rejectionReason,
     this.maxAttendees,
     this.ticketPrice,
     this.ticketUrl,
-  });
+  }) : status = status ?? (isApproved ? 'approved' : 'pending');
 
   factory EventModel.fromMap(Map<String, dynamic> map, String id) {
+    final bool approvedFlag = map['isApproved'] ?? false;
+    final String resolvedStatus = (map['status'] as String?) ??
+        (approvedFlag ? 'approved' : 'pending');
     return EventModel(
       id: id,
       title: map['title'] ?? '',
@@ -82,12 +89,14 @@ class EventModel {
       imageUrl: map['imageUrl'],
       latitude: (map['latitude'] as num?)?.toDouble(),
       longitude: (map['longitude'] as num?)?.toDouble(),
-      isApproved: map['isApproved'] ?? false,
+      isApproved: approvedFlag,
       isSpam: map['isSpam'] ?? false,
       spamScore: (map['spamScore'] as num?)?.toDouble() ?? 0.0,
       trustScore: map['trustScore'] ?? 0,
       submittedAt: (map['submittedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       approvedAt: (map['approvedAt'] as Timestamp?)?.toDate(),
+      status: resolvedStatus,
+      rejectionReason: map['rejectionReason'],
       maxAttendees: map['maxAttendees'],
       ticketPrice: (map['ticketPrice'] as num?)?.toDouble(),
       ticketUrl: map['ticketUrl'],
@@ -120,6 +129,8 @@ class EventModel {
       'trustScore': trustScore,
       'submittedAt': Timestamp.fromDate(submittedAt),
       'approvedAt': approvedAt != null ? Timestamp.fromDate(approvedAt!) : null,
+      'status': status,
+      'rejectionReason': rejectionReason,
       'maxAttendees': maxAttendees,
       'ticketPrice': ticketPrice,
       'ticketUrl': ticketUrl,
