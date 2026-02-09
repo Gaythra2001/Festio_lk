@@ -28,6 +28,9 @@ The backend provides REST API services for:
 - Booking system
 - AI recommendations
 - Organizer trust system
+- Organizer AI chatbot
+- Revenue optimization engine
+- Analytics storage (PostgreSQL)
 
 See [backend/README.md](backend/README.md) for more details.
 
@@ -43,7 +46,26 @@ See [backend/README.md](backend/README.md) for more details.
 2. **Backend Setup**:
    ```bash
    cd backend
-   # Follow backend-specific setup instructions
+   pip install -r requirements.txt
+   ```
+
+3. **Configure PostgreSQL (Analytics Storage)**:
+   - Update `backend/.env` with a valid PostgreSQL URL:
+     ```
+     DATABASE_URL=postgresql://user:password@localhost:5432/festio_lk
+     ```
+   - Ensure the `festio_lk` database exists.
+
+4. **Run Backend (local)**:
+   ```bash
+   # From project root
+   .\.venv312\Scripts\uvicorn.exe backend.src.main:app --host 127.0.0.1 --port 8000 --reload
+   ```
+
+5. **Run Frontend (web)**:
+   ```bash
+   cd frontend
+   flutter run -d chrome
    ```
 
 ## Development Workflow
@@ -51,6 +73,13 @@ See [backend/README.md](backend/README.md) for more details.
 - Frontend development: Work in the `frontend/` directory
 - Backend development: Work in the `backend/` directory
 - Keep both services running during development for full functionality
+
+## Key APIs
+
+- Revenue Optimization: `POST /api/revenue-optimization/optimize`
+- Analytics (store): `POST /api/analytics/events`
+- Analytics (summary): `GET /api/analytics/summary`
+- Organizer Chatbot: `POST /api/organizer-chatbot/send-message`
 
 ## Documentation
 

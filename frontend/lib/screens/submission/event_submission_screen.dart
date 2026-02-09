@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/providers/event_provider.dart';
 import '../../core/providers/auth_provider.dart';
-import '../../core/providers/notification_provider.dart';
 import '../../core/models/event_model.dart';
 
 class EventSubmissionScreen extends StatefulWidget {
@@ -212,7 +211,8 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
           ticketPrice: _priceController.text.isNotEmpty
               ? double.tryParse(_priceController.text)
               : null,
-          isApproved: true, // Auto-approve for now
+          isApproved: false,
+          status: 'pending',
         );
 
         // Submit event with image
@@ -229,24 +229,8 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
           if (newEventId != null && newEventId.isNotEmpty) {
             // Reload upcoming events on home page
             await eventProvider.loadUpcomingEvents();
-
-            // Send notification to users about new event
-            final notificationProvider =
-                Provider.of<NotificationProvider>(context, listen: false);
-
-            // Prepare event data for navigation
-            final eventData = {
-              'title': _titleController.text,
-              'date':
-                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-              'location': _locationController.text,
-              'imageUrl': '', // Will be updated if image upload is implemented
-            };
-
-            notificationProvider.addNewEventNotification(
-              _titleController.text,
-              eventData: eventData,
-            );
+            final organizerId = authProvider.user?.id ?? '';
+            eventProvider.loadOrganizerEvents(organizerId);
 
             // Show success message
             ScaffoldMessenger.of(context).showSnackBar(
@@ -257,7 +241,7 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Event "${_titleController.text}" submitted successfully! Users have been notified.',
+                        'Event "${_titleController.text}" submitted and pending admin approval.',
                         style: GoogleFonts.poppins(),
                       ),
                     ),
