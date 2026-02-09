@@ -66,6 +66,7 @@ htmlcov/
 .pyre/
 .venv/
 .venv*/
+.venv312/
 *.venv312/
 venv/
 env/
