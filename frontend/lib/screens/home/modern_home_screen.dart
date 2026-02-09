@@ -1,8 +1,10 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'dart:ui';
+import 'package:intl/intl.dart';
 
 import '../events/modern_event_detail_screen.dart';
 import '../submission/event_submission_screen.dart';
@@ -15,7 +17,6 @@ import '../../widgets/juice_rating.dart';
 import '../../core/providers/notification_provider.dart';
 import '../../core/providers/event_provider.dart';
 import '../../widgets/app_footer.dart';
-import 'package:intl/intl.dart';
 
 class ModernHomeScreen extends StatefulWidget {
   const ModernHomeScreen({super.key});
@@ -29,7 +30,10 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
   String _searchQuery = '';
   bool _showAIBot = false;
   bool _showCalendar = false;
+  bool _pageReady = false;
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _eventsKey = GlobalKey();
 
   @override
   void initState() {
@@ -42,13 +46,15 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
         'Check out new cultural events in your area',
       );
 
-      // Load upcoming events from provider
       final eventProvider = Provider.of<EventProvider>(context, listen: false);
       eventProvider.loadUpcomingEvents();
+
+      if (mounted) {
+        setState(() => _pageReady = true);
+      }
     });
   }
 
-  // Sample events data
   final List<Map<String, dynamic>> _allEvents = [
     {
       'title': 'Kandy Esala Perahera',
@@ -56,7 +62,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'location': 'Kandy, Sri Lanka',
       'category': 'Festival',
       'imageUrl':
-          'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800',
+          'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200',
       'juice': 4.8,
     },
     {
@@ -65,7 +71,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'location': 'Colombo, Sri Lanka',
       'category': 'Dance',
       'imageUrl':
-          'https://images.unsplash.com/photo-1504609773096-104ff2c73ba4?w=800',
+          'https://images.unsplash.com/photo-1504609773096-104ff2c73ba4?w=1200',
       'juice': 4.2,
     },
     {
@@ -74,7 +80,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'location': 'Galle, Sri Lanka',
       'category': 'Music',
       'imageUrl':
-          'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800',
+          'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200',
       'juice': 4.6,
     },
     {
@@ -83,7 +89,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'location': 'Colombo, Sri Lanka',
       'category': 'Festival',
       'imageUrl':
-          'https://images.unsplash.com/photo-1478145787956-f6f12c59624d?w=800',
+          'https://images.unsplash.com/photo-1478145787956-f6f12c59624d?w=1200',
       'juice': 3.9,
     },
     {
@@ -92,7 +98,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'location': 'Kandy, Sri Lanka',
       'category': 'Theater',
       'imageUrl':
-          'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=800',
+          'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=1200',
       'juice': 3.5,
     },
     {
@@ -101,13 +107,12 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       'location': 'Negombo, Sri Lanka',
       'category': 'Music',
       'imageUrl':
-          'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800',
+          'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=1200',
       'juice': 4.4,
     },
   ];
 
   List<Map<String, dynamic>> get _filteredEvents {
-    // Get events from provider
     final eventProvider = Provider.of<EventProvider>(context, listen: false);
     final providerEvents = eventProvider.upcomingEvents.map((event) {
       return {
@@ -116,20 +121,17 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
         'location': event.location,
         'category': event.category,
         'imageUrl': event.imageUrl ??
-            'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800',
-        'juice': 4.5, // Default rating
+            'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200',
+        'juice': 4.5,
       };
     }).toList();
 
-    // Combine with hardcoded sample events
     var events = [...providerEvents, ..._allEvents];
 
-    // Filter by category
     if (_selectedCategory != 'All') {
       events = events.where((e) => e['category'] == _selectedCategory).toList();
     }
 
-    // Filter by search query
     if (_searchQuery.isNotEmpty) {
       events = events.where((e) {
         final title = e['title'].toLowerCase();
@@ -144,348 +146,197 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final isDesktop = width >= 1024;
+    final isTablet = width >= 760;
+    final contentPadding = EdgeInsets.symmetric(
+      horizontal: isDesktop ? 36 : 20,
+      vertical: isDesktop ? 28 : 20,
+    );
+
     return Scaffold(
       backgroundColor: const Color(0xFF0A0E27),
       body: Stack(
         children: [
+          _buildDecorativeBackground(),
           CustomScrollView(
+            controller: _scrollController,
             slivers: [
               SliverAppBar(
-                expandedHeight: 160,
+                expandedHeight: 120,
                 pinned: true,
                 backgroundColor: Colors.transparent,
-                flexibleSpace: FlexibleSpaceBar(
-                  title: Text(
-                    'Festio LK',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 28,
-                      color: Colors.white,
-                    ),
+                title: Text(
+                  'Festio LK',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 26,
+                    letterSpacing: 0.6,
+                    color: Colors.white,
                   ),
                 ),
+                actions: [
+                  _buildAppBarAction(
+                    icon: Icons.smart_toy_outlined,
+                    tooltip: 'AI Picks',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AIRecommendationsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildAppBarAction(
+                    icon: Icons.campaign_outlined,
+                    tooltip: 'Organizer Dashboard',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const ModernOrganizerDashboard(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildAppBarAction(
+                    icon: Icons.verified_user_outlined,
+                    tooltip: 'Trust Assessment',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const TrustAssessmentScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildAppBarAction(
+                    icon: Icons.account_balance_wallet_outlined,
+                    tooltip: 'Budget Planning',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const BudgetPlanningScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                ],
               ),
-
-              // Content
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Row(
+                  padding: contentPadding,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1200),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _searchController,
-                              onChanged: (v) =>
-                                  setState(() => _searchQuery = v),
-                              decoration: InputDecoration(
-                                hintText: 'search_events'.tr(),
-                              ),
+                          AnimatedOpacity(
+                            duration: const Duration(milliseconds: 500),
+                            opacity: _pageReady ? 1 : 0,
+                            child: AnimatedSlide(
+                              duration: const Duration(milliseconds: 500),
+                              offset: _pageReady
+                                  ? Offset.zero
+                                  : const Offset(0, 0.05),
+                              curve: Curves.easeOutCubic,
+                              child: _buildHeroSection(isDesktop),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          // AI Bot Button - Professional styling
-                          Row(
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF667eea),
-                                      Color(0xFF764ba2)
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF667eea)
-                                          .withOpacity(0.4),
-                                      blurRadius: 16,
-                                      offset: const Offset(0, 6),
-                                    ),
-                                  ],
-                                ),
-                                child: IconButton(
-                                  icon: const Icon(Icons.smart_toy_outlined,
-                                      color: Colors.white, size: 22),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const AIRecommendationsScreen(),
-                                      ),
-                                    );
-                                  },
-                                  tooltip: 'AI Recommendations',
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF8fd3f4),
-                                      Color(0xFF84fab0)
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF84fab0)
-                                          .withOpacity(0.35),
-                                      blurRadius: 16,
-                                      offset: const Offset(0, 6),
-                                    ),
-                                  ],
-                                ),
-                                child: IconButton(
-                                  icon: const Icon(Icons.campaign_outlined,
-                                      color: Colors.white, size: 22),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const ModernOrganizerDashboard(),
-                                      ),
-                                    );
-                                  },
-                                  tooltip: 'Organizer Dashboard',
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFFfa709a),
-                                      Color(0xFFfee140)
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFFfa709a)
-                                          .withOpacity(0.35),
-                                      blurRadius: 16,
-                                      offset: const Offset(0, 6),
-                                    ),
-                                  ],
-                                ),
-                                child: IconButton(
-                                  icon: const Icon(Icons.verified_user_outlined,
-                                      color: Colors.white, size: 22),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const TrustAssessmentScreen(),
-                                      ),
-                                    );
-                                  },
-                                  tooltip: 'Trust Assessment',
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFFa8edea),
-                                      Color(0xFFfed6e3)
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFFa8edea)
-                                          .withOpacity(0.35),
-                                      blurRadius: 16,
-                                      offset: const Offset(0, 6),
-                                    ),
-                                  ],
-                                ),
-                                child: IconButton(
-                                  icon: const Icon(Icons.account_balance_wallet_outlined,
-                                      color: Colors.white, size: 22),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const BudgetPlanningScreen(),
-                                      ),
-                                    );
-                                  },
-                                  tooltip: 'Budget Planning',
-                                ),
-                              ),
-                            ],
+                          const SizedBox(height: 32),
+                          _buildSectionHeader(
+                            title: 'Quick Actions',
+                            subtitle: 'Start planning in a single tap.',
                           ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Categories
-                      Text(
-                        'category'.tr(),
-                        style: GoogleFonts.poppins(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            _buildCategoryChip('All'),
-                            _buildCategoryChip('Music'),
-                            _buildCategoryChip('Dance'),
-                            _buildCategoryChip('Festival'),
-                            _buildCategoryChip('Theater'),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Calendar Section
-                      if (_showCalendar)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'event_calendar',
-                              style: GoogleFonts.poppins(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Consumer<EventProvider>(
-                              builder: (context, eventProvider, child) {
-                                return EventCalendar(
-                                  events: eventProvider.upcomingEvents,
-                                  onDateSelected: (date) {
-                                    // Handle date selection
-                                  },
-                                  onEventsForDateChanged: (events) {
-                                    // Handle events for selected date
-                                  },
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 32),
-                          ],
-                        ),
-
-                      // Featured Events
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _searchQuery.isNotEmpty
-                                ? 'Search Results (${_filteredEvents.length})'
-                                : _selectedCategory == 'All'
-                                    ? 'Featured Events'
-                                    : '$_selectedCategory Events',
-                            style: GoogleFonts.poppins(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          const SizedBox(height: 16),
+                          _buildQuickActions(isDesktop),
+                          const SizedBox(height: 32),
+                          _buildSectionHeader(
+                            title: 'Browse by Category',
+                            subtitle: 'Pick a vibe and discover what is on.',
                           ),
-                          if (_searchQuery.isNotEmpty ||
-                              _selectedCategory != 'All')
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  _searchQuery = '';
-                                  _selectedCategory = 'All';
-                                  _searchController.clear();
-                                });
-                              },
-                              child: Text(
-                                'Clear',
-                                style: GoogleFonts.poppins(
-                                  color: const Color(0xFF6C63FF),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Event Cards
-                      if (_filteredEvents.isEmpty)
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(40),
-                            child: Column(
+                          const SizedBox(height: 16),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
                               children: [
-                                Icon(
-                                  Icons.search_off,
-                                  size: 64,
-                                  color: Colors.white38,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No events found',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 18,
-                                    color: Colors.white70,
-                                  ),
-                                ),
+                                _buildCategoryChip('All'),
+                                _buildCategoryChip('Music'),
+                                _buildCategoryChip('Dance'),
+                                _buildCategoryChip('Festival'),
+                                _buildCategoryChip('Theater'),
                               ],
                             ),
                           ),
-                        )
-                      else
-                        ..._filteredEvents.map((event) => Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: _buildEventCard(
-                                title: event['title']!,
-                                date: event['date']!,
-                                location: event['location']!,
-                                imageUrl: event['imageUrl']!,
-                                juice: event['juice']! as double,
+                          const SizedBox(height: 32),
+                          _buildSectionHeader(
+                            title: 'Upcoming Events',
+                            subtitle: _searchQuery.isNotEmpty
+                                ? 'Results for "$_searchQuery"'
+                                : _selectedCategory == 'All'
+                                    ? 'Handpicked for you this season.'
+                                    : 'Top $_selectedCategory events near you.',
+                            action: TextButton.icon(
+                              onPressed: () {
+                                setState(() => _showCalendar = !_showCalendar);
+                              },
+                              icon: Icon(
+                                _showCalendar
+                                    ? Icons.calendar_month
+                                    : Icons.calendar_today_outlined,
+                                color: Colors.white,
                               ),
-                            )),
-
-                      const SizedBox(height: 40),
-                      const AppFooter(),
-                      const SizedBox(height: 40),
-                    ],
+                              label: Text(
+                                _showCalendar
+                                    ? 'Hide Calendar'
+                                    : 'Show Calendar',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          if (_showCalendar)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: Consumer<EventProvider>(
+                                builder: (context, eventProvider, child) {
+                                  return EventCalendar(
+                                    events: eventProvider.upcomingEvents,
+                                    onDateSelected: (date) {},
+                                    onEventsForDateChanged: (events) {},
+                                  );
+                                },
+                              ),
+                            ),
+                          Container(
+                            key: _eventsKey,
+                            child: _buildEventSection(isDesktop, isTablet),
+                          ),
+                          const SizedBox(height: 40),
+                          const AppFooter(),
+                          const SizedBox(height: 40),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
             ],
           ),
-
-          // AI Bot Overlay
           if (_showAIBot) _buildAIBotOverlay(),
         ],
       ),
-
-      // Floating Action Button - Professional styling
       floatingActionButton: Container(
         decoration: BoxDecoration(
           gradient: const LinearGradient(
@@ -535,6 +386,593 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
     );
   }
 
+  Widget _buildDecorativeBackground() {
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF0A0E27),
+                  Color(0xFF0F1638),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            top: -120,
+            right: -80,
+            child: _buildGlowOrb(
+              size: 240,
+              colors: [
+                const Color(0xFF667eea).withOpacity(0.45),
+                const Color(0xFF764ba2).withOpacity(0.1),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: -140,
+            left: -60,
+            child: _buildGlowOrb(
+              size: 280,
+              colors: [
+                const Color(0xFF84fab0).withOpacity(0.4),
+                const Color(0xFF8fd3f4).withOpacity(0.12),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGlowOrb({required double size, required List<Color> colors}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(colors: colors),
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+        child: const SizedBox.expand(),
+      ),
+    );
+  }
+
+  Widget _buildAppBarAction({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return IconButton(
+      onPressed: onTap,
+      tooltip: tooltip,
+      icon: Icon(icon, color: Colors.white),
+    );
+  }
+
+  Widget _buildHeroSection(bool isDesktop) {
+    final headlineStyle = GoogleFonts.spaceGrotesk(
+      fontSize: isDesktop ? 40 : 32,
+      fontWeight: FontWeight.w700,
+      height: 1.1,
+      color: Colors.white,
+    );
+
+    final subheadStyle = GoogleFonts.poppins(
+      fontSize: 15,
+      height: 1.6,
+      color: Colors.white70,
+    );
+
+    final searchField = TextField(
+      controller: _searchController,
+      onChanged: (v) => setState(() => _searchQuery = v),
+      decoration: InputDecoration(
+        hintText: 'search_events'.tr(),
+        prefixIcon: const Icon(Icons.search, color: Colors.white70),
+        suffixIcon: _searchQuery.isNotEmpty
+            ? IconButton(
+                onPressed: () {
+                  setState(() {
+                    _searchQuery = '';
+                    _searchController.clear();
+                    _selectedCategory = 'All';
+                  });
+                },
+                icon: const Icon(Icons.close, color: Colors.white70),
+              )
+            : null,
+      ),
+    );
+
+    final heroCard = _buildHeroCard();
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        color: const Color(0xFF141A3D).withOpacity(0.7),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 30,
+            offset: const Offset(0, 20),
+          ),
+        ],
+      ),
+      child: isDesktop
+          ? Row(
+              children: [
+                Expanded(
+                  flex: 6,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeroBadge('New cultural events every week'),
+                      const SizedBox(height: 18),
+                      Text('Plan your next cultural escape',
+                          style: headlineStyle),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Discover authentic festivals, music nights, and heritage gatherings across Sri Lanka. Start with a quick search or let our AI guide you.',
+                        style: subheadStyle,
+                      ),
+                      const SizedBox(height: 20),
+                      searchField,
+                      const SizedBox(height: 20),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              final context = _eventsKey.currentContext;
+                              if (context != null) {
+                                Scrollable.ensureVisible(
+                                  context,
+                                  duration: const Duration(milliseconds: 500),
+                                  curve: Curves.easeOutCubic,
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.explore_outlined),
+                            label: const Text('Explore Events'),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              setState(() => _showAIBot = true);
+                            },
+                            icon: const Icon(Icons.auto_awesome),
+                            label: const Text('AI Concierge'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: BorderSide(
+                                color: Colors.white.withOpacity(0.4),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 14,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 24),
+                Expanded(flex: 5, child: heroCard),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeroBadge('New cultural events every week'),
+                const SizedBox(height: 16),
+                Text('Plan your next cultural escape', style: headlineStyle),
+                const SizedBox(height: 12),
+                Text(
+                  'Discover authentic festivals, music nights, and heritage gatherings across Sri Lanka.',
+                  style: subheadStyle,
+                ),
+                const SizedBox(height: 18),
+                searchField,
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          final context = _eventsKey.currentContext;
+                          if (context != null) {
+                            Scrollable.ensureVisible(
+                              context,
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.easeOutCubic,
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.explore_outlined),
+                        label: const Text('Explore Events'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          setState(() => _showAIBot = true);
+                        },
+                        icon: const Icon(Icons.auto_awesome),
+                        label: const Text('AI Concierge'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(
+                            color: Colors.white.withOpacity(0.4),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                heroCard,
+              ],
+            ),
+    );
+  }
+
+  Widget _buildHeroBadge(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF8fd3f4), Color(0xFF84fab0)],
+        ),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.poppins(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF0A0E27),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeroCard() {
+    return Container(
+      height: 320,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 24,
+            offset: const Offset(0, 16),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.network(
+                'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=1400',
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: const Color(0xFF1A1F3A),
+                    child: const Icon(Icons.event, color: Colors.white38),
+                  );
+                },
+              ),
+            ),
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.25),
+                      Colors.black.withOpacity(0.85),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 20,
+              right: 20,
+              bottom: 20,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Esala Perahera Preview',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Reserve your spot for the grand procession in Kandy.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ModernEventDetailScreen(
+                            title: 'Kandy Esala Perahera',
+                            date: 'Aug 15, 2024',
+                            location: 'Kandy, Sri Lanka',
+                            imageUrl:
+                                'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200',
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF667eea),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: const Text('View Spotlight'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActions(bool isDesktop) {
+    final items = [
+      _QuickAction(
+        title: 'AI Picks',
+        subtitle: 'Get a curated plan.',
+        icon: Icons.auto_awesome,
+        gradient: const [Color(0xFF667eea), Color(0xFF764ba2)],
+        onTap: () => setState(() => _showAIBot = true),
+      ),
+      _QuickAction(
+        title: 'Plan Budget',
+        subtitle: 'Estimate costs fast.',
+        icon: Icons.account_balance_wallet_outlined,
+        gradient: const [Color(0xFF84fab0), Color(0xFF8fd3f4)],
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const BudgetPlanningScreen(),
+            ),
+          );
+        },
+      ),
+      _QuickAction(
+        title: 'Organizer Tools',
+        subtitle: 'Manage your events.',
+        icon: Icons.campaign_outlined,
+        gradient: const [Color(0xFFfa709a), Color(0xFFfee140)],
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ModernOrganizerDashboard(),
+            ),
+          );
+        },
+      ),
+      _QuickAction(
+        title: 'Trust Score',
+        subtitle: 'Check organizer status.',
+        icon: Icons.verified_user_outlined,
+        gradient: const [Color(0xFFa8edea), Color(0xFFfed6e3)],
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const TrustAssessmentScreen(),
+            ),
+          );
+        },
+      ),
+    ];
+
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
+      children: items
+          .map(
+            (item) => SizedBox(
+              width: isDesktop ? 260 : 300,
+              child: _buildQuickActionCard(item),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _buildQuickActionCard(_QuickAction item) {
+    return InkWell(
+      onTap: item.onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: const Color(0xFF171D3D),
+          border: Border.all(color: Colors.white.withOpacity(0.08)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 18,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: item.gradient),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(item.icon, color: Colors.white, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.title,
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    item.subtitle,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Colors.white54),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader({
+    required String title,
+    required String subtitle,
+    Widget? action,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.spaceGrotesk(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                style: GoogleFonts.poppins(
+                  color: Colors.white70,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (action != null) action,
+      ],
+    );
+  }
+
+  Widget _buildEventSection(bool isDesktop, bool isTablet) {
+    final events = _filteredEvents;
+    if (events.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            children: [
+              Icon(
+                Icons.search_off,
+                size: 64,
+                color: Colors.white38,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No events found',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  color: Colors.white70,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final columns = isDesktop ? 3 : isTablet ? 2 : 1;
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: columns,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: isDesktop ? 1.1 : 1.0,
+      ),
+      itemCount: events.length,
+      itemBuilder: (context, index) {
+        final event = events[index];
+        return _buildEventCard(
+          title: event['title']!,
+          date: event['date']!,
+          location: event['location']!,
+          imageUrl: event['imageUrl']!,
+          juice: event['juice']! as double,
+        );
+      },
+    );
+  }
+
   Widget _buildCategoryChip(String label) {
     final isSelected = _selectedCategory == label;
     return Container(
@@ -545,9 +983,9 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
             _selectedCategory = label;
           });
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(999),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
           decoration: BoxDecoration(
             gradient: isSelected
                 ? const LinearGradient(
@@ -560,12 +998,12 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                   )
                 : null,
             color: isSelected ? null : const Color(0xFF1A1F3A),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(999),
             border: Border.all(
               color: isSelected
                   ? Colors.transparent
                   : Colors.white.withOpacity(0.08),
-              width: 1.5,
+              width: 1.2,
             ),
             boxShadow: isSelected
                 ? [
@@ -582,8 +1020,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
             style: GoogleFonts.poppins(
               color: Colors.white,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              fontSize: 14,
-              letterSpacing: 0.3,
+              fontSize: 13,
+              letterSpacing: 0.2,
             ),
           ),
         ),
@@ -613,7 +1051,6 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
         );
       },
       child: Container(
-        height: 280,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
@@ -634,7 +1071,6 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
           borderRadius: BorderRadius.circular(20),
           child: Stack(
             children: [
-              // Image
               Positioned.fill(
                 child: Image.network(
                   imageUrl,
@@ -647,8 +1083,6 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                   },
                 ),
               ),
-
-              // Gradient Overlay - Enhanced for better readability
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
@@ -657,19 +1091,17 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withOpacity(0.2),
+                        Colors.black.withOpacity(0.25),
                         Colors.black.withOpacity(0.85),
                       ],
                     ),
                   ),
                 ),
               ),
-
-              // Content
               Positioned(
-                left: 20,
-                right: 20,
-                bottom: 20,
+                left: 18,
+                right: 18,
+                bottom: 18,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -677,14 +1109,14 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                       title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
                         color: Colors.white,
-                        letterSpacing: 0.3,
+                        letterSpacing: 0.2,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
                         const Icon(
@@ -697,7 +1129,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                           date,
                           style: GoogleFonts.poppins(
                             color: Colors.white70,
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -719,20 +1151,18 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.poppins(
                               color: Colors.white70,
-                              fontSize: 14,
+                              fontSize: 13,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     JuiceRatingCompact(rating: juice),
                   ],
                 ),
               ),
-
-              // Favorite Button with glass effect
               Positioned(
                 top: 16,
                 right: 16,
@@ -777,7 +1207,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
           color: Colors.black.withOpacity(0.6),
           child: Center(
             child: GestureDetector(
-              onTap: () {}, // Prevent closing when tapping on the bot
+              onTap: () {},
               child: Container(
                 margin: const EdgeInsets.all(20),
                 padding: const EdgeInsets.all(28),
@@ -805,7 +1235,6 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // AI Icon with gradient
                     Container(
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
@@ -829,23 +1258,19 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         color: Colors.white,
                       ),
                     ),
-
                     const SizedBox(height: 28),
-
                     Text(
-                      'AI Event Recommender',
-                      style: GoogleFonts.poppins(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
+                      'AI Event Concierge',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
                         color: Colors.white,
-                        letterSpacing: 0.5,
+                        letterSpacing: 0.4,
                       ),
                     ),
-
                     const SizedBox(height: 12),
-
                     Text(
-                      'Get personalized event recommendations based on your interests and location!',
+                      'Tell us what you love and we will match festivals, concerts, and cultural nights for you.',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
@@ -854,10 +1279,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         height: 1.5,
                       ),
                     ),
-
                     const SizedBox(height: 28),
-
-                    // Recommendation Buttons
                     _buildAIButton(
                       'Recommend Events Near Me',
                       Icons.location_on,
@@ -869,15 +1291,13 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                                '🤖 AI found 6 events near you in Colombo!'),
+                                'AI found 6 events near you in Colombo!'),
                             duration: Duration(seconds: 3),
                           ),
                         );
                       },
                     ),
-
                     const SizedBox(height: 14),
-
                     _buildAIButton(
                       'Based on My Interests',
                       Icons.favorite,
@@ -889,15 +1309,13 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content:
-                                Text('🤖 AI recommends Music events for you!'),
+                                Text('AI recommends Music events for you!'),
                             duration: Duration(seconds: 3),
                           ),
                         );
                       },
                     ),
-
                     const SizedBox(height: 14),
-
                     _buildAIButton(
                       'Popular Right Now',
                       Icons.trending_up,
@@ -908,17 +1326,13 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         });
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content:
-                                Text('🤖 Showing trending Festival events!'),
+                            content: Text('Showing trending Festival events!'),
                             duration: Duration(seconds: 3),
                           ),
                         );
                       },
                     ),
-
                     const SizedBox(height: 28),
-
-                    // Close Button
                     TextButton(
                       onPressed: () {
                         setState(() {
@@ -989,6 +1403,23 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
+}
+
+class _QuickAction {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final List<Color> gradient;
+  final VoidCallback onTap;
+
+  const _QuickAction({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.gradient,
+    required this.onTap,
+  });
 }
