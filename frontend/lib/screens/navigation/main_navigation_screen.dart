@@ -262,57 +262,64 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   // Search and quick actions
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
+                    child: Row(
                       children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.25),
-                            ),
-                          ),
-                          child: TextField(
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Search events, places, or dates',
-                              hintStyle: GoogleFonts.poppins(
-                                color: Colors.white.withOpacity(0.7),
-                                fontSize: 14,
+                        Expanded(
+                          flex: 5,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.14),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.22),
                               ),
-                              prefixIcon: const Icon(
-                                Icons.search,
+                            ),
+                            child: TextField(
+                              style: GoogleFonts.poppins(
                                 color: Colors.white,
+                                fontSize: 13,
                               ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 14,
+                              decoration: InputDecoration(
+                                hintText: 'Search events, places, or dates',
+                                hintStyle: GoogleFonts.poppins(
+                                  color: Colors.white.withOpacity(0.7),
+                                  fontSize: 13,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.search,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              _buildQuickActionChip(
-                                label: 'Browse festivals',
-                                icon: Icons.festival,
-                              ),
-                              _buildQuickActionChip(
-                                label: 'Nearby today',
-                                icon: Icons.near_me_outlined,
-                              ),
-                              _buildQuickActionChip(
-                                label: 'Family friendly',
-                                icon: Icons.family_restroom,
-                              ),
-                            ],
+                        const SizedBox(width: 16),
+                        Expanded(
+                          flex: 4,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                _buildQuickActionChip(
+                                  label: 'Browse festivals',
+                                  icon: Icons.festival,
+                                ),
+                                _buildQuickActionChip(
+                                  label: 'Nearby today',
+                                  icon: Icons.near_me_outlined,
+                                ),
+                                _buildQuickActionChip(
+                                  label: 'Family friendly',
+                                  icon: Icons.family_restroom,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
