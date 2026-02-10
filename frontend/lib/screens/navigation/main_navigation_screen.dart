@@ -84,7 +84,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
-                  colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                  colors: [Color(0xFFE6A05B), Color(0xFFEA6A5A)],
                 )
               : null,
           color: isSelected ? null : Colors.white.withOpacity(0.05),
@@ -126,21 +126,21 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       backgroundColor: const Color(0xFF0A0E27),
       body: Column(
         children: [
-          // Professional App Bar with Navigation
+          // Friendly header with quick access
           Container(
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFF667eea),
-                  Color(0xFF764ba2),
+                  Color(0xFFE6A05B),
+                  Color(0xFFEA6A5A),
                 ],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF667eea).withOpacity(0.3),
-                  blurRadius: 20,
+                  color: const Color(0xFFB85C48).withOpacity(0.25),
+                  blurRadius: 18,
                   offset: const Offset(0, 10),
                 ),
               ],
@@ -156,22 +156,22 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       children: [
                         // Logo
                         Container(
-                          width: 50,
-                          height: 50,
+                          width: 52,
+                          height: 52,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
+                                color: Colors.black.withOpacity(0.18),
+                                blurRadius: 10,
+                                offset: const Offset(0, 6),
                               ),
                             ],
                           ),
                           child: Icon(
                             Icons.celebration,
-                            color: const Color(0xFF667eea),
+                            color: const Color(0xFFB85C48),
                             size: 28,
                           ),
                         ),
@@ -185,12 +185,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                                 'Festio LK',
                                 style: GoogleFonts.poppins(
                                   fontSize: 24,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w700,
                                   color: Colors.white,
                                 ),
                               ),
                               Text(
-                                'Discover Cultural Events',
+                                'Plan your next cultural day out',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   color: Colors.white.withOpacity(0.9),
@@ -202,14 +202,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         // Icon Buttons Row
                         Row(
                           children: [
-                            // Calendar Icon
                             _buildIconButton(
                               icon: Icons.calendar_month_outlined,
                               onTap: _toggleCalendar,
                               isActive: _showCalendar,
                             ),
                             const SizedBox(width: 8),
-                            // Notifications Icon
                             Container(
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.15),
@@ -218,26 +216,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                                   color: Colors.white.withOpacity(0.25),
                                   width: 1.5,
                                 ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
                               ),
                               child: const NotificationBell(
                                 iconColor: Colors.white,
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // Language Selector Icon
                             _buildIconButton(
                               icon: Icons.language,
                               onTap: _showLanguageSelector,
                             ),
                             const SizedBox(width: 8),
-                            // Profile button
                             GestureDetector(
                               onTap: () {
                                 Navigator.push(
@@ -256,13 +245,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                                     color: Colors.white.withOpacity(0.3),
                                     width: 1.5,
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
                                 ),
                                 child: const Icon(
                                   Icons.person_outline,
@@ -276,6 +258,67 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       ],
                     ),
                   ),
+
+                  // Search and quick actions
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.25),
+                            ),
+                          ),
+                          child: TextField(
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Search events, places, or dates',
+                              hintStyle: GoogleFonts.poppins(
+                                color: Colors.white.withOpacity(0.7),
+                                fontSize: 14,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: Colors.white,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildQuickActionChip(
+                                label: 'Browse festivals',
+                                icon: Icons.festival,
+                              ),
+                              _buildQuickActionChip(
+                                label: 'Nearby today',
+                                icon: Icons.near_me_outlined,
+                              ),
+                              _buildQuickActionChip(
+                                label: 'Family friendly',
+                                icon: Icons.family_restroom,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
 
                   // Navigation tabs
                   Container(
@@ -368,7 +411,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             style: GoogleFonts.poppins(
               fontSize: 15,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected ? const Color(0xFF667eea) : Colors.white,
+                color: isSelected ? const Color(0xFFD97B5B) : Colors.white,
             ),
           ),
         ),
@@ -406,6 +449,39 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           icon,
           color: Colors.white,
           size: 22,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionChip({
+    required String label,
+    required IconData icon,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.18),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.3),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 16, color: Colors.white),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );
