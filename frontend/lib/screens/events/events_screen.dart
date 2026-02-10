@@ -241,6 +241,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
       organizerId: 'system',
       organizerName: 'System',
       isApproved: true,
+      status: 'approved',
       isSpam: false,
       spamScore: 0.0,
       trustScore: 100,

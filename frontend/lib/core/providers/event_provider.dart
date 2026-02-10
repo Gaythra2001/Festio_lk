@@ -20,12 +20,16 @@ class EventProvider with ChangeNotifier {
   List<EventModel> _events = [];
   List<EventModel> _upcomingEvents = [];
   List<EventModel> _searchResults = [];
+  List<EventModel> _organizerEvents = [];
+  List<EventModel> _pendingEvents = [];
   bool _isLoading = false;
   String _currentLanguage = 'en';
 
   List<EventModel> get events => _events;
   List<EventModel> get upcomingEvents => _upcomingEvents;
   List<EventModel> get searchResults => _searchResults;
+  List<EventModel> get organizerEvents => _organizerEvents;
+  List<EventModel> get pendingEvents => _pendingEvents;
   bool get isLoading => _isLoading;
   String get currentLanguage => _currentLanguage;
 
@@ -65,6 +69,87 @@ class EventProvider with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error loading upcoming events: $e');
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  void loadOrganizerEvents(String organizerId) {
+    if (useFirebase && _firestoreService != null) {
+      _firestoreService!.getOrganizerEvents(organizerId).listen((events) {
+        _organizerEvents = events;
+        notifyListeners();
+      });
+    } else if (_mockFirestoreService != null) {
+      _mockFirestoreService!.getOrganizerEvents(organizerId).listen((events) {
+        _organizerEvents = events;
+        notifyListeners();
+      });
+    }
+  }
+
+  Future<void> loadPendingEvents() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      if (useFirebase && _firestoreService != null) {
+        _pendingEvents = await _firestoreService!.getPendingEvents();
+      } else if (_mockFirestoreService != null) {
+        _pendingEvents = await _mockFirestoreService!.getPendingEvents();
+      }
+    } catch (e) {
+      debugPrint('Error loading pending events: $e');
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> approveEvent(String eventId, {String? organizerId}) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      if (useFirebase && _firestoreService != null) {
+        await _firestoreService!.approveEvent(eventId);
+      } else if (_mockFirestoreService != null) {
+        await _mockFirestoreService!.approveEvent(eventId);
+      }
+
+      await loadPendingEvents();
+      if (organizerId != null && organizerId.isNotEmpty) {
+        loadOrganizerEvents(organizerId);
+      }
+      await loadUpcomingEvents();
+    } catch (e) {
+      debugPrint('Error approving event: $e');
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> rejectEvent(String eventId,
+      {String? organizerId, String? reason}) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      if (useFirebase && _firestoreService != null) {
+        await _firestoreService!.rejectEvent(eventId, reason: reason);
+      } else if (_mockFirestoreService != null) {
+        await _mockFirestoreService!.rejectEvent(eventId, reason: reason);
+      }
+
+      await loadPendingEvents();
+      if (organizerId != null && organizerId.isNotEmpty) {
+        loadOrganizerEvents(organizerId);
+      }
+      await loadUpcomingEvents();
+    } catch (e) {
+      debugPrint('Error rejecting event: $e');
     }
 
     _isLoading = false;
@@ -186,12 +271,14 @@ class EventProvider with ChangeNotifier {
         imageUrl: imageUrl ?? event.imageUrl,
         latitude: event.latitude,
         longitude: event.longitude,
-        isApproved: event.isApproved,
+        isApproved: false,
         isSpam: event.isSpam,
         spamScore: event.spamScore,
         trustScore: event.trustScore,
         submittedAt: event.submittedAt,
-        approvedAt: event.approvedAt,
+        approvedAt: null,
+        status: 'pending',
+        rejectionReason: null,
         maxAttendees: event.maxAttendees,
         ticketPrice: event.ticketPrice,
         ticketUrl: event.ticketUrl,
@@ -202,6 +289,10 @@ class EventProvider with ChangeNotifier {
         newId = await _firestoreService!.submitEvent(eventWithImage);
       } else if (_mockFirestoreService != null) {
         newId = await _mockFirestoreService!.submitEvent(eventWithImage);
+      }
+      await loadPendingEvents();
+      if (event.organizerId.isNotEmpty) {
+        loadOrganizerEvents(event.organizerId);
       }
       _isLoading = false;
       notifyListeners();

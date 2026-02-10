@@ -58,13 +58,20 @@ class MockFirestoreService {
 
   Stream<List<EventModel>> getApprovedEvents() {
     return Stream.value(
-        _mockEvents.where((e) => e.isApproved && !e.isSpam).toList());
+      _mockEvents.where((e) => e.status == 'approved' && !e.isSpam).toList());
+  }
+
+  Stream<List<EventModel>> getOrganizerEvents(String organizerId) {
+    return Stream.value(
+      _mockEvents.where((e) => e.organizerId == organizerId).toList(),
+    );
   }
 
   Future<List<EventModel>> getUpcomingEvents() async {
     final now = DateTime.now();
     return _mockEvents
-        .where((e) => e.isApproved && !e.isSpam && e.startDate.isAfter(now))
+        .where((e) =>
+            e.status == 'approved' && !e.isSpam && e.startDate.isAfter(now))
         .toList();
   }
 
@@ -86,11 +93,100 @@ class MockFirestoreService {
       imageUrl: event.imageUrl,
       submittedAt: DateTime.now(),
       isApproved: event.isApproved, // Use the approval status from the event
+      status: event.status,
+      rejectionReason: event.rejectionReason,
       ticketPrice: event.ticketPrice,
     );
 
     _mockEvents.add(newEvent);
     return newEvent.id;
+  }
+
+  Future<List<EventModel>> getPendingEvents() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return _mockEvents
+      .where((e) => e.status == 'pending' && !e.isSpam)
+        .toList(growable: false);
+  }
+
+  Future<void> approveEvent(String eventId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final index = _mockEvents.indexWhere((e) => e.id == eventId);
+    if (index != -1) {
+      final event = _mockEvents[index];
+      _mockEvents[index] = EventModel(
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        titleSi: event.titleSi,
+        titleTa: event.titleTa,
+        descriptionSi: event.descriptionSi,
+        descriptionTa: event.descriptionTa,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        location: event.location,
+        locationSi: event.locationSi,
+        locationTa: event.locationTa,
+        category: event.category,
+        tags: event.tags,
+        organizerId: event.organizerId,
+        organizerName: event.organizerName,
+        imageUrl: event.imageUrl,
+        latitude: event.latitude,
+        longitude: event.longitude,
+        isApproved: true,
+        isSpam: event.isSpam,
+        spamScore: event.spamScore,
+        trustScore: event.trustScore,
+        submittedAt: event.submittedAt,
+        approvedAt: DateTime.now(),
+        status: 'approved',
+        rejectionReason: null,
+        maxAttendees: event.maxAttendees,
+        ticketPrice: event.ticketPrice,
+        ticketUrl: event.ticketUrl,
+      );
+    }
+  }
+
+  Future<void> rejectEvent(String eventId, {String? reason}) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final index = _mockEvents.indexWhere((e) => e.id == eventId);
+    if (index != -1) {
+      final event = _mockEvents[index];
+      _mockEvents[index] = EventModel(
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        titleSi: event.titleSi,
+        titleTa: event.titleTa,
+        descriptionSi: event.descriptionSi,
+        descriptionTa: event.descriptionTa,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        location: event.location,
+        locationSi: event.locationSi,
+        locationTa: event.locationTa,
+        category: event.category,
+        tags: event.tags,
+        organizerId: event.organizerId,
+        organizerName: event.organizerName,
+        imageUrl: event.imageUrl,
+        latitude: event.latitude,
+        longitude: event.longitude,
+        isApproved: false,
+        isSpam: event.isSpam,
+        spamScore: event.spamScore,
+        trustScore: event.trustScore,
+        submittedAt: event.submittedAt,
+        approvedAt: null,
+        status: 'rejected',
+        rejectionReason: reason,
+        maxAttendees: event.maxAttendees,
+        ticketPrice: event.ticketPrice,
+        ticketUrl: event.ticketUrl,
+      );
+    }
   }
 
   Future<EventModel?> getEventById(String eventId) async {

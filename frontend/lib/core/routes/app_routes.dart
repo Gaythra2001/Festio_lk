@@ -22,5 +22,6 @@ class AppRoutes {
   static const String trustAssessment = '/ai/trust-assessment';
   static const String budgetPlanning = '/ai/budget-planning';
   static const String modernOrganizerDashboard = '/organizer/modern-dashboard';
+  static const String adminEventApprovals = '/admin/event-approvals';
 }
 

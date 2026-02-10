@@ -9,9 +9,21 @@ class FirestoreService {
   Stream<List<EventModel>> getApprovedEvents() {
     return _firestore
         .collection('events')
-        .where('isApproved', isEqualTo: true)
+      .where('isApproved', isEqualTo: true)
         .where('isSpam', isEqualTo: false)
         .orderBy('startDate', descending: false)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+        .map((doc) => EventModel.fromMap(doc.data(), doc.id))
+        .where((event) => event.status == 'approved')
+        .toList());
+  }
+
+  Stream<List<EventModel>> getOrganizerEvents(String organizerId) {
+    return _firestore
+        .collection('events')
+        .where('organizerId', isEqualTo: organizerId)
+        .orderBy('submittedAt', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => EventModel.fromMap(doc.data(), doc.id))
@@ -22,7 +34,7 @@ class FirestoreService {
     final now = DateTime.now();
     final snapshot = await _firestore
         .collection('events')
-        .where('isApproved', isEqualTo: true)
+      .where('isApproved', isEqualTo: true)
         .where('isSpam', isEqualTo: false)
         .where('startDate', isGreaterThan: Timestamp.fromDate(now))
         .orderBy('startDate', descending: false)
@@ -30,13 +42,46 @@ class FirestoreService {
         .get();
 
     return snapshot.docs
-        .map((doc) => EventModel.fromMap(doc.data(), doc.id))
-        .toList();
+      .map((doc) => EventModel.fromMap(doc.data(), doc.id))
+      .where((event) => event.status == 'approved')
+      .toList();
   }
 
   Future<String> submitEvent(EventModel event) async {
     final docRef = await _firestore.collection('events').add(event.toMap());
     return docRef.id;
+  }
+
+  Future<List<EventModel>> getPendingEvents() async {
+    final snapshot = await _firestore
+        .collection('events')
+      .where('isApproved', isEqualTo: false)
+        .where('isSpam', isEqualTo: false)
+        .orderBy('submittedAt', descending: true)
+        .get();
+
+    return snapshot.docs
+      .map((doc) => EventModel.fromMap(doc.data(), doc.id))
+      .where((event) => event.status == 'pending')
+      .toList();
+  }
+
+  Future<void> approveEvent(String eventId) async {
+    await _firestore.collection('events').doc(eventId).update({
+      'status': 'approved',
+      'isApproved': true,
+      'approvedAt': Timestamp.fromDate(DateTime.now()),
+      'rejectionReason': null,
+    });
+  }
+
+  Future<void> rejectEvent(String eventId, {String? reason}) async {
+    await _firestore.collection('events').doc(eventId).update({
+      'status': 'rejected',
+      'isApproved': false,
+      'approvedAt': null,
+      'rejectionReason': reason,
+    });
   }
 
   Future<EventModel?> getEventById(String eventId) async {
