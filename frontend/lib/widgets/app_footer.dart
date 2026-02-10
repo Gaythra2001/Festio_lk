@@ -34,7 +34,7 @@ class AppFooter extends StatelessWidget {
         ? _buildMobileLayout()
         : Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1100),
+              constraints: const BoxConstraints(maxWidth: 900),
               child: _buildDesktopLayout(),
             ),
           );
@@ -170,12 +170,12 @@ class AppFooter extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Payment Methods
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: [
             _buildPaymentLogo('VISA', const Color(0xFF1A1F71)),
-            const SizedBox(width: 8),
             _buildPaymentLogo('MC', const Color(0xFFEB001B)),
-            const SizedBox(width: 8),
             _buildPaymentLogo('LOKO', const Color(0xFF4CAF50)),
           ],
         ),

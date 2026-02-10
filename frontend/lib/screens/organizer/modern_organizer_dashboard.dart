@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:math';
 import 'dart:ui';
 
 import '../../core/providers/promotion_provider.dart';
@@ -39,6 +41,10 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
   double _competitorAvgPrice = 2700;
   double _marketingBoost = 0.35;
   double _demandGrowthRate = 0.2;
+  String _eventCategory = 'Festival';
+  String _abExperimentId = 'rev_opt_v1';
+  String _abVariant = 'A';
+  bool _abReady = false;
 
   final RevenueOptimizationService _revenueOptimizationService =
       RevenueOptimizationService();
@@ -100,11 +106,51 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
       vsync: this,
     );
     _fadeController.forward();
-    Future.microtask(() {
+    Future.microtask(() async {
       context.read<PromotionProvider>().load();
+      await _initExperiment();
       _trackDashboardView();
       _loadAnalyticsSummary();
     });
+  }
+
+  Future<void> _initExperiment() async {
+    if (_abReady) return;
+    final authProvider = context.read<AuthProvider>();
+    final organizerId = authProvider.user?.id ?? 'unknown';
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'ab_${_abExperimentId}_$organizerId';
+    final stored = prefs.getString(key);
+    if (stored == null || (stored != 'A' && stored != 'B')) {
+      final variant = _pickVariant();
+      await prefs.setString(key, variant);
+      _abVariant = variant;
+    } else {
+      _abVariant = stored;
+    }
+    if (mounted) {
+      setState(() {
+        _abReady = true;
+      });
+    }
+  }
+
+  String _pickVariant() {
+    return Random().nextBool() ? 'A' : 'B';
+  }
+
+  Future<void> _ensureExperimentReady() async {
+    if (!_abReady) {
+      await _initExperiment();
+    }
+  }
+
+  Map<String, dynamic> _experimentMetadata() {
+    return {
+      'experiment_id': _abExperimentId,
+      'variant': _abVariant,
+      'panel': 'revenue_optimization',
+    };
   }
 
   Future<void> _trackDashboardView() async {
@@ -331,6 +377,8 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
     final organizerId = authProvider.user?.id ?? 'unknown';
     final eventId = _selectedEventId.isNotEmpty ? _selectedEventId : 'default';
 
+    await _ensureExperimentReady();
+
     try {
       await _analyticsApiService.trackEvent(
         organizerId: organizerId,
@@ -338,6 +386,14 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
         eventType: 'revenue_optimization_generate',
         metadata: {
           'source': 'dashboard_button',
+          ..._experimentMetadata(),
+          'event_category': _eventCategory,
+          'tickets_sold': _ticketsSold.toInt(),
+          'tickets_available': _ticketsAvailable.toInt(),
+          'days_until_event': _daysUntilEvent.toInt(),
+          'competitor_avg_price': _competitorAvgPrice,
+          'marketing_boost': _marketingBoost,
+          'sales_trend': _demandGrowthRate,
         },
       );
     } catch (_) {}
@@ -346,10 +402,13 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
       final result = await _revenueOptimizationService.optimizeRevenue(
         organizerId: organizerId,
         eventId: eventId,
+        eventCategory: _eventCategory,
         currentPrice: _currentPrice,
         ticketsSold: _ticketsSold.toInt(),
         ticketsAvailable: _ticketsAvailable.toInt(),
+        venueCapacity: _ticketsAvailable.toInt(),
         daysUntilEvent: _daysUntilEvent.toInt(),
+        salesTrend: _demandGrowthRate,
         competitorAvgPrice: _competitorAvgPrice,
         marketingBoost: _marketingBoost,
         demandGrowthRate: _demandGrowthRate,
@@ -358,12 +417,14 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
       setState(() {
         _revenueOptimization = result;
       });
+      await _trackRevenueResult(result, isFallback: false);
       _loadAnalyticsSummary();
     } catch (e) {
       setState(() {
         _revenueNotice = 'Preview data shown (backend unreachable).';
         _revenueOptimization = _buildRevenuePreview();
       });
+      await _trackRevenueResult(_revenueOptimization ?? {}, isFallback: true);
     } finally {
       if (mounted) {
         setState(() {
@@ -373,6 +434,31 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
     }
   }
 
+  Future<void> _trackRevenueResult(
+    Map<String, dynamic> data, {
+    required bool isFallback,
+  }) async {
+    final authProvider = context.read<AuthProvider>();
+    final organizerId = authProvider.user?.id ?? 'unknown';
+    final eventId = _selectedEventId.isNotEmpty ? _selectedEventId : 'default';
+    final modelUsed = data['model_used'] ?? (isFallback ? 'preview' : null);
+    try {
+      await _analyticsApiService.trackEvent(
+        organizerId: organizerId,
+        eventId: eventId,
+        eventType: 'revenue_optimization_result',
+        metadata: {
+          ..._experimentMetadata(),
+          'model_used': modelUsed,
+          'is_fallback': isFallback,
+          'recommended_price': data['recommended_price'],
+          'revenue_uplift': data['revenue_uplift'],
+          'price_change_pct': data['price_change_pct'],
+        },
+      );
+    } catch (_) {}
+  }
+
   Map<String, dynamic> _buildRevenuePreview() {
     final sellThrough = _ticketsAvailable > 0
         ? (_ticketsSold / _ticketsAvailable).clamp(0.0, 1.0)
@@ -380,10 +466,20 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
     final demandIndex = (1 + _demandGrowthRate + (sellThrough - 0.5) * 0.6)
         .clamp(0.6, 1.6);
     final recommended = _currentPrice * demandIndex;
+    final optimalLow = recommended * 0.92;
+    final optimalHigh = recommended * 1.08;
+    final revenueCurrent = (_currentPrice * _ticketsAvailable).toStringAsFixed(0);
+    final revenueOptimized = (recommended * _ticketsAvailable).toStringAsFixed(0);
+    final uplift = (double.parse(revenueOptimized) - double.parse(revenueCurrent)).toStringAsFixed(0);
     return {
+      'event_category': _eventCategory,
+      'model_used': 'preview',
       'recommended_price': recommended.toStringAsFixed(0),
-      'expected_revenue_optimized': (recommended * _ticketsAvailable)
-          .toStringAsFixed(0),
+      'optimal_price_low': optimalLow.toStringAsFixed(0),
+      'optimal_price_high': optimalHigh.toStringAsFixed(0),
+      'expected_revenue_current': revenueCurrent,
+      'expected_revenue_optimized': revenueOptimized,
+      'revenue_uplift': uplift,
       'price_change_pct':
           (((recommended - _currentPrice) / _currentPrice) * 100)
               .toStringAsFixed(2),
@@ -394,6 +490,18 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
         'Event is approaching; adjust price for conversion'
       ]
     };
+  }
+
+  String _formatCurrency(dynamic value) {
+    if (value == null) return '-';
+    if (value is num) return value.toStringAsFixed(0);
+    return value.toString();
+  }
+
+  String _formatPercent(dynamic value) {
+    if (value == null) return '-';
+    if (value is num) return value.toStringAsFixed(2);
+    return value.toString();
   }
 
   double _sellThroughRate() {
@@ -569,22 +677,42 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                             ),
                           ),
                         ),
+                      if (data['model_used'] != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            children: [
+                              Icon(Icons.psychology,
+                                  size: 16,
+                                  color: const Color(0xFF00D4FF)),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Model: ${data['model_used']}',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: Colors.white.withOpacity(0.75),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       Row(
                         children: [
                           Expanded(
                             child: _buildStatCard(
                               icon: Icons.price_change,
                               title: 'Recommended Price',
-                              value: '₨${data['recommended_price']}',
+                              value: '₨${_formatCurrency(data['recommended_price'])}',
                               color: const Color(0xFF00E5FF),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: _buildStatCard(
-                              icon: Icons.trending_up,
-                              title: 'Revenue Lift',
-                              value: '₨${data['expected_revenue_optimized']}',
+                              icon: Icons.tune,
+                              title: 'Optimal Range',
+                              value:
+                                  '₨${_formatCurrency(data['optimal_price_low'])}-₨${_formatCurrency(data['optimal_price_high'])}',
                               color: const Color(0xFF764BA2),
                             ),
                           ),
@@ -595,9 +723,9 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                         children: [
                           Expanded(
                             child: _buildStatCard(
-                              icon: Icons.percent,
-                              title: 'Price Change',
-                              value: '${data['price_change_pct']}%',
+                              icon: Icons.trending_up,
+                              title: 'Revenue Uplift',
+                              value: '₨${_formatCurrency(data['revenue_uplift'])}',
                               color: const Color(0xFF00D4FF),
                             ),
                           ),
@@ -606,12 +734,50 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                             child: _buildStatCard(
                               icon: Icons.insights,
                               title: 'Demand Index',
-                              value: '${data['demand_index']}',
+                              value: _formatPercent(data['demand_index']),
                               color: const Color(0xFF00D9FF),
                             ),
                           ),
                         ],
                       ),
+                      const SizedBox(height: 12),
+                      if (data['expected_revenue_optimized'] != null)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.1),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.show_chart,
+                                  size: 16,
+                                  color: const Color(0xFF00D4FF)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Expected revenue: ₨${_formatCurrency(data['expected_revenue_optimized'])}',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: Colors.white.withOpacity(0.8),
+                                  ),
+                                ),
+                              ),
+                              if (data['suggested_price_adjustment'] != null)
+                                Text(
+                                  data['suggested_price_adjustment'].toString(),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                       const SizedBox(height: 16),
                       if (data['reasons'] != null)
                         Column(
@@ -816,6 +982,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
             divisions: 59,
             onChanged: (v) => setState(() => _daysUntilEvent = v),
           ),
+          _buildCategoryRow(),
           _buildSliderRow(
             label: 'Competitor avg price',
             valueLabel: '₨${_competitorAvgPrice.toStringAsFixed(0)}',
@@ -835,13 +1002,72 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
             onChanged: (v) => setState(() => _marketingBoost = v),
           ),
           _buildSliderRow(
-            label: 'Demand growth rate',
+            label: 'Sales trend (last 30 days)',
             valueLabel: '+${(_demandGrowthRate * 100).toStringAsFixed(0)}%',
             value: _demandGrowthRate,
             min: -0.2,
             max: 0.6,
             divisions: 40,
             onChanged: (v) => setState(() => _demandGrowthRate = v),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryRow() {
+    final categories = [
+      'Festival',
+      'Music',
+      'Dance',
+      'Theater',
+      'Art',
+      'Food',
+      'Religious',
+      'Other',
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              'Event category',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.white70,
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _eventCategory,
+                dropdownColor: const Color(0xFF1A1F3A),
+                icon: const Icon(Icons.expand_more, color: Colors.white70),
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: Colors.white,
+                ),
+                items: categories
+                    .map((category) => DropdownMenuItem<String>(
+                          value: category,
+                          child: Text(category),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() => _eventCategory = value);
+                },
+              ),
+            ),
           ),
         ],
       ),
