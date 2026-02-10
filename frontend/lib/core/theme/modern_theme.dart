@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Heritage-inspired Color Palette
-  static const primaryColor = Color(0xFFD97B5B);
-  static const secondaryColor = Color(0xFF2FA7A0);
-  static const backgroundColor = Color(0xFF0B1B1C);
-  static const surfaceColor = Color(0xFF142628);
-  static const cardColor = Color(0xFF1D3234);
+  // Modern Color Palette
+  static const primaryColor = Color(0xFF6C63FF);
+  static const secondaryColor = Color(0xFF4CAF50);
+  static const backgroundColor = Color(0xFF0A0E27);
+  static const surfaceColor = Color(0xFF1A1F3A);
+  static const cardColor = Color(0xFF252B48);
 
-  static const gradientStart = Color(0xFFE6A05B);
-  static const gradientEnd = Color(0xFFEA6A5A);
+  static const gradientStart = Color(0xFF667eea);
+  static const gradientEnd = Color(0xFF764ba2);
 
   static const textPrimary = Color(0xFFFFFFFF);
-  static const textSecondary = Color(0xFFC9D2D1);
-  static const textTertiary = Color(0xFF8A9A98);
+  static const textSecondary = Color(0xFFB0B3C7);
+  static const textTertiary = Color(0xFF6B7280);
 
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,

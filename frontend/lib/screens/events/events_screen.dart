@@ -278,12 +278,12 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFFE6A05B), Color(0xFFEA6A5A)],
+                colors: [Color(0xFF6078EA), Color(0xFF7ED6DF)],
               ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFB85C48).withOpacity(0.25),
+                  color: const Color(0xFF4B6CB7).withOpacity(0.25),
                   blurRadius: 18,
                   offset: const Offset(0, 10),
                 ),
@@ -306,7 +306,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                   ),
                   child: const Icon(
                     Icons.event_available,
-                    color: Color(0xFFB85C48),
+                    color: Color(0xFF4B6CB7),
                     size: 24,
                   ),
                 ),
@@ -348,14 +348,14 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.today, color: Color(0xFFB85C48), size: 18),
+                        const Icon(Icons.today, color: Color(0xFF4B6CB7), size: 18),
                         const SizedBox(width: 8),
                         Text(
                           'Today',
                           style: GoogleFonts.poppins(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFFB85C48),
+                            color: const Color(0xFF4B6CB7),
                           ),
                         ),
                       ],

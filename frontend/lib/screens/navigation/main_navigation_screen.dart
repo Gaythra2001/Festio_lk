@@ -84,7 +84,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
-                  colors: [Color(0xFFE6A05B), Color(0xFFEA6A5A)],
+                  colors: [Color(0xFF667eea), Color(0xFF764ba2)],
                 )
               : null,
           color: isSelected ? null : Colors.white.withOpacity(0.05),
@@ -133,13 +133,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFFE6A05B),
-                  Color(0xFFEA6A5A),
+                  Color(0xFF6078EA),
+                  Color(0xFF7ED6DF),
                 ],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFB85C48).withOpacity(0.25),
+                  color: const Color(0xFF4B6CB7).withOpacity(0.25),
                   blurRadius: 18,
                   offset: const Offset(0, 10),
                 ),
@@ -171,7 +171,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                           ),
                           child: Icon(
                             Icons.celebration,
-                            color: const Color(0xFFB85C48),
+                            color: const Color(0xFF4B6CB7),
                             size: 28,
                           ),
                         ),
@@ -411,7 +411,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             style: GoogleFonts.poppins(
               fontSize: 15,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? const Color(0xFFD97B5B) : Colors.white,
+                color: isSelected ? const Color(0xFF667eea) : Colors.white,
             ),
           ),
         ),

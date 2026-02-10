@@ -63,8 +63,8 @@ class _ContactScreenState extends State<ContactScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFFE6A05B).withOpacity(0.25),
-                  const Color(0xFFEA6A5A).withOpacity(0.25),
+                  const Color(0xFF6078EA).withOpacity(0.25),
+                  const Color(0xFF7ED6DF).withOpacity(0.25),
                 ],
               ),
               borderRadius: BorderRadius.circular(20),
@@ -75,12 +75,12 @@ class _ContactScreenState extends State<ContactScreen> {
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFE6A05B), Color(0xFFEA6A5A)],
+                      colors: [Color(0xFF6078EA), Color(0xFF7ED6DF)],
                     ),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFB85C48).withOpacity(0.35),
+                        color: const Color(0xFF4B6CB7).withOpacity(0.35),
                         blurRadius: 18,
                         offset: const Offset(0, 10),
                       ),
@@ -170,8 +170,8 @@ class _ContactScreenState extends State<ContactScreen> {
                         child: ElevatedButton(
                           onPressed: _isSubmitting ? null : _submitForm,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFD97B5B),
-                            disabledBackgroundColor: const Color(0xFFD97B5B).withOpacity(0.5),
+                            backgroundColor: const Color(0xFF667eea),
+                            disabledBackgroundColor: const Color(0xFF667eea).withOpacity(0.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
@@ -258,7 +258,7 @@ class _ContactScreenState extends State<ContactScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFFD97B5B), Color(0xFFEA6A5A)],
+                          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -356,7 +356,7 @@ class _ContactScreenState extends State<ContactScreen> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFFD97B5B), Color(0xFFEA6A5A)],
+                colors: [Color(0xFF667eea), Color(0xFF764ba2)],
               ),
               borderRadius: BorderRadius.circular(12),
             ),

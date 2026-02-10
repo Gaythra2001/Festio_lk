@@ -172,8 +172,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color(0xFFE6A05B).withOpacity(0.55),
-                        const Color(0xFFEA6A5A).withOpacity(0.35),
+                        const Color(0xFF6078EA).withOpacity(0.55),
+                        const Color(0xFF7ED6DF).withOpacity(0.35),
                       ],
                     ),
                   ),
