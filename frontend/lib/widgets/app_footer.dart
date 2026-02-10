@@ -30,6 +30,15 @@ class AppFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
+    final footerContent = isMobile
+        ? _buildMobileLayout()
+        : Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1100),
+              child: _buildDesktopLayout(),
+            ),
+          );
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -39,7 +48,7 @@ class AppFooter extends StatelessWidget {
       decoration: const BoxDecoration(
         color: Color(0xFF0B1635), // Dark navy blue background
       ),
-      child: isMobile ? _buildMobileLayout() : _buildDesktopLayout(),
+      child: footerContent,
     );
   }
 
@@ -106,7 +115,7 @@ class AppFooter extends StatelessWidget {
               ),
               child: const Icon(
                 Icons.celebration,
-                color: Color(0xFF667eea),
+                color: Color(0xFFD97B5B),
                 size: 28,
               ),
             ),
@@ -124,7 +133,7 @@ class AppFooter extends StatelessWidget {
               style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF667eea),
+                color: const Color(0xFFD97B5B),
               ),
             ),
           ],

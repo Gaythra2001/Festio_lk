@@ -166,14 +166,39 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                 expandedHeight: 120,
                 pinned: true,
                 backgroundColor: Colors.transparent,
-                title: Text(
-                  'Festio LK',
-                  style: GoogleFonts.spaceGrotesk(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 26,
-                    letterSpacing: 0.6,
-                    color: Colors.white,
+                flexibleSpace: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color(0xFFE6A05B).withOpacity(0.55),
+                        const Color(0xFFEA6A5A).withOpacity(0.35),
+                      ],
+                    ),
                   ),
+                ),
+                title: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Festio LK',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 24,
+                        letterSpacing: 0.6,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      'Find events that fit your day',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
                 ),
                 actions: [
                   _buildAppBarAction(
