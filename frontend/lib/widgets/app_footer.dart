@@ -115,7 +115,7 @@ class AppFooter extends StatelessWidget {
               ),
               child: const Icon(
                 Icons.celebration,
-                color: Color(0xFFD97B5B),
+                color: Color(0xFF667eea),
                 size: 28,
               ),
             ),
@@ -133,7 +133,7 @@ class AppFooter extends StatelessWidget {
               style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFFD97B5B),
+                color: const Color(0xFF667eea),
               ),
             ),
           ],
