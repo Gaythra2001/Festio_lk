@@ -109,7 +109,7 @@ class _EventApprovalScreenState extends State<EventApprovalScreen> {
             ? ListView(
                 children: [
                   const SizedBox(height: 80),
-                  Icon(Icons.verified, size: 72, color: Colors.white24),
+                  const Icon(Icons.verified, size: 72, color: Colors.white24),
                   const SizedBox(height: 12),
                   Center(
                     child: Text(

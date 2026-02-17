@@ -756,7 +756,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => ModernEventDetailScreen(
+                          builder: (_) => const ModernEventDetailScreen(
                             title: 'Kandy Esala Perahera',
                             date: 'Aug 15, 2024',
                             location: 'Kandy, Sri Lanka',
@@ -954,7 +954,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
           padding: const EdgeInsets.all(40),
           child: Column(
             children: [
-              Icon(
+              const Icon(
                 Icons.search_off,
                 size: 64,
                 color: Colors.white38,

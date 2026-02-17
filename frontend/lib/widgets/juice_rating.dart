@@ -8,12 +8,12 @@ class JuiceRating extends StatelessWidget {
   final double size;
 
   const JuiceRating({
-    Key? key,
+    super.key,
     required this.rating,
     this.label = 'Juice',
     this.showLabel = true,
     this.size = 24,
-  }) : super(key: key);
+  });
 
   Color _getJuiceColor(double value) {
     // Gradient from cool to hot colors based on rating
@@ -153,9 +153,9 @@ class JuiceRatingCompact extends StatelessWidget {
   final double rating; // 0.0 to 5.0
 
   const JuiceRatingCompact({
-    Key? key,
+    super.key,
     required this.rating,
-  }) : super(key: key);
+  });
 
   Color _getJuiceColor(double value) {
     if (value < 1) return Colors.blue;

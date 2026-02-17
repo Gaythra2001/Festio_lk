@@ -5,7 +5,7 @@ import '../../core/providers/notification_provider.dart';
 import '../../widgets/promotion_notification_card.dart';
 
 class PromotionNotificationsScreen extends StatelessWidget {
-  const PromotionNotificationsScreen({Key? key}) : super(key: key);
+  const PromotionNotificationsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

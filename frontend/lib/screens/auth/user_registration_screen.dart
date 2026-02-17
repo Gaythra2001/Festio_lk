@@ -373,7 +373,7 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> {
                         onChanged: (value) {
                           setState(() => _agreeToTerms = value ?? false);
                         },
-                        fillColor: MaterialStateProperty.all(
+                        fillColor: WidgetStateProperty.all(
                           _agreeToTerms
                               ? const Color(0xFF667eea)
                               : Colors.white.withOpacity(0.2),

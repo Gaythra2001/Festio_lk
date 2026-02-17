@@ -3,7 +3,7 @@ import '../../core/services/research_evaluation_service.dart';
 
 /// Evaluation & Fairness/Diversity Analysis Screen
 class EvaluationDashboardScreen extends StatefulWidget {
-  const EvaluationDashboardScreen({Key? key}) : super(key: key);
+  const EvaluationDashboardScreen({super.key});
 
   @override
   State<EvaluationDashboardScreen> createState() => _EvaluationDashboardScreenState();

@@ -10,10 +10,10 @@ class RatingAnalyticsScreen extends StatefulWidget {
   final String eventName;
 
   const RatingAnalyticsScreen({
-    Key? key,
+    super.key,
     required this.eventId,
     required this.eventName,
-  }) : super(key: key);
+  });
 
   @override
   State<RatingAnalyticsScreen> createState() => _RatingAnalyticsScreenState();

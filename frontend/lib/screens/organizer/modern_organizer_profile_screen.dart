@@ -113,7 +113,9 @@ class _ModernOrganizerProfileScreenState
     if (_websiteController.text.isNotEmpty) completedFields++;
     if (_facebookController.text.isNotEmpty ||
         _instagramController.text.isNotEmpty ||
-        _twitterController.text.isNotEmpty) completedFields++;
+        _twitterController.text.isNotEmpty) {
+      completedFields++;
+    }
 
     setState(() {
       _profileCompletion = completedFields / totalFields;

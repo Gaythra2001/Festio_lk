@@ -54,6 +54,10 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   String _currentUserId = 'guest_user';
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _dateKeys = {};
+  late final TextEditingController _searchController;
+  String _searchQuery = '';
+  bool _freeOnly = false;
+  bool _thisMonthOnly = false;
 
   List<_Event> _getBaseEvents() => [
     _Event(
@@ -61,7 +65,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
       date: DateTime(2026, 8, 15),
       location: 'Kandy',
       category: 'Festival',
-      image: 'assets\images\festival\Kandy Esala Perahera.jpg',
+      image: 'assetsimages\festivalKandy Esala Perahera.jpg',
       juice: 4.8,
       price: 'Free',
     ),
@@ -164,6 +168,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
     _events = [..._getBaseEvents(), ..._generatePoyaDays()];
     _tabController = TabController(length: 2, vsync: this);
     _mlFuture = Future.value(<RecommendationModel>[]); // Hydrated once auth/user context is available
+    _searchController = TextEditingController();
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         setState(() {});
@@ -189,6 +194,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   void dispose() {
     _tabController.dispose();
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -249,13 +255,39 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
     );
   }
 
+  List<_Event> _applyFilters(List<_Event> events, DateTime today) {
+    var results = events;
+
+    if (_searchQuery.trim().isNotEmpty) {
+      final query = _searchQuery.toLowerCase();
+      results = results.where((event) {
+        return event.title.toLowerCase().contains(query) ||
+            event.location.toLowerCase().contains(query) ||
+            event.category.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    if (_freeOnly) {
+      results = results.where((event) => event.price.toLowerCase().contains('free')).toList();
+    }
+
+    if (_thisMonthOnly) {
+      results = results.where((event) {
+        return event.date.year == today.year && event.date.month == today.month;
+      }).toList();
+    }
+
+    return results;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final filteredEvents = _selectedCategory == 'All'
-        ? _events
-        : _events.where((e) => e.category == _selectedCategory).toList();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+    final categoryFiltered = _selectedCategory == 'All'
+      ? _events
+      : _events.where((e) => e.category == _selectedCategory).toList();
+    final filteredEvents = _applyFilters(categoryFiltered, today);
     final upcomingEvents = filteredEvents
         .where((event) => !event.date.isBefore(today))
         .toList()
@@ -273,94 +305,225 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
           // Friendly header
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF6078EA), Color(0xFF7ED6DF)],
+                colors: [Color(0xFF0B1F2A), Color(0xFF1E4D5A)],
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF4B6CB7).withOpacity(0.25),
+                  color: const Color(0xFF0B1F2A).withOpacity(0.35),
                   blurRadius: 18,
                   offset: const Offset(0, 10),
                 ),
               ],
             ),
-            child: Row(
+            child: Stack(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.12),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.event_available,
-                    color: Color(0xFF4B6CB7),
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Events',
-                        style: GoogleFonts.poppins(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Find festivals, shows, and local celebrations',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: Colors.white.withOpacity(0.9),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                GestureDetector(
-                  onTap: _scrollToToday,
+                Positioned(
+                  top: -40,
+                  right: -30,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    height: 120,
+                    width: 120,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.6),
-                      ),
+                      color: const Color(0xFFFFD7A3).withOpacity(0.25),
+                      shape: BoxShape.circle,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.today, color: Color(0xFF4B6CB7), size: 18),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Today',
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF4B6CB7),
+                  ),
+                ),
+                Positioned(
+                  bottom: -30,
+                  left: -10,
+                  child: Container(
+                    height: 90,
+                    width: 90,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF7CCFB2).withOpacity(0.25),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.event_available,
+                          color: Color(0xFF0B1F2A),
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Plan your next experience',
+                              style: GoogleFonts.playfairDisplay(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                height: 1.1,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Discover festivals, music, and rituals across the island',
+                              style: GoogleFonts.manrope(
+                                fontSize: 13,
+                                color: Colors.white.withOpacity(0.85),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _scrollToToday,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.92),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.6),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.today, color: Color(0xFF0B1F2A), size: 18),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Today',
+                                style: GoogleFonts.manrope(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF0B1F2A),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          // Search and quick filters
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF111B24),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withOpacity(0.06)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 14,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: _searchController,
+                  style: GoogleFonts.manrope(color: Colors.white),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search by event, city, or ritual',
+                    hintStyle: GoogleFonts.manrope(color: Colors.white54),
+                    prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                    suffixIcon: _searchQuery.isEmpty
+                        ? null
+                        : IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _searchQuery = '';
+                                _searchController.clear();
+                              });
+                            },
+                            icon: const Icon(Icons.close, color: Colors.white70),
+                            tooltip: 'Clear search',
+                          ),
+                    filled: true,
+                    fillColor: const Color(0xFF0B141C),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  children: [
+                    FilterChip(
+                      label: Text(
+                        'Free entry',
+                        style: GoogleFonts.manrope(
+                          color: _freeOnly ? const Color(0xFF0B1F2A) : Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      selected: _freeOnly,
+                      onSelected: (value) {
+                        setState(() {
+                          _freeOnly = value;
+                        });
+                      },
+                      selectedColor: const Color(0xFF7CCFB2),
+                      checkmarkColor: const Color(0xFF0B1F2A),
+                      backgroundColor: Colors.white.withOpacity(0.06),
+                    ),
+                    FilterChip(
+                      label: Text(
+                        'This month',
+                        style: GoogleFonts.manrope(
+                          color: _thisMonthOnly ? const Color(0xFF0B1F2A) : Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      selected: _thisMonthOnly,
+                      onSelected: (value) {
+                        setState(() {
+                          _thisMonthOnly = value;
+                        });
+                      },
+                      selectedColor: const Color(0xFFFFD7A3),
+                      checkmarkColor: const Color(0xFF0B1F2A),
+                      backgroundColor: Colors.white.withOpacity(0.06),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -376,14 +539,14 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF1A1F3A),
+              color: const Color(0xFF0E1720),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withOpacity(0.08),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF667eea).withOpacity(0.15),
+                  color: const Color(0xFF0B1F2A).withOpacity(0.25),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -402,7 +565,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
           // Category Filter
           Text(
             'Filter by Category',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.manrope(
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Colors.white,
@@ -429,20 +592,20 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                     decoration: BoxDecoration(
                       gradient: isSelected
                           ? const LinearGradient(
-                              colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                              colors: [Color(0xFF7CCFB2), Color(0xFFFFD7A3)],
                             )
                           : null,
-                      color: isSelected ? null : const Color(0xFF1A1F3A),
+                      color: isSelected ? null : const Color(0xFF111B24),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected
                             ? Colors.transparent
-                            : Colors.white.withOpacity(0.1),
+                            : Colors.white.withOpacity(0.08),
                       ),
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: const Color(0xFF667eea).withOpacity(0.4),
+                                color: const Color(0xFF7CCFB2).withOpacity(0.35),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -451,10 +614,10 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                     ),
                     child: Text(
                       category,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.manrope(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: isSelected ? const Color(0xFF0B1F2A) : Colors.white,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -486,7 +649,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
         Container(
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF111428), Color(0xFF1E2445)],
+              colors: [Color(0xFF0C1822), Color(0xFF122634)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -502,15 +665,15 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
           ),
           child: TabBar(
             controller: _tabController,
-            labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            labelStyle: GoogleFonts.manrope(fontWeight: FontWeight.w700),
             indicator: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               gradient: const LinearGradient(
-                colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                colors: [Color(0xFF7CCFB2), Color(0xFFFFD7A3)],
               ),
             ),
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white60,
+            labelColor: const Color(0xFF0B1F2A),
+            unselectedLabelColor: Colors.white70,
             tabs: tabs
                 .map((tab) => Tab(
                       text: '${tab.label} (${tab.events.length})',
@@ -543,7 +706,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
       children: [
         Text(
           events.isEmpty ? '$title (0)' : title,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.playfairDisplay(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: Colors.white,
@@ -596,7 +759,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
         decoration: BoxDecoration(
           gradient: isToday 
             ? const LinearGradient(
-                colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                colors: [Color(0xFF7CCFB2), Color(0xFFFFD7A3)],
               )
             : null,
           color: isToday ? null : Colors.white.withOpacity(0.05),
@@ -613,15 +776,15 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
             Icon(
               Icons.calendar_today,
               size: 14,
-              color: isToday ? Colors.white : Colors.white70,
+              color: isToday ? const Color(0xFF0B1F2A) : Colors.white70,
             ),
             const SizedBox(width: 8),
             Text(
               DateFormat('EEEE, MMMM d, yyyy').format(date),
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.manrope(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: isToday ? Colors.white : Colors.white70,
+                color: isToday ? const Color(0xFF0B1F2A) : Colors.white70,
               ),
             ),
             if (isToday) ... [
@@ -629,15 +792,15 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   'Today',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.manrope(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: const Color(0xFF0B1F2A),
                   ),
                 ),
               ),
@@ -646,15 +809,15 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: const Color(0xFF23C864).withOpacity(0.2),
+                color: const Color(0xFF7CCFB2).withOpacity(0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 '${dateEvents.length}',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.manrope(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF23C864),
+                  color: const Color(0xFF7CCFB2),
                 ),
               ),
             ),
@@ -692,10 +855,10 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
           Container(
             height: 42,
             width: 42,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+              gradient: LinearGradient(
+                colors: [Color(0xFF7CCFB2), Color(0xFFFFD7A3)],
               ),
             ),
             child: const Icon(Icons.event_available, color: Colors.white),
@@ -707,7 +870,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
               children: [
                 Text(
                   'No $title yet',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.manrope(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
@@ -716,7 +879,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                 const SizedBox(height: 4),
                 Text(
                   'We will list new events here as soon as they are scheduled.',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.manrope(
                     fontSize: 12,
                     color: Colors.white60,
                   ),
@@ -730,243 +893,267 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   }
 
   Widget _buildEventCard(_Event event) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.35),
-            blurRadius: 14,
-            offset: const Offset(0, 10),
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ModernEventDetailScreen(
+              title: event.title,
+              date: DateFormat('MMM d, yyyy').format(event.date),
+              location: event.location,
+              imageUrl: event.image.startsWith('http')
+                  ? event.image
+                  : 'https://via.placeholder.com/800x400',
+              eventId: event.title.hashCode.toString(),
+            ),
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: event.image.startsWith('http')
-                  ? Image.network(
-                      event.image,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: const Color(0xFF1A1F3A),
-                        child: Icon(
-                          Icons.event,
-                          size: 48,
-                          color: Colors.white.withOpacity(0.35),
-                        ),
-                      ),
-                    )
-                  : Image.asset(
-                      event.image,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: const Color(0xFF1A1F3A),
-                        child: Icon(
-                          Icons.event,
-                          size: 48,
-                          color: Colors.white.withOpacity(0.35),
-                        ),
-                      ),
-                    ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.white.withOpacity(0.08)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.35),
+              blurRadius: 14,
+              offset: const Offset(0, 10),
             ),
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.15),
-                      Colors.black.withOpacity(0.55),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: event.image.startsWith('http')
+                    ? Image.network(
+                        event.image,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: const Color(0xFF1A1F3A),
+                          child: Icon(
+                            Icons.event,
+                            size: 48,
+                            color: Colors.white.withOpacity(0.35),
+                          ),
+                        ),
+                      )
+                    : Image.asset(
+                        event.image,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: const Color(0xFF1A1F3A),
+                          child: Icon(
+                            Icons.event,
+                            size: 48,
+                            color: Colors.white.withOpacity(0.35),
+                          ),
+                        ),
+                      ),
+              ),
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.15),
+                        Colors.black.withOpacity(0.55),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 10,
+                left: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white.withOpacity(0.2)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.category_outlined, size: 14, color: Colors.white),
+                      const SizedBox(width: 6),
+                      Text(
+                        event.category,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
-            ),
-            Positioned(
-              top: 10,
-              left: 10,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white.withOpacity(0.2)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.category_outlined, size: 14, color: Colors.white),
-                    const SizedBox(width: 6),
-                    Text(
-                      event.category,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFff9a9e), Color(0xFFfecfef)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFff9a9e).withOpacity(0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              top: 10,
-              right: 10,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFff9a9e), Color(0xFFfecfef)],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFff9a9e).withOpacity(0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.local_fire_department,
-                      size: 14,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      event.juice.toStringAsFixed(1),
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.05),
-                      Colors.black.withOpacity(0.7),
                     ],
                   ),
-                  color: const Color(0xFF0F1428).withOpacity(0.65),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      event.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.local_fire_department,
+                        size: 14,
                         color: Colors.white,
-                        height: 1.2,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 12,
-                          color: Colors.white.withOpacity(0.75),
+                      const SizedBox(width: 4),
+                      Text(
+                        event.juice.toStringAsFixed(1),
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
                         ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            DateFormat('EEE, MMM d, yyyy').format(event.date),
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: Colors.white.withOpacity(0.8),
-                            ),
-                          ),
-                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.05),
+                        Colors.black.withOpacity(0.7),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.location_on,
-                          size: 12,
-                          color: Colors.white.withOpacity(0.75),
+                    color: const Color(0xFF0F1428).withOpacity(0.65),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        event.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          height: 1.2,
                         ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            event.location,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: Colors.white.withOpacity(0.8),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            size: 12,
+                            color: Colors.white.withOpacity(0.75),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              DateFormat('EEE, MMM d, yyyy').format(event.date),
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Colors.white.withOpacity(0.8),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                            ),
-                            borderRadius: BorderRadius.circular(8),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            size: 12,
+                            color: Colors.white.withOpacity(0.75),
                           ),
-                          child: Text(
-                            event.price,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              event.location,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Colors.white.withOpacity(0.8),
+                              ),
                             ),
                           ),
-                        ),
-                        const Spacer(),
-                        Row(
-                          children: [
-                            Text(
-                              'View details',
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF7CCFB2), Color(0xFFFFD7A3)],
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              event.price,
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                                color: const Color(0xFF0B1F2A),
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.white),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
+                          ),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  'View details',
+                                  style: GoogleFonts.manrope(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0B1F2A),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                const Icon(Icons.arrow_forward, size: 14, color: Color(0xFF0B1F2A)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -984,7 +1171,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF141A33), Color(0xFF1F2747)],
+          colors: [Color(0xFF0E1820), Color(0xFF132330)],
         ),
         border: Border.all(color: Colors.white.withOpacity(0.08)),
         boxShadow: [
@@ -1006,7 +1193,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
-                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                    colors: [Color(0xFF7CCFB2), Color(0xFFFFD7A3)],
                   ),
                 ),
                 child: const Icon(Icons.psychology, color: Colors.white, size: 20),
@@ -1050,8 +1237,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
             future: _mlFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Row(
-                  children: const [
+                return const Row(
+                  children: [
                     SizedBox(
                       height: 20,
                       width: 20,

@@ -364,7 +364,7 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => OrganizerTrustProfileScreen(
+                    builder: (context) => const OrganizerTrustProfileScreen(
                       organizerId: 'org_demo_1',
                       organizerName: 'Cultural Events LK',
                     ),
@@ -418,7 +418,7 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => OrganizerTrustProfileScreen(
+                          builder: (context) => const OrganizerTrustProfileScreen(
                             organizerId: 'org_demo_1',
                             organizerName: 'Cultural Events LK',
                           ),

@@ -367,7 +367,7 @@ class MultiLanguageNLPService {
     
     // Basic tokenization (split on whitespace and punctuation)
     // Using double quotes inside raw string to avoid escaping issues
-    final tokens = cleaned.split(RegExp(r"[\s.,;!?(){}\[\]""']+"));
+    final tokens = cleaned.split(RegExp(r'[\s.,;!?(){}\[\]'"']+"));
     
     // Remove empty tokens and common stop words
     final stopWords = _getStopWords(language);

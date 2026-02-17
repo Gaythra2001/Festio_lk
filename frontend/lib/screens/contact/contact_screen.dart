@@ -276,9 +276,9 @@ class _ContactScreenState extends State<ContactScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                SizedBox(
+                const SizedBox(
                   height: 600,
-                  child: const RatingTab(isPlatformRating: true),
+                  child: RatingTab(isPlatformRating: true),
                 ),
               ],
             ),

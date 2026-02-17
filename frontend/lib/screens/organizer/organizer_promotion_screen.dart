@@ -39,7 +39,7 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
         'Standard visibility',
         'Email notification'
       ],
-      'color': Color(0xFF4CAF50),
+      'color': const Color(0xFF4CAF50),
     },
     'standard': {
       'name': 'Standard',
@@ -51,7 +51,7 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
         'Email + Push notifications',
         'Featured badge'
       ],
-      'color': Color(0xFF2196F3),
+      'color': const Color(0xFF2196F3),
     },
     'premium': {
       'name': 'Premium',
@@ -65,7 +65,7 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
         'Homepage spotlight',
         'Priority support'
       ],
-      'color': Color(0xFFFF9800),
+      'color': const Color(0xFFFF9800),
     },
   };
 
@@ -938,9 +938,9 @@ class _OrganizerPromotionScreenState extends State<OrganizerPromotionScreen>
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A1F3A),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: const BoxDecoration(
+          color: Color(0xFF1A1F3A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

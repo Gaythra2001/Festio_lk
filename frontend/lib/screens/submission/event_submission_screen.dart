@@ -256,7 +256,7 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
             Navigator.of(context).pop();
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
+              const SnackBar(
                 content: Text('Failed to submit event. Please try again.'),
                 backgroundColor: Colors.red,
               ),

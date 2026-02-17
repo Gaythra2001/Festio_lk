@@ -143,8 +143,8 @@ class AppFooter extends StatelessWidget {
         // Description
         Text(
           "Festio.LK, Sri Lanka's premier and most trusted online event platform, "
-          "serves as the official marketplace providing a secure and safe platform for "
-          "discovering and booking all entertainment events in Sri Lanka.",
+          'serves as the official marketplace providing a secure and safe platform for '
+          'discovering and booking all entertainment events in Sri Lanka.',
           style: GoogleFonts.poppins(
             fontSize: 13,
             color: Colors.white70,

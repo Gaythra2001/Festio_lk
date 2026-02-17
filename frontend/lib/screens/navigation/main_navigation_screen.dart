@@ -169,9 +169,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                               ),
                             ],
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.celebration,
-                            color: const Color(0xFF4B6CB7),
+                            color: Color(0xFF4B6CB7),
                             size: 28,
                           ),
                         ),
@@ -366,9 +366,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   top: Radius.circular(30),
                 ),
                 child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0A0E27),
-                    borderRadius: const BorderRadius.vertical(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF0A0E27),
+                    borderRadius: BorderRadius.vertical(
                       top: Radius.circular(30),
                     ),
                   ),

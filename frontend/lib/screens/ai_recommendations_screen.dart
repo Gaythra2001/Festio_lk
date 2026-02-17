@@ -14,7 +14,7 @@ const String kGoogleSearchEngineId =
     '<PUT_YOUR_CX_HERE>'; // replace with real CX
 
 class AIRecommendationsScreen extends StatefulWidget {
-  const AIRecommendationsScreen({Key? key}) : super(key: key);
+  const AIRecommendationsScreen({super.key});
 
   @override
   State<AIRecommendationsScreen> createState() =>

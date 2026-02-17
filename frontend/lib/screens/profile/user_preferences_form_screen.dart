@@ -10,10 +10,10 @@ class UserPreferencesFormScreen extends StatefulWidget {
   final UserPreferencesModel? existingPreferences;
 
   const UserPreferencesFormScreen({
-    Key? key,
+    super.key,
     required this.userId,
     this.existingPreferences,
-  }) : super(key: key);
+  });
 
   @override
   State<UserPreferencesFormScreen> createState() =>
@@ -131,7 +131,7 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           Expanded(
             child: PageView(
               controller: _pageController,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               onPageChanged: (page) {
                 setState(() => _currentPage = page);
               },
@@ -229,7 +229,7 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
             'This helps us personalize your event recommendations',
             style: TextStyle(color: Colors.white70),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
 
           // Age
           TextFormField(
@@ -253,11 +253,11 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
             keyboardType: TextInputType.number,
             onChanged: (value) => _age = int.tryParse(value),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Gender
           DropdownButtonFormField<String>(
-            value: _gender,
+            initialValue: _gender,
             style: const TextStyle(color: Colors.white),
             dropdownColor: const Color(0xFF1A1F3A),
             decoration: InputDecoration(
@@ -283,13 +283,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
                 .toList(),
             onChanged: (value) => setState(() => _gender = value),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Religion
           DropdownButtonFormField<String>(
-            value: _religion,
-            style: TextStyle(color: Colors.black87),
-            decoration: InputDecoration(
+            initialValue: _religion,
+            style: const TextStyle(color: Colors.black87),
+            decoration: const InputDecoration(
               labelText: 'Religion (Optional)',
               labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
@@ -311,13 +311,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
                 .toList(),
             onChanged: (value) => setState(() => _religion = value),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Occupation
           TextFormField(
             initialValue: _occupation,
-            style: TextStyle(color: Colors.black87),
-            decoration: InputDecoration(
+            style: const TextStyle(color: Colors.black87),
+            decoration: const InputDecoration(
               labelText: 'Occupation (Optional)',
               labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
@@ -326,13 +326,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
             ),
             onChanged: (value) => _occupation = value,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Education Level
           DropdownButtonFormField<String>(
-            value: _educationLevel,
-            style: TextStyle(color: Colors.black87),
-            decoration: InputDecoration(
+            initialValue: _educationLevel,
+            style: const TextStyle(color: Colors.black87),
+            decoration: const InputDecoration(
               labelText: 'Education Level (Optional)',
               labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
@@ -389,21 +389,21 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
     ];
 
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Where do you like to go?',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
 
           // Primary Area
           DropdownButtonFormField<String>(
-            value: _primaryArea,
-            style: TextStyle(color: Colors.black87),
-            decoration: InputDecoration(
+            initialValue: _primaryArea,
+            style: const TextStyle(color: Colors.black87),
+            decoration: const InputDecoration(
               labelText: 'Primary Location/District',
               labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
@@ -416,12 +416,12 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
                 .toList(),
             onChanged: (value) => setState(() => _primaryArea = value),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Preferred Areas (Multi-select)
-          Text('Preferred Areas (select multiple)',
+          const Text('Preferred Areas (select multiple)',
               style: TextStyle(fontWeight: FontWeight.w500)),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -443,7 +443,7 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               );
             }).toList(),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Max Travel Distance
           Text(
@@ -456,13 +456,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
             label: '${_maxTravelDistance?.toInt() ?? 50} km',
             onChanged: (value) => setState(() => _maxTravelDistance = value),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
 
-          Text(
+          const Text(
             'What\'s your event budget?',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Budget Range
           Row(
@@ -470,8 +470,8 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               Expanded(
                 child: TextFormField(
                   initialValue: _minBudget?.toInt().toString(),
-                  style: TextStyle(color: Colors.black87),
-                  decoration: InputDecoration(
+                  style: const TextStyle(color: Colors.black87),
+                  decoration: const InputDecoration(
                     labelText: 'Min Budget (LKR)',
                     labelStyle: TextStyle(color: Colors.black54),
                     border: OutlineInputBorder(),
@@ -482,12 +482,12 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
                   onChanged: (value) => _minBudget = double.tryParse(value),
                 ),
               ),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               Expanded(
                 child: TextFormField(
                   initialValue: _maxBudget?.toInt().toString(),
-                  style: TextStyle(color: Colors.black87),
-                  decoration: InputDecoration(
+                  style: const TextStyle(color: Colors.black87),
+                  decoration: const InputDecoration(
                     labelText: 'Max Budget (LKR)',
                     labelStyle: TextStyle(color: Colors.black54),
                     border: OutlineInputBorder(),
@@ -500,13 +500,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               ),
             ],
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Budget Flexibility
           DropdownButtonFormField<String>(
-            value: _budgetFlexibility,
-            style: TextStyle(color: Colors.black87),
-            decoration: InputDecoration(
+            initialValue: _budgetFlexibility,
+            style: const TextStyle(color: Colors.black87),
+            decoration: const InputDecoration(
               labelText: 'Budget Flexibility',
               labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
@@ -557,20 +557,20 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
     ];
 
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'What events do you love?',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
 
           // Favorite Event Types
-          Text('Favorite Event Types',
+          const Text('Favorite Event Types',
               style: TextStyle(fontWeight: FontWeight.w500)),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -592,12 +592,12 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               );
             }).toList(),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
 
           // Music Genres
-          Text('Favorite Music Genres',
+          const Text('Favorite Music Genres',
               style: TextStyle(fontWeight: FontWeight.w500)),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -618,11 +618,11 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               );
             }).toList(),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Favorite Artists
           TextFormField(
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Favorite Artists (comma-separated)',
               border: OutlineInputBorder(),
               hintText: 'Artist 1, Artist 2, Artist 3',
@@ -635,12 +635,12 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
                   .toList();
             },
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Disliked Event Types
-          Text('Event Types to Avoid',
+          const Text('Event Types to Avoid',
               style: TextStyle(fontWeight: FontWeight.w500)),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -671,21 +671,21 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
   // Page 4: Behavioral Preferences
   Widget _buildPage4BehavioralPreferences() {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'How do you like to attend events?',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
 
           // Preferred Event Time
           DropdownButtonFormField<String>(
-            value: _preferredEventTime,
-            style: TextStyle(color: Colors.black87),
-            decoration: InputDecoration(
+            initialValue: _preferredEventTime,
+            style: const TextStyle(color: Colors.black87),
+            decoration: const InputDecoration(
               labelText: 'Preferred Event Time',
               labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
@@ -700,11 +700,11 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
                 .toList(),
             onChanged: (value) => setState(() => _preferredEventTime = value),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Preferred Days
-          Text('Preferred Days', style: TextStyle(fontWeight: FontWeight.w500)),
-          SizedBox(height: 8),
+          const Text('Preferred Days', style: TextStyle(fontWeight: FontWeight.w500)),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -733,13 +733,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               );
             }).toList(),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Group Size
           TextFormField(
             initialValue: _groupSize?.toString(),
-            style: TextStyle(color: Colors.black87),
-            decoration: InputDecoration(
+            style: const TextStyle(color: Colors.black87),
+            decoration: const InputDecoration(
               labelText: 'Typical Group Size',
               labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
@@ -751,42 +751,42 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
             keyboardType: TextInputType.number,
             onChanged: (value) => _groupSize = int.tryParse(value),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Preferences switches
           SwitchListTile(
-            title: Text('Family-Friendly Events'),
+            title: const Text('Family-Friendly Events'),
             value: _prefersFamilyFriendly,
             onChanged: (value) =>
                 setState(() => _prefersFamilyFriendly = value),
           ),
           SwitchListTile(
-            title: Text('Outdoor Events'),
+            title: const Text('Outdoor Events'),
             value: _prefersOutdoor,
             onChanged: (value) => setState(() => _prefersOutdoor = value),
           ),
           SwitchListTile(
-            title: Text('Indoor Events'),
+            title: const Text('Indoor Events'),
             value: _prefersIndoor,
             onChanged: (value) => setState(() => _prefersIndoor = value),
           ),
           SwitchListTile(
-            title: Text('Likes New Experiences'),
+            title: const Text('Likes New Experiences'),
             value: _likesNewExperiences,
             onChanged: (value) => setState(() => _likesNewExperiences = value),
           ),
           SwitchListTile(
-            title: Text('Prefers Familiar Events'),
+            title: const Text('Prefers Familiar Events'),
             value: _prefersFamiliarEvents,
             onChanged: (value) =>
                 setState(() => _prefersFamiliarEvents = value),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Adventure Level
-          Text('Adventure Level: ${_adventureLevel}',
-              style: TextStyle(fontWeight: FontWeight.w500)),
-          Text('How adventurous are you?',
+          Text('Adventure Level: $_adventureLevel',
+              style: const TextStyle(fontWeight: FontWeight.w500)),
+          const Text('How adventurous are you?',
               style: TextStyle(fontSize: 12, color: Colors.grey)),
           Slider(
             value: _adventureLevel.toDouble(),
@@ -807,15 +807,15 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
                         : _adventureLevel == 4
                             ? 'Adventurous'
                             : 'Very Adventurous',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
 
           // Social Style
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: _socialStyle,
-            style: TextStyle(color: Colors.black87),
-            decoration: InputDecoration(
+            initialValue: _socialStyle,
+            style: const TextStyle(color: Colors.black87),
+            decoration: const InputDecoration(
               labelText: 'Social Style',
               labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
@@ -850,34 +850,34 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
     ];
 
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Cultural & Religious Preferences',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
 
           SwitchListTile(
-            title: Text('Observes Poya Days'),
-            subtitle: Text('Full moon observance days'),
+            title: const Text('Observes Poya Days'),
+            subtitle: const Text('Full moon observance days'),
             value: _observesPoyaDays,
             onChanged: (value) => setState(() => _observesPoyaDays = value),
           ),
           SwitchListTile(
-            title: Text('Observes Religious Holidays'),
+            title: const Text('Observes Religious Holidays'),
             value: _observesReligiousHolidays,
             onChanged: (value) =>
                 setState(() => _observesReligiousHolidays = value),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Cultural Interests
-          Text('Cultural Interests',
+          const Text('Cultural Interests',
               style: TextStyle(fontWeight: FontWeight.w500)),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -899,13 +899,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
               );
             }).toList(),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Language Preference
           DropdownButtonFormField<String>(
-            value: _languagePreference,
-            style: TextStyle(color: Colors.black87),
-            decoration: InputDecoration(
+            initialValue: _languagePreference,
+            style: const TextStyle(color: Colors.black87),
+            decoration: const InputDecoration(
               labelText: 'Preferred Language for Events',
               labelStyle: TextStyle(color: Colors.black54),
               border: OutlineInputBorder(),
@@ -942,48 +942,48 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
   // Page 6: Notification Preferences
   Widget _buildPage6NotificationPreferences() {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Stay Updated',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             'Control how we communicate with you',
             style: TextStyle(color: Colors.grey[600]),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
 
           SwitchListTile(
-            title: Text('Personalized Notifications'),
-            subtitle: Text('Get recommendations based on your preferences'),
+            title: const Text('Personalized Notifications'),
+            subtitle: const Text('Get recommendations based on your preferences'),
             value: _allowsPersonalizedNotifications,
             onChanged: (value) =>
                 setState(() => _allowsPersonalizedNotifications = value),
           ),
           SwitchListTile(
-            title: Text('Location-Based Recommendations'),
-            subtitle: Text('Events near you'),
+            title: const Text('Location-Based Recommendations'),
+            subtitle: const Text('Events near you'),
             value: _allowsLocationBasedRecommendations,
             onChanged: (value) =>
                 setState(() => _allowsLocationBasedRecommendations = value),
           ),
           SwitchListTile(
-            title: Text('Share Data for Research'),
-            subtitle: Text('Help improve our recommendation system'),
+            title: const Text('Share Data for Research'),
+            subtitle: const Text('Help improve our recommendation system'),
             value: _sharesDataForResearch,
             onChanged: (value) =>
                 setState(() => _sharesDataForResearch = value),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Notification Frequency
-          Text('Notification Frequency',
+          const Text('Notification Frequency',
               style: TextStyle(fontWeight: FontWeight.w500)),
-          Text(
+          const Text(
             'How often do you want recommendations?',
             style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
@@ -998,13 +998,13 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           ),
           Text(
             _getNotificationFrequencyLabel(),
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
 
           Card(
             color: Colors.blue[50],
-            child: Padding(
+            child: const Padding(
               padding: EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1056,8 +1056,8 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
 
   Widget _buildNavigationButtons() {
     return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
@@ -1076,20 +1076,20 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
                     ? null
                     : () {
                         _pageController.previousPage(
-                          duration: Duration(milliseconds: 300),
+                          duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
                         );
                       },
-                child: Text('Back'),
+                child: const Text('Back'),
               ),
             ),
-          if (_currentPage > 0) SizedBox(width: 16),
+          if (_currentPage > 0) const SizedBox(width: 16),
           Expanded(
             flex: 2,
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handleNext,
               child: _isLoading
-                  ? CircularProgressIndicator(color: Colors.white)
+                  ? const CircularProgressIndicator(color: Colors.white)
                   : Text(_currentPage == _totalPages - 1
                       ? 'Save Preferences'
                       : 'Next'),
@@ -1103,7 +1103,7 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
   Future<void> _handleNext() async {
     if (_currentPage < _totalPages - 1) {
       _pageController.nextPage(
-        duration: Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     } else {
@@ -1164,7 +1164,7 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Preferences saved successfully!'),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
@@ -1178,7 +1178,7 @@ class _UserPreferencesFormScreenState extends State<UserPreferencesFormScreen> {
           SnackBar(
             content: Text('Error saving preferences: $e'),
             backgroundColor: Colors.red,
-            duration: Duration(seconds: 3),
+            duration: const Duration(seconds: 3),
           ),
         );
       }

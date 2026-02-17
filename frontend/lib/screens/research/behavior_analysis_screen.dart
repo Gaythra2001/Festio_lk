@@ -3,7 +3,7 @@ import '../../core/services/research_behavior_service.dart';
 
 /// User Behavior Mining & Cold-Start Study Screen
 class BehaviorAnalysisScreen extends StatefulWidget {
-  const BehaviorAnalysisScreen({Key? key}) : super(key: key);
+  const BehaviorAnalysisScreen({super.key});
 
   @override
   State<BehaviorAnalysisScreen> createState() => _BehaviorAnalysisScreenState();

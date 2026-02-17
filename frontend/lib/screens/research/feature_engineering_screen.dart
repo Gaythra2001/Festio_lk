@@ -3,7 +3,7 @@ import '../../core/services/research_feature_service.dart';
 
 /// Feature Engineering Experiments Screen
 class FeatureEngineeringScreen extends StatefulWidget {
-  const FeatureEngineeringScreen({Key? key}) : super(key: key);
+  const FeatureEngineeringScreen({super.key});
 
   @override
   State<FeatureEngineeringScreen> createState() => _FeatureEngineeringScreenState();

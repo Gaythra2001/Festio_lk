@@ -85,10 +85,12 @@ class TextClassifierService {
 
     // Overall translation quality
     final scores = <double>[];
-    if (results.containsKey('sinhalaQuality'))
+    if (results.containsKey('sinhalaQuality')) {
       scores.add(results['sinhalaQuality']);
-    if (results.containsKey('tamilQuality'))
+    }
+    if (results.containsKey('tamilQuality')) {
       scores.add(results['tamilQuality']);
+    }
 
     results['overallQuality'] =
         scores.isEmpty ? 0.0 : scores.reduce((a, b) => a + b) / scores.length;

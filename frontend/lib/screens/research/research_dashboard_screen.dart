@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// Main Research Dashboard Screen
 /// Provides access to all 4 research components
 class ResearchDashboardScreen extends StatelessWidget {
-  const ResearchDashboardScreen({Key? key}) : super(key: key);
+  const ResearchDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

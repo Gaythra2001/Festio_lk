@@ -3,7 +3,7 @@ import 'package:festio_lk/core/services/ai/trust_and_budget_service.dart';
 
 /// Component 3: Organizer Trust Assessment Screen
 class TrustAssessmentScreen extends StatefulWidget {
-  const TrustAssessmentScreen({Key? key}) : super(key: key);
+  const TrustAssessmentScreen({super.key});
 
   @override
   State<TrustAssessmentScreen> createState() => _TrustAssessmentScreenState();
@@ -323,7 +323,7 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen>
 
 /// Component 4: Event Budget Planning Screen
 class BudgetPlanningScreen extends StatefulWidget {
-  const BudgetPlanningScreen({Key? key}) : super(key: key);
+  const BudgetPlanningScreen({super.key});
 
   @override
   State<BudgetPlanningScreen> createState() => _BudgetPlanningScreenState();
