@@ -15,7 +15,7 @@ import '../events/modern_event_detail_screen.dart';
 import 'user_preference_input_screen.dart';
 
 class AIRecommendationsScreen extends StatefulWidget {
-  const AIRecommendationsScreen({Key? key}) : super(key: key);
+  const AIRecommendationsScreen({super.key});
 
   @override
   State<AIRecommendationsScreen> createState() =>
@@ -151,7 +151,7 @@ class _AIRecommendationsScreenState extends State<AIRecommendationsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(
+                  const CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
                   ),
                   const SizedBox(height: 16),

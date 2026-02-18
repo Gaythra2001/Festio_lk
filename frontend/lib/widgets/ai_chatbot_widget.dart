@@ -18,14 +18,14 @@ class AIChatbotWidget extends StatefulWidget {
   final UserBehaviorModel? userBehavior;
 
   const AIChatbotWidget({
-    Key? key,
+    super.key,
     required this.user,
     required this.allEvents,
     required this.userBookings,
     required this.allUserBookings,
     this.userPreferences,
     this.userBehavior,
-  }) : super(key: key);
+  });
 
   @override
   State<AIChatbotWidget> createState() => _AIChatbotWidgetState();
@@ -66,7 +66,7 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
 
     final greeting = await recommendationProvider.sendChatMessage(
       userId: widget.user.id,
-      message: "Hello",
+      message: 'Hello',
       user: widget.user,
       allEvents: widget.allEvents,
       userBookings: widget.userBookings,
@@ -129,11 +129,11 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
   }
 
   void _scrollToBottom() {
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
       }
@@ -145,7 +145,7 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         children: [
@@ -156,7 +156,7 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 return _buildMessageBubble(_messages[index]);
@@ -176,10 +176,10 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Row(
         children: [
@@ -187,8 +187,8 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
             backgroundColor: Colors.white,
             child: Icon(Icons.smart_toy, color: Theme.of(context).primaryColor),
           ),
-          SizedBox(width: 12),
-          Expanded(
+          const SizedBox(width: 12),
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -211,7 +211,7 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
             ),
           ),
           IconButton(
-            icon: Icon(Icons.close, color: Colors.white),
+            icon: const Icon(Icons.close, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -223,7 +223,7 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
     final isUser = message.isUser;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment:
             isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -237,12 +237,12 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
                 CircleAvatar(
                   radius: 16,
                   backgroundColor: Theme.of(context).primaryColor,
-                  child: Icon(Icons.smart_toy, size: 16, color: Colors.white),
+                  child: const Icon(Icons.smart_toy, size: 16, color: Colors.white),
                 ),
-              if (!isUser) SizedBox(width: 8),
+              if (!isUser) const SizedBox(width: 8),
               Flexible(
                 child: Container(
-                  padding: EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: isUser
                         ? Theme.of(context).primaryColor
@@ -258,7 +258,7 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
                   ),
                 ),
               ),
-              if (isUser) SizedBox(width: 8),
+              if (isUser) const SizedBox(width: 8),
               if (isUser)
                 CircleAvatar(
                   radius: 16,
@@ -266,7 +266,7 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
                       ? NetworkImage(widget.user.photoUrl!)
                       : null,
                   child: widget.user.photoUrl == null
-                      ? Icon(Icons.person, size: 16)
+                      ? const Icon(Icons.person, size: 16)
                       : null,
                 ),
             ],
@@ -275,7 +275,7 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
           // Quick reply suggestions
           if (!isUser && message.suggestedResponses != null)
             Padding(
-              padding: EdgeInsets.only(top: 8, left: 40),
+              padding: const EdgeInsets.only(top: 8, left: 40),
               child: Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -293,7 +293,7 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
     return InkWell(
       onTap: () => _sendMessage(suggestion),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           border: Border.all(color: Theme.of(context).primaryColor),
           borderRadius: BorderRadius.circular(20),
@@ -311,17 +311,17 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
 
   Widget _buildTypingIndicator() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           CircleAvatar(
             radius: 16,
             backgroundColor: Theme.of(context).primaryColor,
-            child: Icon(Icons.smart_toy, size: 16, color: Colors.white),
+            child: const Icon(Icons.smart_toy, size: 16, color: Colors.white),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Container(
-            padding: EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: Colors.grey[200],
               borderRadius: BorderRadius.circular(16),
@@ -330,9 +330,9 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _buildDot(0),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 _buildDot(200),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 _buildDot(400),
               ],
             ),
@@ -345,7 +345,7 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
   Widget _buildDot(int delay) {
     return TweenAnimationBuilder(
       tween: Tween(begin: 0.0, end: 1.0),
-      duration: Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 600),
       builder: (context, double value, child) {
         return Opacity(
           opacity: (value * 2).clamp(0.0, 1.0),
@@ -364,8 +364,8 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
 
   Widget _buildInputField() {
     return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
@@ -389,17 +389,17 @@ class _AIChatbotWidgetState extends State<AIChatbotWidget> {
                 filled: true,
                 fillColor: Colors.grey[100],
                 contentPadding:
-                    EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
               textInputAction: TextInputAction.send,
               onSubmitted: _sendMessage,
             ),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           CircleAvatar(
             backgroundColor: Theme.of(context).primaryColor,
             child: IconButton(
-              icon: Icon(Icons.send, color: Colors.white, size: 20),
+              icon: const Icon(Icons.send, color: Colors.white, size: 20),
               onPressed: () => _sendMessage(_messageController.text),
             ),
           ),

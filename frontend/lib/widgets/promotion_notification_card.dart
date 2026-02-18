@@ -7,10 +7,10 @@ class PromotionNotificationCard extends StatelessWidget {
   final VoidCallback? onDismiss;
 
   const PromotionNotificationCard({
-    Key? key,
+    super.key,
     required this.notification,
     this.onDismiss,
-  }) : super(key: key);
+  });
 
   Color _getBackgroundColor() {
     if (notification.metadata?['isPaid'] == true) {

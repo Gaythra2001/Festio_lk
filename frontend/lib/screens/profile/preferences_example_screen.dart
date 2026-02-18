@@ -6,7 +6,7 @@ import '../../widgets/preferences_status_widget.dart';
 
 /// Example screen showing how to integrate the preference system
 class PreferencesExampleScreen extends StatefulWidget {
-  const PreferencesExampleScreen({Key? key}) : super(key: key);
+  const PreferencesExampleScreen({super.key});
 
   @override
   State<PreferencesExampleScreen> createState() =>
@@ -56,16 +56,16 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Personalization'),
+        title: const Text('Personalization'),
         backgroundColor: Theme.of(context).primaryColor,
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Column(
                 children: [
                   // Main preference status widget
-                  PreferencesStatusWidget(compact: false),
+                  const PreferencesStatusWidget(compact: false),
 
                   // Additional info cards
                   _buildInfoSection(),
@@ -88,18 +88,18 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
         // final summary = provider.getPreferencesSummary(); // Unused
 
         return Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Why Complete Your Preferences?',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               _buildBenefitItem(
                 icon: Icons.recommend,
                 title: 'Better Recommendations',
@@ -133,12 +133,12 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
     required String description,
   }) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Theme.of(context).primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
@@ -149,19 +149,19 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
               size: 24,
             ),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   description,
                   style: TextStyle(
@@ -181,42 +181,42 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
     return Consumer2<RecommendationProvider, AuthProvider>(
       builder: (context, recommendationProvider, authProvider, child) {
         return Card(
-          margin: EdgeInsets.all(16),
+          margin: const EdgeInsets.all(16),
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Quick Actions',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
 
                 // Check preference quality
                 ListTile(
-                  leading: Icon(Icons.analytics, color: Colors.blue),
-                  title: Text('Check Preference Quality'),
-                  trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                  leading: const Icon(Icons.analytics, color: Colors.blue),
+                  title: const Text('Check Preference Quality'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () => _showQualityDialog(recommendationProvider),
                 ),
 
                 // View preference summary
                 ListTile(
-                  leading: Icon(Icons.info, color: Colors.green),
-                  title: Text('View Preference Summary'),
-                  trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                  leading: const Icon(Icons.info, color: Colors.green),
+                  title: const Text('View Preference Summary'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () => _showSummaryDialog(recommendationProvider),
                 ),
 
                 // Refresh preferences
                 ListTile(
-                  leading: Icon(Icons.refresh, color: Colors.orange),
-                  title: Text('Refresh Preferences'),
-                  trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                  leading: const Icon(Icons.refresh, color: Colors.orange),
+                  title: const Text('Refresh Preferences'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () => _refreshPreferences(
                     authProvider.user?.id,
                     recommendationProvider,
@@ -234,17 +234,17 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
     return Consumer2<RecommendationProvider, AuthProvider>(
       builder: (context, recommendationProvider, authProvider, child) {
         return Card(
-          margin: EdgeInsets.all(16),
+          margin: const EdgeInsets.all(16),
           color: Colors.grey[100],
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(Icons.developer_mode, size: 20, color: Colors.grey),
-                    SizedBox(width: 8),
+                    const Icon(Icons.developer_mode, size: 20, color: Colors.grey),
+                    const SizedBox(width: 8),
                     Text(
                       'Developer Tools',
                       style: TextStyle(
@@ -255,7 +255,7 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
                     ),
                   ],
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
 
                 // Reset preferences
                 ElevatedButton.icon(
@@ -263,14 +263,14 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
                     authProvider.user?.id,
                     recommendationProvider,
                   ),
-                  icon: Icon(Icons.delete_forever),
-                  label: Text('Reset Preferences'),
+                  icon: const Icon(Icons.delete_forever),
+                  label: const Text('Reset Preferences'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
                   ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
 
                 // Create test data
                 ElevatedButton.icon(
@@ -278,8 +278,8 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
                     authProvider.user?.id,
                     recommendationProvider,
                   ),
-                  icon: Icon(Icons.science),
-                  label: Text('Create Test Preferences'),
+                  icon: const Icon(Icons.science),
+                  label: const Text('Create Test Preferences'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purple,
                     foregroundColor: Colors.white,
@@ -317,7 +317,7 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Preference Quality'),
+        title: const Text('Preference Quality'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -343,7 +343,7 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
                 ],
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text('Completion: ${summary['completionPercentage']}%'),
             Text('Is Complete: ${summary['isComplete']}'),
             Text('Needs Update: ${provider.needsPreferenceUpdate()}'),
@@ -352,7 +352,7 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
+            child: const Text('Close'),
           ),
         ],
       ),
@@ -365,14 +365,14 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Preference Summary'),
+        title: const Text('Preference Summary'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: summary.entries
                 .map((e) => Padding(
-                      padding: EdgeInsets.symmetric(vertical: 4),
+                      padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Text('${e.key}: ${e.value}'),
                     ))
                 .toList(),
@@ -381,7 +381,7 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
+            child: const Text('Close'),
           ),
         ],
       ),
@@ -396,7 +396,7 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
 
     try {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Refreshing preferences...')),
+        const SnackBar(content: Text('Refreshing preferences...')),
       );
 
       await provider.loadUserPreferences(userId);
@@ -404,7 +404,7 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Preferences refreshed!'),
             backgroundColor: Colors.green,
           ),
@@ -431,16 +431,16 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Reset Preferences?'),
-        content: Text('This will delete all your preferences.'),
+        title: const Text('Reset Preferences?'),
+        content: const Text('This will delete all your preferences.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('Reset', style: TextStyle(color: Colors.red)),
+            child: const Text('Reset', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -451,7 +451,7 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
         await provider.createDefaultPreferences(userId);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Preferences reset!'),
               backgroundColor: Colors.green,
             ),
@@ -489,7 +489,7 @@ class _PreferencesExampleScreenState extends State<PreferencesExampleScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Test preferences created!'),
             backgroundColor: Colors.green,
           ),

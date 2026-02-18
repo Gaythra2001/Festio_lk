@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:intl/intl.dart';
 
 import '../events/modern_event_detail_screen.dart';
 import '../submission/event_submission_screen.dart';
@@ -756,7 +755,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => ModernEventDetailScreen(
+                          builder: (_) => const ModernEventDetailScreen(
                             title: 'Kandy Esala Perahera',
                             date: 'Aug 15, 2024',
                             location: 'Kandy, Sri Lanka',
@@ -954,7 +953,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
           padding: const EdgeInsets.all(40),
           child: Column(
             children: [
-              Icon(
+              const Icon(
                 Icons.search_off,
                 size: 64,
                 color: Colors.white38,

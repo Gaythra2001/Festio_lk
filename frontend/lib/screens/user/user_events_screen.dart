@@ -139,16 +139,16 @@ class _DiscoverTab extends StatelessWidget {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: [
+                  children: const [
                     _CategoryCard(
                       title: 'Festival',
                       icon: Icons.celebration,
-                      color: const Color(0xFF667eea),
+                      color: Color(0xFF667eea),
                     ),
                     _CategoryCard(
                       title: 'Music',
                       icon: Icons.music_note,
-                      color: const Color(0xFF764ba2),
+                      color: Color(0xFF764ba2),
                     ),
                     _CategoryCard(
                       title: 'Dance',
@@ -379,7 +379,7 @@ class _EventCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Icon(Icons.location_on, size: 16, color: Colors.white54),
+                      const Icon(Icons.location_on, size: 16, color: Colors.white54),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -395,7 +395,7 @@ class _EventCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Icon(Icons.calendar_today,
+                      const Icon(Icons.calendar_today,
                           size: 16, color: Colors.white54),
                       const SizedBox(width: 4),
                       Text(

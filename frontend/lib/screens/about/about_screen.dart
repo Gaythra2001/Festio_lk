@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:ui';
 import '../../widgets/rating_tab.dart';
 import '../../widgets/app_footer.dart';
 
@@ -194,9 +193,9 @@ class AboutScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-                SizedBox(
+                const SizedBox(
                   height: 600,
-                  child: const RatingTab(isPlatformRating: true),
+                  child: RatingTab(isPlatformRating: true),
                 ),
               ],
             ),

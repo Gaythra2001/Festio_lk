@@ -11,9 +11,9 @@ class SearchResultsScreen extends StatefulWidget {
   final UserPreferencesModel userPreferences;
 
   const SearchResultsScreen({
-    Key? key,
+    super.key,
     required this.userPreferences,
-  }) : super(key: key);
+  });
 
   @override
   State<SearchResultsScreen> createState() => _SearchResultsScreenState();
@@ -159,8 +159,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
 
             // System Events Results
             _isLoading
-                ? SliverToBoxAdapter(
-                    child: const Center(
+                ? const SliverToBoxAdapter(
+                    child: Center(
                       child: Padding(
                         padding: EdgeInsets.all(40.0),
                         child: CircularProgressIndicator(),

@@ -9,9 +9,9 @@ class PreferencesStatusWidget extends StatelessWidget {
   final bool compact;
 
   const PreferencesStatusWidget({
-    Key? key,
+    super.key,
     this.compact = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -62,10 +62,10 @@ class PreferencesStatusWidget extends StatelessWidget {
       return Card(
         color: Colors.orange[50],
         child: ListTile(
-          leading: Icon(Icons.warning_amber_rounded, color: Colors.orange),
-          title: Text('Complete Your Preferences'),
-          subtitle: Text('Get better event recommendations'),
-          trailing: Icon(Icons.arrow_forward_ios, size: 16),
+          leading: const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+          title: const Text('Complete Your Preferences'),
+          subtitle: const Text('Get better event recommendations'),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
           onTap: () => _navigateToPreferences(context, userId),
         ),
       );
@@ -75,16 +75,16 @@ class PreferencesStatusWidget extends StatelessWidget {
       return Card(
         color: Colors.blue[50],
         child: ListTile(
-          leading: Icon(Icons.refresh, color: Colors.blue),
-          title: Text('Update Your Preferences'),
-          subtitle: Text('Keep recommendations fresh'),
-          trailing: Icon(Icons.arrow_forward_ios, size: 16),
+          leading: const Icon(Icons.refresh, color: Colors.blue),
+          title: const Text('Update Your Preferences'),
+          subtitle: const Text('Keep recommendations fresh'),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
           onTap: () => _navigateToPreferences(context, userId),
         ),
       );
     }
 
-    return SizedBox.shrink();
+    return const SizedBox.shrink();
   }
 
   Widget _buildFullView(
@@ -99,9 +99,9 @@ class PreferencesStatusWidget extends StatelessWidget {
   ) {
     return Card(
       elevation: 4,
-      margin: EdgeInsets.all(16),
+      margin: const EdgeInsets.all(16),
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -113,8 +113,8 @@ class PreferencesStatusWidget extends StatelessWidget {
                   color: Theme.of(context).primaryColor,
                   size: 28,
                 ),
-                SizedBox(width: 12),
-                Expanded(
+                const SizedBox(width: 12),
+                const Expanded(
                   child: Text(
                     'Personalization Status',
                     style: TextStyle(
@@ -126,7 +126,7 @@ class PreferencesStatusWidget extends StatelessWidget {
                 _buildQualityBadge(context, qualityScore),
               ],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             // Completion Progress
             Text(
@@ -137,7 +137,7 @@ class PreferencesStatusWidget extends StatelessWidget {
                 color: Colors.grey[700],
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
@@ -153,7 +153,7 @@ class PreferencesStatusWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Text(
                   '${completionPercentage.toStringAsFixed(0)}%',
                   style: TextStyle(
@@ -164,7 +164,7 @@ class PreferencesStatusWidget extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             // Status Messages
             if (!hasPreferences) ...[
@@ -173,7 +173,7 @@ class PreferencesStatusWidget extends StatelessWidget {
                 message: 'No preferences set yet',
                 color: Colors.orange,
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
             ],
             if (!isComplete && hasPreferences) ...[
               _buildStatusMessage(
@@ -181,7 +181,7 @@ class PreferencesStatusWidget extends StatelessWidget {
                 message: 'Complete your profile for better recommendations',
                 color: Colors.orange,
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
             ],
             if (needsUpdate && isComplete) ...[
               _buildStatusMessage(
@@ -189,7 +189,7 @@ class PreferencesStatusWidget extends StatelessWidget {
                 message: 'Your preferences may be outdated',
                 color: Colors.blue,
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
             ],
             if (isComplete && !needsUpdate) ...[
               _buildStatusMessage(
@@ -197,13 +197,13 @@ class PreferencesStatusWidget extends StatelessWidget {
                 message: 'Your preferences are up to date!',
                 color: Colors.green,
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
             ],
 
             // Preferences Summary (if available)
             if (hasPreferences && isComplete) ...[
-              Divider(),
-              SizedBox(height: 8),
+              const Divider(),
+              const SizedBox(height: 8),
               _buildPreferenceDetail('Age', summary['age']?.toString()),
               _buildPreferenceDetail('Location', summary['primaryArea']),
               _buildPreferenceDetail(
@@ -213,11 +213,11 @@ class PreferencesStatusWidget extends StatelessWidget {
               _buildPreferenceDetail(
                   'Preferred Time', summary['preferredEventTime']),
               _buildPreferenceDetail('Budget', summary['budgetRange']),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
             ],
 
             // Action Button
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -225,10 +225,10 @@ class PreferencesStatusWidget extends StatelessWidget {
                 icon: Icon(hasPreferences ? Icons.edit : Icons.add),
                 label: Text(
                   hasPreferences ? 'Update Preferences' : 'Set Up Preferences',
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                 ),
@@ -259,7 +259,7 @@ class PreferencesStatusWidget extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: color.withOpacity(0.2),
         borderRadius: BorderRadius.circular(16),
@@ -291,7 +291,7 @@ class PreferencesStatusWidget extends StatelessWidget {
     return Row(
       children: [
         Icon(icon, color: color, size: 20),
-        SizedBox(width: 8),
+        const SizedBox(width: 8),
         Expanded(
           child: Text(
             message,
@@ -307,10 +307,10 @@ class PreferencesStatusWidget extends StatelessWidget {
   }
 
   Widget _buildPreferenceDetail(String label, String? value) {
-    if (value == null || value.isEmpty || value == 'null') return SizedBox();
+    if (value == null || value.isEmpty || value == 'null') return const SizedBox();
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -327,7 +327,7 @@ class PreferencesStatusWidget extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -341,7 +341,7 @@ class PreferencesStatusWidget extends StatelessWidget {
   void _navigateToPreferences(BuildContext context, String? userId) async {
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please log in to set preferences'),
           backgroundColor: Colors.red,
         ),

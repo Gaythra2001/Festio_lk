@@ -3,7 +3,7 @@ import '../../core/services/research_model_service.dart';
 
 /// Model Comparison & Tuning Screen
 class ModelComparisonScreen extends StatefulWidget {
-  const ModelComparisonScreen({Key? key}) : super(key: key);
+  const ModelComparisonScreen({super.key});
 
   @override
   State<ModelComparisonScreen> createState() => _ModelComparisonScreenState();

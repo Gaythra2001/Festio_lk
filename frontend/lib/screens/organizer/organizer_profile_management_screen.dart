@@ -832,7 +832,7 @@ class _OrganizerProfileManagementScreenState
       ),
       child: Row(
         children: [
-          Icon(Icons.business_center, color: const Color(0xFF667eea)),
+          const Icon(Icons.business_center, color: Color(0xFF667eea)),
           const SizedBox(width: 16),
           Expanded(
             child: DropdownButtonHideUnderline(

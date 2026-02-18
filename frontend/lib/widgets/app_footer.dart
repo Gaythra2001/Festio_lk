@@ -34,7 +34,7 @@ class AppFooter extends StatelessWidget {
         ? _buildMobileLayout()
         : Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 900),
+              constraints: const BoxConstraints(maxWidth: 1100),
               child: _buildDesktopLayout(),
             ),
           );
@@ -42,50 +42,95 @@ class AppFooter extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 20 : 60,
-        vertical: 40,
+        horizontal: isMobile ? 20 : 40,
+        vertical: 50,
       ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF0B1635), // Dark navy blue background
+      decoration: BoxDecoration(
+        color: const Color(0xFF0A0E27),
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withOpacity(0.08),
+            width: 1,
+          ),
+        ),
       ),
       child: footerContent,
     );
   }
 
   Widget _buildDesktopLayout() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
       children: [
-        // Left Section - Branding
-        Expanded(
-          flex: 2,
-          child: _buildBrandingSection(),
-        ),
-        const SizedBox(width: 60),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Left Section - Branding
+            Expanded(
+              flex: 3,
+              child: _buildBrandingSection(),
+            ),
+            const SizedBox(width: 80),
 
-        // Helpful Links
-        Expanded(
-          child: _buildHelpfulLinks(),
-        ),
-        const SizedBox(width: 40),
+            // Helpful Links
+            Expanded(
+              flex: 2,
+              child: _buildHelpfulLinks(),
+            ),
+            const SizedBox(width: 60),
 
-        // About Us
-        Expanded(
-          child: _buildAboutUs(),
-        ),
-        const SizedBox(width: 40),
+            // About Us
+            Expanded(
+              flex: 2,
+              child: _buildAboutUs(),
+            ),
+            const SizedBox(width: 60),
 
-        // Contact
-        Expanded(
-          child: _buildContact(),
+            // Contact
+            Expanded(
+              flex: 2,
+              child: _buildContact(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 40),
+        Container(
+          padding: const EdgeInsets.only(top: 24),
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(
+                color: Colors.white.withOpacity(0.1),
+                width: 1,
+              ),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '© ${DateTime.now().year} Festio.LK. All rights reserved.',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: Colors.white60,
+                ),
+              ),
+              Row(
+                children: [
+                  _buildBottomLink('Privacy Policy'),
+                  const SizedBox(width: 24),
+                  _buildBottomLink('Terms of Service'),
+                  const SizedBox(width: 24),
+                  _buildBottomLink('Cookie Policy'),
+                ],
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
   Widget _buildMobileLayout() {
-    return SingleChildScrollView(
-      child: Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildBrandingSection(),
@@ -95,8 +140,41 @@ class AppFooter extends StatelessWidget {
         _buildAboutUs(),
         const SizedBox(height: 30),
         _buildContact(),
+        const SizedBox(height: 40),
+        Container(
+          padding: const EdgeInsets.only(top: 24),
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(
+                color: Colors.white.withOpacity(0.1),
+                width: 1,
+              ),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '© ${DateTime.now().year} Festio.LK. All rights reserved.',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: Colors.white60,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 16,
+                runSpacing: 12,
+                children: [
+                  _buildBottomLink('Privacy Policy'),
+                  _buildBottomLink('Terms of Service'),
+                  _buildBottomLink('Cookie Policy'),
+                ],
+              ),
+            ],
+          ),
+        ),
       ],
-      ),
     );
   }
 
@@ -110,30 +188,34 @@ class AppFooter extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF7CCFB2), Color(0xFFFFD7A3)],
+                ),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
                 Icons.celebration,
-                color: Color(0xFF667eea),
-                size: 28,
+                color: Color(0xFF0A0E27),
+                size: 26,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Text(
               'Festio',
-              style: GoogleFonts.poppins(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+              style: GoogleFonts.inter(
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
                 color: Colors.white,
+                letterSpacing: -0.5,
               ),
             ),
             Text(
               '.LK',
-              style: GoogleFonts.poppins(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF667eea),
+              style: GoogleFonts.inter(
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF7CCFB2),
+                letterSpacing: -0.5,
               ),
             ),
           ],
@@ -142,12 +224,11 @@ class AppFooter extends StatelessWidget {
 
         // Description
         Text(
-          "Festio.LK, Sri Lanka's premier and most trusted online event platform, "
-          "serves as the official marketplace providing a secure and safe platform for "
-          "discovering and booking all entertainment events in Sri Lanka.",
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            color: Colors.white70,
+          'Sri Lanka\'s premier online event platform for '
+          'discovering and booking entertainment events.',
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            color: Colors.white60,
             height: 1.6,
           ),
         ),
@@ -155,8 +236,8 @@ class AppFooter extends StatelessWidget {
 
         // Social Media Icons
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 10,
+          runSpacing: 10,
           children: [
             _buildSocialIcon(Icons.facebook, 'https://facebook.com'),
             _buildSocialIcon(Icons.camera_alt, 'https://instagram.com'),
@@ -189,10 +270,11 @@ class AppFooter extends StatelessWidget {
       children: [
         Text(
           'Helpful Links',
-          style: GoogleFonts.poppins(
-            fontSize: 18,
+          style: GoogleFonts.inter(
+            fontSize: 15,
             fontWeight: FontWeight.w600,
             color: Colors.white,
+            letterSpacing: 0.3,
           ),
         ),
         const SizedBox(height: 16),
@@ -210,10 +292,11 @@ class AppFooter extends StatelessWidget {
       children: [
         Text(
           'About Us',
-          style: GoogleFonts.poppins(
-            fontSize: 18,
+          style: GoogleFonts.inter(
+            fontSize: 15,
             fontWeight: FontWeight.w600,
             color: Colors.white,
+            letterSpacing: 0.3,
           ),
         ),
         const SizedBox(height: 16),
@@ -230,10 +313,11 @@ class AppFooter extends StatelessWidget {
       children: [
         Text(
           'Contact',
-          style: GoogleFonts.poppins(
-            fontSize: 18,
+          style: GoogleFonts.inter(
+            fontSize: 15,
             fontWeight: FontWeight.w600,
             color: Colors.white,
+            letterSpacing: 0.3,
           ),
         ),
         const SizedBox(height: 16),
@@ -245,16 +329,16 @@ class AppFooter extends StatelessWidget {
             children: [
               const Icon(
                 Icons.message,
-                color: Colors.white70,
-                size: 18,
+                color: Colors.white60,
+                size: 16,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'WhatsApp(Text-only service)',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: Colors.white70,
+                  'WhatsApp (Text-only)',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: Colors.white60,
                     decoration: TextDecoration.none,
                   ),
                 ),
@@ -271,16 +355,16 @@ class AppFooter extends StatelessWidget {
             children: [
               const Icon(
                 Icons.email_outlined,
-                color: Colors.white70,
-                size: 18,
+                color: Colors.white60,
+                size: 16,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'support@festio.lk',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: Colors.white70,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: Colors.white60,
                     decoration: TextDecoration.none,
                   ),
                 ),
@@ -296,13 +380,13 @@ class AppFooter extends StatelessWidget {
     return GestureDetector(
       onTap: () => _launchUrl(url),
       child: Container(
-        width: 36,
-        height: 36,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: const Color(0xFF1A2449),
+          color: Colors.white.withOpacity(0.08),
           shape: BoxShape.circle,
           border: Border.all(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withOpacity(0.15),
             width: 1,
           ),
         ),
@@ -319,20 +403,20 @@ class AppFooter extends StatelessWidget {
     return GestureDetector(
       onTap: () => _launchUrl(url),
       child: Container(
-        width: 36,
-        height: 36,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: const Color(0xFF1A2449),
+          color: Colors.white.withOpacity(0.08),
           shape: BoxShape.circle,
           border: Border.all(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withOpacity(0.15),
             width: 1,
           ),
         ),
         child: Center(
           child: Text(
             text,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.inter(
               color: Colors.white70,
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -352,10 +436,24 @@ class AppFooter extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.inter(
           fontSize: 12,
           fontWeight: FontWeight.bold,
           color: color,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomLink(String text) {
+    return GestureDetector(
+      onTap: () {},
+      child: Text(
+        text,
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          color: Colors.white60,
+          decoration: TextDecoration.none,
         ),
       ),
     );
@@ -371,9 +469,9 @@ class AppFooter extends StatelessWidget {
         },
         child: Text(
           text,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: Colors.white70,
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            color: Colors.white60,
             decoration: TextDecoration.none,
           ),
         ),

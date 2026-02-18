@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -14,7 +13,7 @@ const String kGoogleSearchEngineId =
     '<PUT_YOUR_CX_HERE>'; // replace with real CX
 
 class AIRecommendationsScreen extends StatefulWidget {
-  const AIRecommendationsScreen({Key? key}) : super(key: key);
+  const AIRecommendationsScreen({super.key});
 
   @override
   State<AIRecommendationsScreen> createState() =>

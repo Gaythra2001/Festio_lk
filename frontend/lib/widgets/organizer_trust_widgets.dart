@@ -350,7 +350,7 @@ class OrganizerTrustCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.event,
                   size: 14,
                   color: Colors.white54,

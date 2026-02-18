@@ -655,7 +655,7 @@ class _OrganizerRegistrationScreenState
                 onChanged: (value) {
                   setState(() => _agreeToTerms = value ?? false);
                 },
-                fillColor: MaterialStateProperty.all(
+                fillColor: WidgetStateProperty.all(
                   _agreeToTerms
                       ? const Color(0xFF667eea)
                       : Colors.white.withOpacity(0.2),
@@ -683,7 +683,7 @@ class _OrganizerRegistrationScreenState
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.check_circle_outline,
             size: 16,
             color: Colors.white60,

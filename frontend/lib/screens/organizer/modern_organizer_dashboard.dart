@@ -27,13 +27,14 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
     with TickerProviderStateMixin {
   late TabController _tabController;
   late AnimationController _fadeController;
-  String _selectedEventId = '';
+  final String _selectedEventId = '';
   String _selectedLanguage = 'en';
   bool _isRevenueLoading = false;
   String? _revenueError;
   String? _revenueNotice;
   Map<String, dynamic>? _revenueOptimization;
   Map<String, dynamic>? _analyticsSummary;
+  bool _isAnalyticsLoading = false;
   double _currentPrice = 2500;
   double _ticketsSold = 180;
   double _ticketsAvailable = 400;
@@ -42,7 +43,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
   double _marketingBoost = 0.35;
   double _demandGrowthRate = 0.2;
   String _eventCategory = 'Festival';
-  String _abExperimentId = 'rev_opt_v1';
+  final String _abExperimentId = 'rev_opt_v1';
   String _abVariant = 'A';
   bool _abReady = false;
 
@@ -171,6 +172,11 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
   Future<void> _loadAnalyticsSummary() async {
     final authProvider = context.read<AuthProvider>();
     final organizerId = authProvider.user?.id ?? 'unknown';
+    if (mounted) {
+      setState(() {
+        _isAnalyticsLoading = true;
+      });
+    }
     try {
       final summary = await _analyticsApiService.getSummary(
         organizerId: organizerId,
@@ -180,6 +186,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
       if (mounted) {
         setState(() {
           _analyticsSummary = summary;
+          _isAnalyticsLoading = false;
         });
       }
     } catch (_) {}
@@ -192,6 +199,20 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
       final value = counts[eventType];
       if (value is int) return value;
       if (value is num) return value.toInt();
+    }
+    return 0;
+  }
+
+  int _getVariantCount(String eventType, String variant) {
+    if (_analyticsSummary == null) return 0;
+    final variants = _analyticsSummary!['variant_counts'];
+    if (variants is Map) {
+      final eventBucket = variants[eventType];
+      if (eventBucket is Map) {
+        final value = eventBucket[variant];
+        if (value is int) return value;
+        if (value is num) return value.toInt();
+      }
     }
     return 0;
   }
@@ -220,9 +241,9 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
 
     return FloatingActionButton(
       onPressed: () => _openChatbot(context, organizerId),
-      backgroundColor: Color(0xFF00D4FF),
-      child: Icon(Icons.chat_bubble, color: Colors.white),
+      backgroundColor: const Color(0xFF00D4FF),
       tooltip: 'AI Assistant',
+      child: const Icon(Icons.chat_bubble, color: Colors.white),
     );
   }
 
@@ -425,6 +446,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
         _revenueOptimization = _buildRevenuePreview();
       });
       await _trackRevenueResult(_revenueOptimization ?? {}, isFallback: true);
+      _loadAnalyticsSummary();
     } finally {
       if (mounted) {
         setState(() {
@@ -584,7 +606,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                     ElevatedButton.icon(
                       onPressed: _isRevenueLoading ? null : _loadRevenueOptimization,
                       icon: _isRevenueLoading
-                          ? SizedBox(
+                          ? const SizedBox(
                               width: 16,
                               height: 16,
                               child: CircularProgressIndicator(
@@ -592,7 +614,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                                 color: Colors.white,
                               ),
                             )
-                          : Icon(Icons.auto_graph, color: Colors.white, size: 18),
+                          : const Icon(Icons.auto_graph, color: Colors.white, size: 18),
                       label: Text(
                         _isRevenueLoading ? 'Optimizing...' : 'Generate',
                         style: GoogleFonts.poppins(
@@ -648,33 +670,39 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                       if (_analyticsSummary != null)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 16),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.1),
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.analytics,
-                                    size: 16,
-                                    color: const Color(0xFF00D4FF)),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Last 30 days: ${_analyticsSummary!['total_events']} tracked actions',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      color: Colors.white.withOpacity(0.8),
-                                    ),
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.1),
+                                    width: 1,
                                   ),
                                 ),
-                              ],
-                            ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.analytics,
+                                        size: 16,
+                                        color: Color(0xFF00D4FF)),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'Last 30 days: ${_analyticsSummary!['total_events']} tracked actions',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          color: Colors.white.withOpacity(0.8),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _buildVariantPerformanceCard(),
+                            ],
                           ),
                         ),
                       if (data['model_used'] != null)
@@ -682,9 +710,9 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                           padding: const EdgeInsets.only(bottom: 12),
                           child: Row(
                             children: [
-                              Icon(Icons.psychology,
+                              const Icon(Icons.psychology,
                                   size: 16,
-                                  color: const Color(0xFF00D4FF)),
+                                  color: Color(0xFF00D4FF)),
                               const SizedBox(width: 8),
                               Text(
                                 'Model: ${data['model_used']}',
@@ -754,9 +782,9 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.show_chart,
+                              const Icon(Icons.show_chart,
                                   size: 16,
-                                  color: const Color(0xFF00D4FF)),
+                                  color: Color(0xFF00D4FF)),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
@@ -798,8 +826,8 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                                   padding: const EdgeInsets.only(bottom: 6),
                                   child: Row(
                                     children: [
-                                      Icon(Icons.check_circle,
-                                          size: 14, color: const Color(0xFF00D4FF)),
+                                      const Icon(Icons.check_circle,
+                                          size: 14, color: Color(0xFF00D4FF)),
                                       const SizedBox(width: 6),
                                       Expanded(
                                         child: Text(
@@ -824,6 +852,97 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildVariantPerformanceCard() {
+    final generateA = _getVariantCount('revenue_optimization_generate', 'A');
+    final generateB = _getVariantCount('revenue_optimization_generate', 'B');
+    final resultA = _getVariantCount('revenue_optimization_result', 'A');
+    final resultB = _getVariantCount('revenue_optimization_result', 'B');
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.auto_graph, size: 16, color: Color(0xFF00D4FF)),
+              const SizedBox(width: 8),
+              Text(
+                'Variant performance',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (_isAnalyticsLoading)
+            Row(
+              children: [
+                const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Color(0xFF00D4FF),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Refreshing...',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            )
+          else ...[
+            _buildVariantRow('Generate', generateA, generateB),
+            const SizedBox(height: 6),
+            _buildVariantRow('Result', resultA, resultB),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVariantRow(String label, int countA, int countB) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            '$label A: $countA',
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: Colors.white70,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            '$label B: $countB',
+            textAlign: TextAlign.end,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: Colors.white70,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1623,10 +1742,10 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                         ),
                       ],
                     ),
-                    Icon(
+                    const Icon(
                       Icons.language,
                       size: 32,
-                      color: const Color(0xFFFFD93D),
+                      color: Color(0xFFFFD93D),
                     ),
                   ],
                 ),
@@ -1656,17 +1775,17 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                       _selectedLanguage = ['en', 'si', 'ta'][index];
                     });
                   },
-                  tabs: [
+                  tabs: const [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Tab(text: '🇬🇧 English'),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Tab(text: '🇱🇰 Sinhala'),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Tab(text: '🇮🇳 Tamil'),
                     ),
                   ],

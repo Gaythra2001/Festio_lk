@@ -97,7 +97,7 @@ class _OrganizerTrustProfileScreenState
                                 width: 3,
                               ),
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.business,
                               size: 40,
                               color: Colors.white,

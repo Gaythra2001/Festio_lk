@@ -7,7 +7,7 @@ import 'search_results_screen.dart';
 
 /// User Preferences Input Screen
 class UserPreferenceInputScreen extends StatefulWidget {
-  const UserPreferenceInputScreen({Key? key}) : super(key: key);
+  const UserPreferenceInputScreen({super.key});
 
   @override
   State<UserPreferenceInputScreen> createState() =>
@@ -200,7 +200,7 @@ class _UserPreferenceInputScreenState extends State<UserPreferenceInputScreen> {
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                   );
-                }).toList(),
+                }),
 
                 const SizedBox(height: 40),
 

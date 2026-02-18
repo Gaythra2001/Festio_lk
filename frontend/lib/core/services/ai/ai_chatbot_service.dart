@@ -317,7 +317,7 @@ class AIEventChatbotService {
               .toList();
           break;
         case 'tomorrow':
-          final tomorrow = now.add(Duration(days: 1));
+          final tomorrow = now.add(const Duration(days: 1));
           results = results
               .where((e) =>
                   e.startDate.year == tomorrow.year &&
@@ -327,12 +327,12 @@ class AIEventChatbotService {
           break;
         case 'this_weekend':
           final nextSaturday = now.add(Duration(days: (6 - now.weekday) % 7));
-          final nextSunday = nextSaturday.add(Duration(days: 1));
+          final nextSunday = nextSaturday.add(const Duration(days: 1));
           results = results
               .where((e) =>
                   e.startDate
-                      .isAfter(nextSaturday.subtract(Duration(days: 1))) &&
-                  e.startDate.isBefore(nextSunday.add(Duration(days: 1))))
+                      .isAfter(nextSaturday.subtract(const Duration(days: 1))) &&
+                  e.startDate.isBefore(nextSunday.add(const Duration(days: 1))))
               .toList();
           break;
       }
@@ -412,19 +412,19 @@ class AIEventChatbotService {
 
     for (int i = 0; i < min(events.length, 3); i++) {
       final event = events[i];
-      response += "${i + 1}. **${event.title}**\n";
-      response += "   📅 ${_formatDate(event.startDate)}\n";
-      response += "   📍 ${event.location}\n";
+      response += '${i + 1}. **${event.title}**\n';
+      response += '   📅 ${_formatDate(event.startDate)}\n';
+      response += '   📍 ${event.location}\n';
       if (event.ticketPrice != null && event.ticketPrice! > 0) {
-        response += "   💰 LKR ${event.ticketPrice!.toStringAsFixed(0)}\n";
+        response += '   💰 LKR ${event.ticketPrice!.toStringAsFixed(0)}\n';
       } else {
-        response += "   💰 Free\n";
+        response += '   💰 Free\n';
       }
-      response += "\n";
+      response += '\n';
     }
 
     if (events.length > 3) {
-      response += "... and ${events.length - 3} more events!";
+      response += '... and ${events.length - 3} more events!';
     }
 
     return response;
@@ -436,22 +436,22 @@ class AIEventChatbotService {
       return "I don't have enough information yet to personalize recommendations. Browse some events and I'll learn your preferences!";
     }
 
-    String response = "Based on your interests, I recommend:\n\n";
+    String response = 'Based on your interests, I recommend:\n\n';
 
     for (int i = 0; i < min(recommendations.length, 3); i++) {
       final scored = recommendations[i];
       final event = scored.event;
 
-      response += "${i + 1}. **${event.title}**\n";
-      response += "   📅 ${_formatDate(event.startDate)}\n";
-      response += "   📍 ${event.location}\n";
-      response += "   ✨ ${scored.getExplanation()}\n";
-      response += "\n";
+      response += '${i + 1}. **${event.title}**\n';
+      response += '   📅 ${_formatDate(event.startDate)}\n';
+      response += '   📍 ${event.location}\n';
+      response += '   ✨ ${scored.getExplanation()}\n';
+      response += '\n';
     }
 
     if (recommendations.length > 3) {
       response +=
-          "I have ${recommendations.length - 3} more great suggestions for you!";
+          'I have ${recommendations.length - 3} more great suggestions for you!';
     }
 
     return response;
@@ -463,11 +463,11 @@ class AIEventChatbotService {
     String timeGreeting;
 
     if (hour < 12) {
-      timeGreeting = "Good morning";
+      timeGreeting = 'Good morning';
     } else if (hour < 17) {
-      timeGreeting = "Good afternoon";
+      timeGreeting = 'Good afternoon';
     } else {
-      timeGreeting = "Good evening";
+      timeGreeting = 'Good evening';
     }
 
     final name = user.displayName ?? 'there';
@@ -486,7 +486,7 @@ class AIEventChatbotService {
 
   /// Handle event details query
   String _handleEventDetailsQuery(String message, List<EventModel> allEvents) {
-    return "To see detailed information about an event, please select it from the list above. I can show you the full description, venue details, ticket prices, and more!";
+    return 'To see detailed information about an event, please select it from the list above. I can show you the full description, venue details, ticket prices, and more!';
   }
 
   /// Handle booking help
@@ -520,7 +520,7 @@ Need specific help? Just ask!""";
       response += "I'll look for events under LKR ${entities['budget']}. ";
     }
 
-    response += "This will help me give you better recommendations!";
+    response += 'This will help me give you better recommendations!';
     return response;
   }
 
@@ -545,7 +545,7 @@ Need specific help? Just ask!""";
 
   /// Handle feedback
   String _handleFeedback(String message) {
-    return "Thank you for your feedback! 🙏 Your input helps us improve Festio and provide better event recommendations. Is there anything else I can help you with?";
+    return 'Thank you for your feedback! 🙏 Your input helps us improve Festio and provide better event recommendations. Is there anything else I can help you with?';
   }
 
   /// Generate search suggestions
@@ -583,7 +583,7 @@ Need specific help? Just ask!""";
       'Nov',
       'Dec'
     ];
-    return "${months[date.month - 1]} ${date.day}, ${date.year}";
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
   /// Add message to conversation history

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class LanguageSelector extends StatelessWidget {
-  const LanguageSelector({Key? key}) : super(key: key);
+  const LanguageSelector({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +92,7 @@ class LanguageSelector extends StatelessWidget {
                   if (nativeName != translatedName)
                     Text(
                       translatedName,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         color: Colors.grey,
                       ),

@@ -12,11 +12,11 @@ class RatingTab extends StatefulWidget {
   final bool isPlatformRating;
 
   const RatingTab({
-    Key? key,
+    super.key,
     this.eventId,
     this.eventName,
     this.isPlatformRating = false,
-  }) : super(key: key);
+  });
 
   @override
   State<RatingTab> createState() => _RatingTabState();

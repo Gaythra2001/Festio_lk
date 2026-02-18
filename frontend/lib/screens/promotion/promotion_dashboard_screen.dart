@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:festio_lk/core/services/ai/ma_epom_service.dart';
 
 class PromotionDashboardScreen extends StatefulWidget {
-  const PromotionDashboardScreen({Key? key}) : super(key: key);
+  const PromotionDashboardScreen({super.key});
 
   @override
   State<PromotionDashboardScreen> createState() =>

@@ -238,7 +238,7 @@ class _EventCard extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(Icons.location_on, size: 16, color: Colors.white54),
+                  const Icon(Icons.location_on, size: 16, color: Colors.white54),
                   const SizedBox(width: 4),
                   Text(
                     event.location,
@@ -252,7 +252,7 @@ class _EventCard extends StatelessWidget {
               const SizedBox(height: 6),
               Row(
                 children: [
-                  Icon(Icons.calendar_today, size: 16, color: Colors.white54),
+                  const Icon(Icons.calendar_today, size: 16, color: Colors.white54),
                   const SizedBox(width: 4),
                   Text(
                     '${event.startDate.day}/${event.startDate.month}/${event.startDate.year}',
@@ -327,9 +327,9 @@ class _CreateEventTab extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: Stack(
+                child: const Stack(
                   alignment: Alignment.center,
-                  children: const [
+                  children: [
                     Icon(
                       Icons.celebration,
                       size: 60,
@@ -456,17 +456,17 @@ class _AnalyticsTab extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
+            const Row(
               children: [
                 Expanded(
                   child: _StatCard(
                     title: 'Total Events',
                     value: '12',
                     icon: Icons.event,
-                    color: const Color(0xFF667eea),
+                    color: Color(0xFF667eea),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: _StatCard(
                     title: 'Active',
@@ -478,17 +478,17 @@ class _AnalyticsTab extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Row(
+            const Row(
               children: [
                 Expanded(
                   child: _StatCard(
                     title: 'Total Views',
                     value: '1.2K',
                     icon: Icons.visibility,
-                    color: const Color(0xFF764ba2),
+                    color: Color(0xFF764ba2),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: _StatCard(
                     title: 'Bookings',

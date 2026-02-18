@@ -8,9 +8,9 @@ class RecommendationMetricsDashboard extends StatefulWidget {
   final String? userId;
 
   const RecommendationMetricsDashboard({
-    Key? key,
+    super.key,
     this.userId,
-  }) : super(key: key);
+  });
 
   @override
   State<RecommendationMetricsDashboard> createState() =>
@@ -83,7 +83,7 @@ class _RecommendationMetricsDashboardState
       body: Consumer<InteractionTrackingProvider>(
         builder: (context, trackingProvider, child) {
           if (trackingProvider.isLoading) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
               ),

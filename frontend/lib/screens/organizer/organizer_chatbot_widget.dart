@@ -12,11 +12,11 @@ class OrganizerChatbotWidget extends StatefulWidget {
   final VoidCallback? onClose;
 
   const OrganizerChatbotWidget({
-    Key? key,
+    super.key,
     required this.organizerId,
     required this.eventId,
     this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   State<OrganizerChatbotWidget> createState() => _OrganizerChatbotWidgetState();
@@ -129,8 +129,8 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(0xFF00D4FF).withOpacity(0.2),
-            Color(0xFF764BA2).withOpacity(0.1),
+            const Color(0xFF00D4FF).withOpacity(0.2),
+            const Color(0xFF764BA2).withOpacity(0.1),
           ],
         ),
         border: Border(
@@ -157,10 +157,10 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF00D4FF),
+                        color: const Color(0xFF00D4FF),
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       'Always here to help',
                       style: GoogleFonts.poppins(
@@ -175,12 +175,12 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
                     Container(
                       width: 8,
                       height: 8,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Color(0xFF00D4FF),
                         shape: BoxShape.circle,
                       ),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       'Online',
                       style: GoogleFonts.poppins(
@@ -188,7 +188,7 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
                         color: Colors.white.withOpacity(0.8),
                       ),
                     ),
-                    SizedBox(width: 16),
+                    const SizedBox(width: 16),
                     if (widget.onClose != null)
                       GestureDetector(
                         onTap: widget.onClose,
@@ -216,9 +216,9 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
           Icon(
             Icons.chat_bubble_outline,
             size: 64,
-            color: Color(0xFF00D4FF).withOpacity(0.3),
+            color: const Color(0xFF00D4FF).withOpacity(0.3),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
             'No messages yet',
             style: GoogleFonts.poppins(
@@ -240,21 +240,21 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
         mainAxisAlignment:
             isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
-          if (!isUser) SizedBox(width: 4),
+          if (!isUser) const SizedBox(width: 4),
           Flexible(
             child: Container(
               decoration: BoxDecoration(
                 gradient: isUser
                     ? LinearGradient(
                         colors: [
-                          Color(0xFF00D4FF).withOpacity(0.3),
-                          Color(0xFF764BA2).withOpacity(0.2),
+                          const Color(0xFF00D4FF).withOpacity(0.3),
+                          const Color(0xFF764BA2).withOpacity(0.2),
                         ],
                       )
                     : LinearGradient(
                         colors: [
-                          Color(0xFF764BA2).withOpacity(0.2),
-                          Color(0xFF667eea).withOpacity(0.15),
+                          const Color(0xFF764BA2).withOpacity(0.2),
+                          const Color(0xFF667eea).withOpacity(0.15),
                         ],
                       ),
                 borderRadius: BorderRadius.circular(16),
@@ -285,7 +285,7 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
                           ),
                         ),
                         if (message.metadata != null) ...[
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           _buildMessageMetadata(message.metadata!),
                         ],
                       ],
@@ -295,7 +295,7 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
               ),
             ),
           ),
-          if (isUser) SizedBox(width: 4),
+          if (isUser) const SizedBox(width: 4),
         ],
       ),
     );
@@ -309,7 +309,7 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (metrics != null && metrics.isNotEmpty) ...[
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -334,7 +334,7 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
           ),
         ],
         if (recommendations != null && recommendations.isNotEmpty) ...[
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: recommendations.take(2).map((rec) {
@@ -346,7 +346,7 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
                   '• $action ($impact)',
                   style: GoogleFonts.poppins(
                     fontSize: 11,
-                    color: Color(0xFF00D4FF).withOpacity(0.8),
+                    color: const Color(0xFF00D4FF).withOpacity(0.8),
                   ),
                 ),
               );
@@ -365,26 +365,26 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
           Container(
             width: 8,
             height: 8,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Color(0xFF00D4FF),
               shape: BoxShape.circle,
             ),
           ),
-          SizedBox(width: 6),
+          const SizedBox(width: 6),
           Container(
             width: 8,
             height: 8,
             decoration: BoxDecoration(
-              color: Color(0xFF00D4FF).withOpacity(0.6),
+              color: const Color(0xFF00D4FF).withOpacity(0.6),
               shape: BoxShape.circle,
             ),
           ),
-          SizedBox(width: 6),
+          const SizedBox(width: 6),
           Container(
             width: 8,
             height: 8,
             decoration: BoxDecoration(
-              color: Color(0xFF00D4FF).withOpacity(0.3),
+              color: const Color(0xFF00D4FF).withOpacity(0.3),
               shape: BoxShape.circle,
             ),
           ),
@@ -418,8 +418,8 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Color(0xFF00D4FF).withOpacity(0.15),
-                        Color(0xFF764BA2).withOpacity(0.1),
+                        const Color(0xFF00D4FF).withOpacity(0.15),
+                        const Color(0xFF764BA2).withOpacity(0.1),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(12),
@@ -445,10 +445,10 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF00D4FF),
+                                color: const Color(0xFF00D4FF),
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
                               action.description,
                               maxLines: 2,
@@ -490,8 +490,8 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xFF00D4FF).withOpacity(0.1),
-                    Color(0xFF764BA2).withOpacity(0.05),
+                    const Color(0xFF00D4FF).withOpacity(0.1),
+                    const Color(0xFF764BA2).withOpacity(0.05),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(24),
@@ -529,7 +529,7 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
               ),
             ),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           GestureDetector(
             onTap: provider.isLoading || provider.isTyping
                 ? null
@@ -542,7 +542,7 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
             child: Container(
               width: 44,
               height: 44,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
                     Color(0xFF00D4FF),
@@ -551,7 +551,7 @@ class _OrganizerChatbotWidgetState extends State<OrganizerChatbotWidget>
                 ),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.send,
                 color: Colors.white,
                 size: 20,
