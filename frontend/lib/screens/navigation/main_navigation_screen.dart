@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'dart:ui';
 import '../home/modern_home_screen.dart';
 import '../events/events_screen.dart';
 import '../about/about_screen.dart';

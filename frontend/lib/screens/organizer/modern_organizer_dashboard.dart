@@ -243,7 +243,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
       onPressed: () => _openChatbot(context, organizerId),
       backgroundColor: const Color(0xFF00D4FF),
       tooltip: 'AI Assistant',
-      child: Icon(Icons.chat_bubble, color: Colors.white),
+      child: const Icon(Icons.chat_bubble, color: Colors.white),
     );
   }
 
