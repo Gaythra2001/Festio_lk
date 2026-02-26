@@ -34,7 +34,7 @@ class AppFooter extends StatelessWidget {
         ? _buildMobileLayout()
         : Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1100),
+              constraints: const BoxConstraints(maxWidth: 980),
               child: _buildDesktopLayout(),
             ),
           );
@@ -42,14 +42,14 @@ class AppFooter extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 20 : 40,
-        vertical: 50,
+        horizontal: isMobile ? 20 : 32,
+        vertical: 48,
       ),
       decoration: BoxDecoration(
         color: const Color(0xFF0A0E27),
         border: Border(
           top: BorderSide(
-            color: Colors.white.withOpacity(0.08),
+            color: Colors.white.withOpacity(0.1),
             width: 1,
           ),
         ),
@@ -69,21 +69,21 @@ class AppFooter extends StatelessWidget {
               flex: 3,
               child: _buildBrandingSection(),
             ),
-            const SizedBox(width: 80),
+            const SizedBox(width: 50),
 
             // Helpful Links
             Expanded(
               flex: 2,
               child: _buildHelpfulLinks(),
             ),
-            const SizedBox(width: 60),
+            const SizedBox(width: 40),
 
             // About Us
             Expanded(
               flex: 2,
               child: _buildAboutUs(),
             ),
-            const SizedBox(width: 60),
+            const SizedBox(width: 40),
 
             // Contact
             Expanded(
@@ -92,9 +92,9 @@ class AppFooter extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 40),
+        const SizedBox(height: 36),
         Container(
-          padding: const EdgeInsets.only(top: 24),
+          padding: const EdgeInsets.only(top: 20),
           decoration: BoxDecoration(
             border: Border(
               top: BorderSide(
@@ -134,15 +134,15 @@ class AppFooter extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildBrandingSection(),
-        const SizedBox(height: 40),
+        const SizedBox(height: 32),
         _buildHelpfulLinks(),
-        const SizedBox(height: 30),
+        const SizedBox(height: 24),
         _buildAboutUs(),
-        const SizedBox(height: 30),
+        const SizedBox(height: 24),
         _buildContact(),
-        const SizedBox(height: 40),
+        const SizedBox(height: 32),
         Container(
-          padding: const EdgeInsets.only(top: 24),
+          padding: const EdgeInsets.only(top: 20),
           decoration: BoxDecoration(
             border: Border(
               top: BorderSide(
@@ -186,7 +186,7 @@ class AppFooter extends StatelessWidget {
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFF7CCFB2), Color(0xFFFFD7A3)],
@@ -196,14 +196,14 @@ class AppFooter extends StatelessWidget {
               child: const Icon(
                 Icons.celebration,
                 color: Color(0xFF0A0E27),
-                size: 26,
+                size: 24,
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Text(
               'Festio',
               style: GoogleFonts.inter(
-                fontSize: 26,
+                fontSize: 24,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
                 letterSpacing: -0.5,
@@ -212,7 +212,7 @@ class AppFooter extends StatelessWidget {
             Text(
               '.LK',
               style: GoogleFonts.inter(
-                fontSize: 26,
+                fontSize: 24,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF7CCFB2),
                 letterSpacing: -0.5,
@@ -220,24 +220,24 @@ class AppFooter extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 14),
 
         // Description
         Text(
           'Sri Lanka\'s premier online event platform for '
           'discovering and booking entertainment events.',
           style: GoogleFonts.inter(
-            fontSize: 14,
+            fontSize: 13,
             color: Colors.white60,
-            height: 1.6,
+            height: 1.5,
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
 
         // Social Media Icons
         Wrap(
-          spacing: 10,
-          runSpacing: 10,
+          spacing: 8,
+          runSpacing: 8,
           children: [
             _buildSocialIcon(Icons.facebook, 'https://facebook.com'),
             _buildSocialIcon(Icons.camera_alt, 'https://instagram.com'),
@@ -248,7 +248,7 @@ class AppFooter extends StatelessWidget {
             _buildSocialIconCustom('W', 'https://wa.me/94391112322'), // WhatsApp
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 18),
 
         // Payment Methods
         Wrap(
@@ -380,8 +380,8 @@ class AppFooter extends StatelessWidget {
     return GestureDetector(
       onTap: () => _launchUrl(url),
       child: Container(
-        width: 38,
-        height: 38,
+        width: 34,
+        height: 34,
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.08),
           shape: BoxShape.circle,
@@ -393,7 +393,7 @@ class AppFooter extends StatelessWidget {
         child: Icon(
           icon,
           color: Colors.white70,
-          size: 18,
+          size: 16,
         ),
       ),
     );
@@ -403,8 +403,8 @@ class AppFooter extends StatelessWidget {
     return GestureDetector(
       onTap: () => _launchUrl(url),
       child: Container(
-        width: 38,
-        height: 38,
+        width: 34,
+        height: 34,
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.08),
           shape: BoxShape.circle,
@@ -418,7 +418,7 @@ class AppFooter extends StatelessWidget {
             text,
             style: GoogleFonts.inter(
               color: Colors.white70,
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
