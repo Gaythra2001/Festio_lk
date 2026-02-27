@@ -12,6 +12,7 @@ import '../../core/services/ai/revenue_optimization_service.dart';
 import '../../core/services/analytics_api_service.dart';
 import '../../core/routes/app_routes.dart';
 import 'organizer_chatbot_widget.dart';
+import 'widgets/ai_revenue_optimizer_card.dart';
 
 /// Modern Organizer Dashboard - Component 2: MA-EPOM (Multilingual Event Promotion Optimization)
 class ModernOrganizerDashboard extends StatefulWidget {
@@ -373,6 +374,20 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
               _buildStatsSection(),
               const SizedBox(height: 32),
               _buildRevenueOptimizationSection(),
+              const SizedBox(height: 24),
+              AIRevenueOptimizerCard(
+                eventId: _selectedEventId.isNotEmpty ? _selectedEventId : 'default',
+                eventCategory: _eventCategory,
+                daysBeforeEvent: _daysUntilEvent.toInt(),
+                venueCapacity: _ticketsAvailable.toInt(),
+                currentPrice: _currentPrice,
+                apiBaseUrl: 'http://127.0.0.1:8000',
+                onPriceUpdated: (newPrice) {
+                  setState(() {
+                    _currentPrice = newPrice;
+                  });
+                },
+              ),
               const SizedBox(height: 32),
               _buildPromotionTiersSection(),
               const SizedBox(height: 32),
