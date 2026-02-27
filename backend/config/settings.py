@@ -9,11 +9,8 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     
     # CORS
-    ALLOWED_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:8080",
-        "http://localhost:5000"
-    ]
+    # Allow all origins in development to support Flutter web's random port.
+    ALLOWED_ORIGINS: List[str] = ["*"]
     
     # Database
     DATABASE_URL: str = "postgresql://user:password@localhost:5432/festio_lk"
