@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     FIREBASE_CLIENT_EMAIL: str = ""
     FIREBASE_PRIVATE_KEY: str = ""
     FIREBASE_CREDENTIALS_PATH: str = ""
+    FIREBASE_STORAGE_BUCKET: str = "festio-lk.firebasestorage.app"
     
     # JWT
     JWT_SECRET: str = "your-secret-key-change-this"
