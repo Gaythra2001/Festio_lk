@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 /// Chat message model
 class ChatMessage {
@@ -74,7 +75,7 @@ class QuickAction {
 
 /// Organizer Chatbot Provider
 class OrganizerChatbotProvider extends ChangeNotifier {
-  static const String baseUrl = 'http://localhost:8000/api/organizer-chatbot';
+  static final String baseUrl = kIsWeb ? 'http://localhost:8000/api/organizer-chatbot' : 'http://10.0.2.2:8000/api/organizer-chatbot';
 
   final String organizerId;
   final String eventId;
