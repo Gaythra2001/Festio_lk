@@ -67,18 +67,13 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
     });
 
     try {
-      // Get category encoded value, default to 0 if not found
-      int categoryEncoded = _categoryMapping[widget.eventCategory] ?? 0;
-
       final response = await http.post(
         Uri.parse('$_apiBaseUrl/api/revenue-optimization/optimize'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'days_before_event': widget.daysBeforeEvent,
-          'category_encoded': categoryEncoded,
+          'event_category': widget.eventCategory,
           'venue_capacity': widget.venueCapacity,
-          'price_range_min': 1000,
-          'price_range_max': 5000,
         }),
       ).timeout(const Duration(seconds: 30));
 

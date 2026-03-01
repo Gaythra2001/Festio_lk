@@ -381,7 +381,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                 daysBeforeEvent: _daysUntilEvent.toInt(),
                 venueCapacity: _ticketsAvailable.toInt(),
                 currentPrice: _currentPrice,
-                apiBaseUrl: 'http://127.0.0.1:8000',
+                apiBaseUrl: 'http://localhost:8000',
                 onPriceUpdated: (newPrice) {
                   setState(() {
                     _currentPrice = newPrice;
@@ -537,8 +537,17 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
 
   String _formatPercent(dynamic value) {
     if (value == null) return '-';
-    if (value is num) return value.toStringAsFixed(2);
+    if (value is num) return value.toStringAsFixed(1);
     return value.toString();
+  }
+
+  String _formatAnalyticsCount(int count) {
+    if (count >= 1000000) {
+      return '${(count / 1000000).toStringAsFixed(1)}M';
+    } else if (count >= 1000) {
+      return '${(count / 1000).toStringAsFixed(1)}K';
+    }
+    return count.toString();
   }
 
   double _sellThroughRate() {
@@ -1382,7 +1391,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                       child: _buildStatCard(
                         icon: Icons.visibility,
                         title: 'Total Reach',
-                        value: '124.5K',
+                        value: _formatAnalyticsCount(_analyticsSummary?['total_events'] ?? 0),
                         color: const Color(0xFF00D4FF),
                       ),
                     ),
@@ -1391,7 +1400,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                       child: _buildStatCard(
                         icon: Icons.trending_up,
                         title: 'Engagement',
-                        value: '8.2%',
+                        value: '${_getAnalyticsCount('revenue_optimization_generate') > 0 ? ((_getAnalyticsCount('revenue_optimization_result') / _getAnalyticsCount('revenue_optimization_generate')) * 100).toStringAsFixed(1) : '0'}%',
                         color: const Color(0xFF00E5FF),
                       ),
                     ),
@@ -1403,8 +1412,8 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                     Expanded(
                       child: _buildStatCard(
                         icon: Icons.calendar_month,
-                        title: 'Active',
-                        value: '12',
+                        title: 'Active events',
+                        value: _analyticsSummary?['total_events']?.toString() ?? '0',
                         color: const Color(0xFF764BA2),
                       ),
                     ),
@@ -1413,7 +1422,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                       child: _buildStatCard(
                         icon: Icons.language,
                         title: 'Languages',
-                        value: '3',
+                        value: '3', // This could be dynamic if we track language usage
                         color: const Color(0xFF667eea),
                       ),
                     ),

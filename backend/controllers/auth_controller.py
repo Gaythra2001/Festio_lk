@@ -1,6 +1,7 @@
 from passlib.context import CryptContext  # type: ignore
 from jose import JWTError, jwt  # type: ignore
 from datetime import datetime, timedelta
+from typing import Optional, Dict, Any
 from config.settings import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -29,10 +30,33 @@ def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
     return encoded_jwt
 
 
-def verify_token(token: str) -> dict:
+def verify_token(token: str) -> Optional[Dict[str, Any]]:
     """Verify and decode a JWT token"""
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         return payload
     except JWTError:
         return None
+
+
+def extract_token_from_header(authorization_header: str) -> Optional[str]:
+    """
+    Extract Bearer token from Authorization header
+    
+    Args:
+        authorization_header: Authorization header value (Bearer <token>)
+    
+    Returns:
+        Token string or None if invalid format
+    """
+    if not authorization_header:
+        return None
+    
+    try:
+        scheme, credentials = authorization_header.split()
+        if scheme.lower() == "bearer":
+            return credentials
+    except ValueError:
+        pass
+    
+    return None
