@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
 import '../home/modern_home_screen.dart';
 import '../events/events_screen.dart';
 import '../about/about_screen.dart';
 import '../contact/contact_screen.dart';
 import '../profile/modern_profile_screen.dart';
+import '../organizer/modern_organizer_dashboard.dart';
 import '../../widgets/notification_widget.dart';
+import '../../core/providers/auth_provider.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -19,19 +22,31 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
   bool _showCalendar = false;
 
-  final List<Widget> _screens = [
-    const ModernHomeScreen(),
-    const EventsScreen(),
-    const AboutScreen(),
-    const ContactScreen(),
-  ];
+  List<Widget> _getScreens(bool isOrganizer) {
+    final screens = [
+      const ModernHomeScreen(),
+      const EventsScreen(),
+      const AboutScreen(),
+      const ContactScreen(),
+    ];
+    if (isOrganizer) {
+      screens.add(const ModernOrganizerDashboard());
+    }
+    return screens;
+  }
 
-  final List<String> _titles = [
-    'Home',
-    'Events',
-    'About',
-    'Contact',
-  ];
+  List<String> _getTitles(bool isOrganizer) {
+    final titles = [
+      'Home',
+      'Events',
+      'About',
+      'Contact',
+    ];
+    if (isOrganizer) {
+      titles.add('Dashboard');
+    }
+    return titles;
+  }
 
   void _showLanguageSelector() {
     showDialog(
@@ -121,6 +136,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final isOrganizer = authProvider.user?.isOrganizer ?? false;
+    final screens = _getScreens(isOrganizer);
+    final titles = _getTitles(isOrganizer);
+
     return Scaffold(
       backgroundColor: const Color(0xFF0A0E27),
       body: Column(
@@ -339,10 +359,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     ),
                     child: Row(
                       children: List.generate(
-                        _titles.length,
+                        titles.length,
                         (index) => Expanded(
                           child: _buildNavTab(
-                            _titles[index],
+                            titles[index],
                             index,
                           ),
                         ),
@@ -371,7 +391,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       top: Radius.circular(30),
                     ),
                   ),
-                  child: _screens[_selectedIndex],
+                  child: screens[_selectedIndex >= screens.length ? 0 : _selectedIndex],
                 ),
               ),
             ),

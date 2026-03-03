@@ -53,19 +53,29 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       _isLoading = false;
       notifyListeners();
-      return false;
+      rethrow; // Rethrow to show specific error in UI
     }
   }
 
   Future<bool> register(
-      String email, String password, String displayName) async {
+      String email, String password, String displayName,
+      {String userType = 'user',
+      String? phoneNumber,
+      String? businessName,
+      String? businessRegistration,
+      String? businessAddress}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
       if (useFirebase && _authService != null) {
-        _user = await _authService!
-            .registerWithEmailAndPassword(email, password, displayName);
+        _user = await _authService!.registerWithEmailAndPassword(
+            email, password, displayName,
+            userType: userType,
+            phoneNumber: phoneNumber,
+            businessName: businessName,
+            businessRegistration: businessRegistration,
+            businessAddress: businessAddress);
       } else if (_mockAuthService != null) {
         _user = await _mockAuthService!
             .registerWithEmailAndPassword(email, password, displayName);
@@ -76,7 +86,7 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       _isLoading = false;
       notifyListeners();
-      return false;
+      rethrow; // Rethrow to show specific error in UI
     }
   }
 

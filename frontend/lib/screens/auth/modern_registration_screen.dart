@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import '../../core/providers/user_data_provider.dart';
+import '../../core/providers/auth_provider.dart';
 import '../../core/models/user_model.dart';
 import 'modern_login_screen.dart';
 
@@ -63,37 +63,45 @@ class _ModernRegistrationScreenState extends State<ModernRegistrationScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await Future.delayed(const Duration(seconds: 2));
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final displayName =
+          '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}';
+      final userTypeStr =
+          _selectedUserType == UserType.organizer ? 'organizer' : 'user';
+
+      await authProvider.register(
+        _emailController.text.trim(),
+        _passwordController.text,
+        displayName,
+        userType: userTypeStr,
+        phoneNumber: _phoneController.text.trim(),
+      );
 
       if (mounted) {
-        // Register user in provider
-        Provider.of<UserDataProvider>(context, listen: false).registerUser(
-          email: _emailController.text,
-          fullName: '${_firstNameController.text} ${_lastNameController.text}',
-          phone: _phoneController.text,
-          location: _countryController.text,
-          userType: _selectedUserType,
-        );
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_selectedUserType == UserType.organizer
                 ? 'Organizer account created! Please login.'
-                : 'User account created! Please login.'),
+                : 'Account created! Please login.'),
+            backgroundColor: Colors.green,
           ),
         );
-
         // Navigate back to login
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const ModernLoginScreen()),
-          );
-        }
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const ModernLoginScreen()),
+        );
       }
     } catch (e) {
       if (mounted) {
+        String message = e.toString();
+        if (message.startsWith('Exception: ')) {
+          message = message.substring(11);
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Registration failed: $e')),
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
