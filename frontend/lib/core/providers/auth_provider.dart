@@ -51,6 +51,7 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return _user != null;
     } catch (e) {
+      debugPrint('Auth error: $e'); // Added logging
       _isLoading = false;
       notifyListeners();
       rethrow; // Rethrow to show specific error in UI
