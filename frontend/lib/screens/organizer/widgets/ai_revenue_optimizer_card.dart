@@ -10,6 +10,11 @@ class AIRevenueOptimizerCard extends StatefulWidget {
   final int daysBeforeEvent;
   final int venueCapacity;
   final double currentPrice;
+  final String location;
+  final double organizerRating;
+  final String weatherForecast;
+  final int pastAttendance;
+  final bool isWeekend;
   final Function(double) onPriceUpdated;
   final String? apiBaseUrl;
 
@@ -20,6 +25,11 @@ class AIRevenueOptimizerCard extends StatefulWidget {
     required this.daysBeforeEvent,
     required this.venueCapacity,
     required this.currentPrice,
+    required this.location,
+    required this.organizerRating,
+    required this.weatherForecast,
+    required this.pastAttendance,
+    required this.isWeekend,
     required this.onPriceUpdated,
     this.apiBaseUrl,
   });
@@ -33,16 +43,18 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
   Map<String, dynamic>? _recommendation;
   String? _error;
   Map<String, int> _categoryMapping = {};
+  Map<String, int> _locationMapping = {};
+  Map<String, int> _weatherMapping = {};
   late String _apiBaseUrl;
 
   @override
   void initState() {
     super.initState();
-    _apiBaseUrl = widget.apiBaseUrl ?? 'http://localhost:8000';
-    _loadCategoryMapping();
+    _apiBaseUrl = widget.apiBaseUrl ?? 'http://localhost:8001';
+    _loadMappings();
   }
 
-  Future<void> _loadCategoryMapping() async {
+  Future<void> _loadMappings() async {
     try {
       final response = await http.get(
         Uri.parse('$_apiBaseUrl/api/revenue-optimization/categories'),
@@ -51,11 +63,13 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          _categoryMapping = Map<String, int>.from(data['categories']);
+          _categoryMapping = Map<String, int>.from(data['categories'] ?? {});
+          _locationMapping = Map<String, int>.from(data['locations'] ?? {});
+          _weatherMapping = Map<String, int>.from(data['weather'] ?? {});
         });
       }
     } catch (e) {
-      print('Error loading category mapping: $e');
+      print('Error loading mappings: $e');
     }
   }
 
@@ -67,8 +81,10 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
     });
 
     try {
-      // Map category name to encoded ID if available, else default to 0
+      // Map strings to encoded IDs
       int categoryEncoded = _categoryMapping[widget.eventCategory] ?? 0;
+      int locationEncoded = _locationMapping[widget.location] ?? 0;
+      int weatherEncoded = _weatherMapping[widget.weatherForecast] ?? 0;
 
       final response = await http.post(
         Uri.parse('$_apiBaseUrl/api/revenue-optimization/optimize'),
@@ -77,6 +93,11 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
           'days_before_event': widget.daysBeforeEvent,
           'category_encoded': categoryEncoded,
           'venue_capacity': widget.venueCapacity,
+          'location_encoded': locationEncoded,
+          'weekend_flag': widget.isWeekend ? 1 : 0,
+          'organizer_rating': widget.organizerRating,
+          'weather_encoded': weatherEncoded,
+          'past_event_attendance': widget.pastAttendance,
         }),
       ).timeout(const Duration(seconds: 30));
 
@@ -334,13 +355,16 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
           ),
         ),
         const SizedBox(height: 12),
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: [
             _buildDetailChip(Icons.calendar_today, '${widget.daysBeforeEvent} days'),
-            const SizedBox(width: 8),
-            _buildDetailChip(Icons.location_on, '${widget.venueCapacity} capacity'),
-            const SizedBox(width: 8),
-            _buildDetailChip(Icons.category, widget.eventCategory),
+            _buildDetailChip(Icons.location_on, widget.location),
+            _buildDetailChip(Icons.people, '${widget.venueCapacity} cap'),
+            _buildDetailChip(Icons.star, '${widget.organizerRating} rating'),
+            _buildDetailChip(Icons.wb_sunny, widget.weatherForecast),
+            _buildDetailChip(Icons.weekend, widget.isWeekend ? 'Weekend' : 'Weekday'),
           ],
         ),
         const SizedBox(height: 20),
@@ -556,11 +580,15 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
           ),
           child: Column(
             children: [
-              _buildBreakdownRow('Days to Event', '${widget.daysBeforeEvent}'),
+              _buildBreakdownRow('Location', widget.location),
               const SizedBox(height: 8),
-              _buildBreakdownRow('Venue Capacity', '${widget.venueCapacity}'),
+              _buildBreakdownRow('Weather', widget.weatherForecast),
               const SizedBox(height: 8),
-              _buildBreakdownRow('Category', widget.eventCategory),
+              _buildBreakdownRow('Day Type', widget.isWeekend ? 'Weekend' : 'Weekday'),
+              const SizedBox(height: 8),
+              _buildBreakdownRow('Org. Rating', '${widget.organizerRating} ★'),
+              const SizedBox(height: 8),
+              _buildBreakdownRow('Past Attendance', '${widget.pastAttendance}'),
             ],
           ),
         ),

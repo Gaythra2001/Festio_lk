@@ -32,7 +32,12 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
   double _currentPrice = 2500;
   double _ticketsAvailable = 400;
   double _daysUntilEvent = 10;
-  String _eventCategory = 'Festival';
+  String _eventCategory = 'Music';
+  String _selectedLocation = 'Colombo';
+  double _organizerRating = 4.5;
+  String _weatherForecast = 'Clear';
+  double _pastAttendanceCount = 800;
+  bool _isWeekend = true;
   final AnalyticsApiService _analyticsApiService = AnalyticsApiService();
   Map<String, dynamic>? _analyticsSummary;
 
@@ -428,6 +433,11 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                 daysBeforeEvent: _daysUntilEvent.toInt(),
                 venueCapacity: _ticketsAvailable.toInt(),
                 currentPrice: _currentPrice,
+                location: _selectedLocation,
+                organizerRating: _organizerRating,
+                weatherForecast: _weatherForecast,
+                pastAttendance: _pastAttendanceCount.toInt(),
+                isWeekend: _isWeekend,
                 apiBaseUrl: 'http://localhost:8001',
                 onPriceUpdated: (newPrice) {
                   setState(() {
@@ -507,7 +517,24 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
           _buildSliderRow('Days until event', _daysUntilEvent, 1, 60, '', (val) {
             setState(() => _daysUntilEvent = val);
           }),
-          _buildDropdownRow('Event category', _eventCategory, ['Music', 'Tech', 'Cultural', 'Sports', 'Festival']),
+          _buildDropdownRow('Event category', _eventCategory, ['Music', 'Tech', 'Cultural', 'Sports'], (val) {
+            setState(() => _eventCategory = val);
+          }),
+          _buildDropdownRow('Location', _selectedLocation, ['Colombo', 'Galle', 'Jaffna', 'Kandy', 'Negombo'], (val) {
+            setState(() => _selectedLocation = val);
+          }),
+          _buildSliderRow('Organizer Rating', _organizerRating, 1.0, 5.0, '★', (val) {
+            setState(() => _organizerRating = val);
+          }),
+          _buildDropdownRow('Weather Forecast', _weatherForecast, ['Clear', 'Cloudy', 'Rainy'], (val) {
+            setState(() => _weatherForecast = val);
+          }),
+          _buildSliderRow('Past Event Attendance', _pastAttendanceCount.clamp(0, _ticketsAvailable), 0, _ticketsAvailable.clamp(1, 2000), '', (val) {
+            setState(() => _pastAttendanceCount = val);
+          }),
+          _buildToggleRow('Is Weekend', _isWeekend, (val) {
+            setState(() => _isWeekend = val);
+          }),
           _buildSliderRow('Competitor avg price', 2700, 500, 10000, 'LKR', (val) {}),
           _buildSliderRow('Marketing boost', 25, 0, 100, '%', (val) {}),
           _buildSliderRow('Sales trend (last 30 days)', 2.0, 0, 10, 'x', (val) {}),
@@ -555,7 +582,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
     );
   }
 
-  Widget _buildDropdownRow(String label, String value, List<String> options) {
+  Widget _buildDropdownRow(String label, String value, List<String> options, Function(String) onChanged) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -585,10 +612,31 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
               }).toList(),
               onChanged: (val) {
                 if (val != null) {
-                  setState(() => _eventCategory = val);
+                  onChanged(val);
                 }
               },
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleRow(String label, bool value, Function(bool) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: Colors.cyanAccent,
+            activeTrackColor: Colors.cyanAccent.withOpacity(0.3),
           ),
         ],
       ),
