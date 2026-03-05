@@ -5,8 +5,6 @@ import 'package:provider/provider.dart';
 import '../navigation/main_navigation_screen.dart';
 import '../../widgets/language_selector.dart';
 import '../../core/providers/auth_provider.dart';
-import '../../core/models/user_model.dart';
-import 'package:festio_lk/screens/organizer/modern_organizer_dashboard.dart';
 import 'registration_type_selection_screen.dart';
 
 class ModernLoginScreen extends StatefulWidget {
