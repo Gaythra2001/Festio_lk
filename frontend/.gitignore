@@ -1,0 +1,92 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be version controlled.
+# Uncomment the next line if you want to include your VS Code settings repo
+# .vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# iOS/macOS
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*sync/
+**/ios/**/.sconsign.dblite
+**/ios/**/.tags*
+**/ios/**/.DS_Store
+**/ios/**/.generated/
+**/ios/**/*.jnix
+**/ios/**/*.jar
+**/ios/**/*.o
+**/ios/**/*.obj.d
+**/ios/**/*.o.d
+**/ios/**/*.mod
+**/ios/**/*.smod
+**/ios/**/*.swiftmodule/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Flutter.xcframework
+
+# Android/linux/windows
+**/android/local.properties
+**/android/GeneratedPluginRegistrant.java
+**/android/.gradle/
+**/android/captures/
+**/android/gradle-wrapper.jar
+**/android/gradle-wrapper.properties
+**/android/gradlew
+**/android/gradlew.bat
+**/android/key.properties
+**/android/.gitignore
+
+# Windows
+windows/flutter/generated_plugins.cmake
+windows/flutter/generated_config.cmake
+windows/flutter/generated_platform_c_api.h
+windows/flutter/runner/GeneratedPluginRegistrant.cpp
+
+# Linux
+linux/flutter/generated_plugins.cmake
+linux/flutter/generated_plugins.cc
+linux/flutter/generated_plugins.h
+linux/flutter/generated_plugins_platform_interface.h
+
+# Coverage
+coverage/
+
+# Exceptions to above rules.
+!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
