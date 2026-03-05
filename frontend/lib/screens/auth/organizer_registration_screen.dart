@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/auth_provider.dart';
-import '../../core/models/user_model.dart';
 import 'modern_login_screen.dart';
 
 class OrganizerRegistrationScreen extends StatefulWidget {

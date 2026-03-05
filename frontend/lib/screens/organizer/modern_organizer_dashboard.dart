@@ -8,7 +8,6 @@ import '../../core/providers/promotion_provider.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/organizer_chatbot_provider.dart';
 import '../../core/services/analytics_api_service.dart';
-import '../../core/routes/app_routes.dart';
 import 'organizer_chatbot_widget.dart';
 import 'widgets/ai_revenue_optimizer_card.dart';
 
@@ -28,7 +27,6 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
   late AnimationController _fadeController;
   final String _selectedEventId = '';
   String _selectedLanguage = 'en';
-  bool _isAnalyticsLoading = false;
   double _currentPrice = 2500;
   double _ticketsAvailable = 400;
   double _daysUntilEvent = 10;
@@ -123,11 +121,6 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
   Future<void> _loadAnalyticsSummary() async {
     final authProvider = context.read<AuthProvider>();
     final organizerId = authProvider.user?.id ?? 'unknown';
-    if (mounted) {
-      setState(() {
-        _isAnalyticsLoading = true;
-      });
-    }
     try {
       final summary = await _analyticsApiService.getSummary(
         organizerId: organizerId,
@@ -137,7 +130,6 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
       if (mounted) {
         setState(() {
           _analyticsSummary = summary;
-          _isAnalyticsLoading = false;
         });
       }
     } catch (_) {}
@@ -150,20 +142,6 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
       final value = counts[eventType];
       if (value is int) return value;
       if (value is num) return value.toInt();
-    }
-    return 0;
-  }
-
-  int _getVariantCount(String eventType, String variant) {
-    if (_analyticsSummary == null) return 0;
-    final variants = _analyticsSummary!['variant_counts'];
-    if (variants is Map) {
-      final eventBucket = variants[eventType];
-      if (eventBucket is Map) {
-        final value = eventBucket[variant];
-        if (value is int) return value;
-        if (value is num) return value.toInt();
-      }
     }
     return 0;
   }
@@ -460,13 +438,6 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
         ),
       ),
     );
-  }
-
-
-  String _formatCurrency(dynamic value) {
-    if (value == null) return '-';
-    if (value is num) return value.toStringAsFixed(0);
-    return value.toString();
   }
 
   String _formatAnalyticsCount(int count) {
@@ -1609,64 +1580,5 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
         duration: const Duration(seconds: 2),
       ),
     );
-  }
-}
-
-class _MiniTrendPainter extends CustomPainter {
-  final List<double> values;
-  final Color color;
-
-  _MiniTrendPainter({
-    required this.values,
-    required this.color,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (values.isEmpty) return;
-
-    final maxVal = values.reduce((a, b) => a > b ? a : b);
-    final minVal = values.reduce((a, b) => a < b ? a : b);
-    final range = (maxVal - minVal).abs();
-    final safeRange = range < 0.0001 ? 1 : range;
-
-    final linePaint = Paint()
-      ..color = color
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final fillPaint = Paint()
-      ..color = color.withOpacity(0.15)
-      ..style = PaintingStyle.fill;
-
-    final path = Path();
-    final fillPath = Path();
-
-    for (int i = 0; i < values.length; i++) {
-      final x = size.width * (i / (values.length - 1));
-      final normalized = (values[i] - minVal) / safeRange;
-      final y = size.height - (normalized * size.height);
-
-      if (i == 0) {
-        path.moveTo(x, y);
-        fillPath.moveTo(x, size.height);
-        fillPath.lineTo(x, y);
-      } else {
-        path.lineTo(x, y);
-        fillPath.lineTo(x, y);
-      }
-    }
-
-    fillPath.lineTo(size.width, size.height);
-    fillPath.close();
-
-    canvas.drawPath(fillPath, fillPaint);
-    canvas.drawPath(path, linePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _MiniTrendPainter oldDelegate) {
-    return oldDelegate.values != values || oldDelegate.color != color;
   }
 }
