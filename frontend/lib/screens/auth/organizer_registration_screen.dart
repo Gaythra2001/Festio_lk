@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import '../../core/providers/user_data_provider.dart';
+import '../../core/providers/auth_provider.dart';
 import '../../core/models/user_model.dart';
 import 'modern_login_screen.dart';
 
@@ -60,27 +60,41 @@ class _OrganizerRegistrationScreenState
     setState(() => _isLoading = true);
 
     try {
-      await Future.delayed(const Duration(seconds: 2));
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final displayName = '${_firstNameController.text} ${_lastNameController.text}';
+      
+      final success = await authProvider.register(
+        _emailController.text.trim(),
+        _passwordController.text,
+        displayName,
+        userType: 'organizer',
+        phoneNumber: _phoneController.text.trim(),
+        businessName: _businessNameController.text.trim(),
+        businessRegistration: _businessRegistrationController.text.trim(),
+        businessAddress: _businessAddressController.text.trim(),
+      );
 
       if (mounted) {
-        Provider.of<UserDataProvider>(context, listen: false).registerUser(
-          email: _emailController.text,
-          fullName: '${_firstNameController.text} ${_lastNameController.text}',
-          phone: _phoneController.text,
-          location: _businessAddressController.text,
-          userType: UserType.organizer,
-        );
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Organizer account created! Please login and complete your profile.'),
+              backgroundColor: Colors.green,
+            ),
+          );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'Organizer account created! Please login and complete your profile.'),
-          ),
-        );
-
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const ModernLoginScreen()),
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const ModernLoginScreen()),
+            );
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Registration failed. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       }

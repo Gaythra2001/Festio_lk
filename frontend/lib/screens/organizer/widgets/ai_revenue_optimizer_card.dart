@@ -67,12 +67,15 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
     });
 
     try {
+      // Map category name to encoded ID if available, else default to 0
+      int categoryEncoded = _categoryMapping[widget.eventCategory] ?? 0;
+
       final response = await http.post(
         Uri.parse('$_apiBaseUrl/api/revenue-optimization/optimize'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'days_before_event': widget.daysBeforeEvent,
-          'event_category': widget.eventCategory,
+          'category_encoded': categoryEncoded,
           'venue_capacity': widget.venueCapacity,
         }),
       ).timeout(const Duration(seconds: 30));
@@ -99,14 +102,13 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
 
     try {
       final response = await http.post(
-        Uri.parse('$_apiBaseUrl/api/revenue-optimization/apply-recommendation'),
+        Uri.parse('$_apiBaseUrl/api/revenue-optimization/apply'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'event_id': widget.eventId,
           'old_price': widget.currentPrice,
           'new_price': _recommendation!['recommended_price'].toDouble(),
-          'predicted_revenue': _recommendation!['expected_revenue'],
-          'model_used': _recommendation!['model_used'],
+          'predicted_revenue': _recommendation!['expected_revenue'].toDouble(),
         }),
       ).timeout(const Duration(seconds: 30));
 

@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
@@ -74,23 +74,25 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    print(f"Incoming request: {request.method} {request.url}")
+    try:
+        response = await call_next(request)
+        print(f"Response status: {response.status_code}")
+        return response
+    except Exception as e:
+        print(f"Request failed with error: {str(e)}")
+        raise e
+
 # CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost",
-        "http://127.0.0.1",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000",
-        "http://localhost:3000",
-        "http://localhost:5000",
-        "http://localhost:8080",
-        "http://localhost:5050",
-        "*" # Fallback
-    ],
-    allow_credentials=False, # Set to False when using "*" or multiple origins without specific mapping
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Include routers
@@ -119,8 +121,12 @@ app.include_router(organizer_ml_routes.router)
 # Organizer Chatbot routers
 app.include_router(organizer_chatbot_routes.router)
 
-# Revenue Optimization (Using Firestore)
-app.include_router(revenue_optimization.router)
+# Revenue Optimization (Using Firestore) - DISABLED in favor of new AI Revenue Optimization
+# app.include_router(revenue_optimization.router)
+
+# New AI Revenue Optimization (As requested)
+from revenue_optimizer_api import router as revenue_api
+app.include_router(revenue_api)
 
 # Analytics routers
 app.include_router(analytics.router)

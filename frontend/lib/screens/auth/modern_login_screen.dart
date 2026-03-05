@@ -4,7 +4,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../navigation/main_navigation_screen.dart';
 import '../../widgets/language_selector.dart';
-import '../../core/providers/user_data_provider.dart';
+import '../../core/providers/auth_provider.dart';
+import '../../core/models/user_model.dart';
+import 'package:festio_lk/screens/organizer/modern_organizer_dashboard.dart';
 import 'registration_type_selection_screen.dart';
 
 class ModernLoginScreen extends StatefulWidget {
@@ -23,7 +25,7 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
   Future<void> _handleLogin() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('please_wait'.tr())),
+        const SnackBar(content: Text('Please enter email and password')),
       );
       return;
     }
@@ -31,25 +33,30 @@ class _ModernLoginScreenState extends State<ModernLoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // In demo mode, any email/password works
-      // This simulates a login - no actual Firebase needed
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Store user data in provider
-      if (mounted) {
-        Provider.of<UserDataProvider>(context, listen: false).loginUser(
-          email: _emailController.text,
-        );
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await authProvider.signIn(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
 
-        // Navigate to home screen
+      if (mounted && authProvider.user != null) {
+        // Unified routing: both roles go to MainNavigationScreen
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
         );
       }
     } catch (e) {
       if (mounted) {
+        // Extract message if it starts with "Exception: "
+        String message = e.toString();
+        if (message.startsWith('Exception: ')) {
+          message = message.substring(11);
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login failed: $e')),
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {

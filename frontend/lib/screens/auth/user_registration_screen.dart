@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import '../../core/providers/user_data_provider.dart';
+import '../../core/providers/auth_provider.dart';
 import '../../core/models/user_model.dart';
 import 'modern_login_screen.dart';
 
@@ -27,46 +27,9 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> {
   bool _agreeToTerms = false;
 
   Future<void> _handleGoogleRegistration() async {
-    setState(() => _isLoading = true);
-
-    try {
-      // Simulate Google registration
-      await Future.delayed(const Duration(seconds: 2));
-
-      if (mounted) {
-        // In a real app, you would use google_sign_in package
-        // For demo, we'll create a basic user with Google email
-        Provider.of<UserDataProvider>(context, listen: false).registerUser(
-          email: 'user_${DateTime.now().millisecondsSinceEpoch}@google.com',
-          fullName: 'Google User',
-          phone: '+94 000000000',
-          location: 'Sri Lanka',
-          userType: UserType.user,
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account created with Google! Please login.'),
-          ),
-        );
-
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const ModernLoginScreen()),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Google registration failed: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Google registration coming soon!')),
+    );
   }
 
   Future<void> _handleEmailRegistration() async {
@@ -100,26 +63,37 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await Future.delayed(const Duration(seconds: 2));
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final displayName = '${_firstNameController.text} ${_lastNameController.text}';
+      
+      final success = await authProvider.register(
+        _emailController.text.trim(),
+        _passwordController.text,
+        displayName,
+        userType: 'user',
+        phoneNumber: _phoneController.text.trim(),
+      );
 
       if (mounted) {
-        Provider.of<UserDataProvider>(context, listen: false).registerUser(
-          email: _emailController.text,
-          fullName: '${_firstNameController.text} ${_lastNameController.text}',
-          phone: _phoneController.text,
-          location: 'Sri Lanka',
-          userType: UserType.user,
-        );
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account created! Please login.'),
+              backgroundColor: Colors.green,
+            ),
+          );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account created! Please login.'),
-          ),
-        );
-
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const ModernLoginScreen()),
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const ModernLoginScreen()),
+            );
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Registration failed. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       }
