@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:http/http.dart' as _http;
+import 'package:http/http.dart' as http;
 import '../models/user_model.dart';
 
 class AuthService {
@@ -115,7 +115,7 @@ class AuthService {
 
         // Also notify the backend to keep Firestore (via Admin SDK) in sync
         try {
-          await _http.post(
+          await http.post(
             Uri.parse('http://localhost:8000/api/auth/register'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({

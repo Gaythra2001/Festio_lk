@@ -6,7 +6,9 @@ from controllers.auth_controller import extract_token_from_header
 
 router = APIRouter()
 
-firebase_auth_service = get_firebase_auth_service()
+# Lazy initialization - get service when needed
+def get_auth_service():
+    return get_firebase_auth_service()
 
 
 # ============ REQUEST/RESPONSE MODELS ============
@@ -68,11 +70,11 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> dict:
     
     try:
         # Verify Firebase ID token
-        decoded_token = firebase_auth_service.verify_id_token(token)
+        decoded_token = get_auth_service().verify_id_token(token)
         uid = decoded_token.get('uid')
         
         # Get user profile from Firestore
-        user = firebase_auth_service.get_user_by_uid(uid)
+        user = get_auth_service().get_user_by_uid(uid)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -102,7 +104,7 @@ async def register(user_data: UserRegister):
     """
     try:
         # Create user in Firebase and Firestore
-        user = firebase_auth_service.create_user(
+        user = get_auth_service().create_user(
             email=user_data.email,
             password=user_data.password,
             display_name=user_data.display_name,
@@ -159,11 +161,11 @@ async def login(authorization: Optional[str] = Header(None)):
             )
         
         # Verify token
-        decoded_token = firebase_auth_service.verify_id_token(token)
+        decoded_token = get_auth_service().verify_id_token(token)
         uid = decoded_token.get('uid')
         
         # Get user profile
-        user = firebase_auth_service.get_user_by_uid(uid)
+        user = get_auth_service().get_user_by_uid(uid)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -219,7 +221,7 @@ async def update_user_profile(
     """
     update_dict = update_data.dict(exclude_unset=True)
     
-    updated_user = firebase_auth_service.update_user(
+    updated_user = get_auth_service().update_user(
         uid=current_user['id'],
         **update_dict
     )
@@ -257,7 +259,7 @@ async def verify_token(authorization: Optional[str] = Header(None)):
         )
     
     try:
-        decoded_token = firebase_auth_service.verify_id_token(token)
+        decoded_token = get_auth_service().verify_id_token(token)
         return {
             "valid": True,
             "uid": decoded_token.get('uid'),

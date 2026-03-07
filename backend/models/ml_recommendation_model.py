@@ -200,7 +200,7 @@ class EventRecommendationModel:
             'event_id_mapping': self.event_id_mapping
         }
         joblib.dump(model_data, path)
-        print(f"✅ Model saved to {path}")
+        print(f"[OK] Model saved to {path}")
     
     def load_model(self, path: str = 'models/recommendation_model.pkl') -> None:
         """Load trained model from disk"""
@@ -211,4 +211,4 @@ class EventRecommendationModel:
         self.user_item_matrix = model_data['user_item_matrix']
         self.user_id_mapping = model_data['user_id_mapping']
         self.event_id_mapping = model_data['event_id_mapping']
-        print(f"✅ Model loaded from {path}")
+        print(f"[OK] Model loaded from {path}")

@@ -357,18 +357,18 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
           Expanded(
             child: LineChart(
               LineChartData(
-                gridData: FlGridData(show: false),
-                titlesData: FlTitlesData(show: false),
+                gridData: const FlGridData(show: false),
+                titlesData: const FlTitlesData(show: false),
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
                     spots: [
-                      FlSpot(0, 1),
-                      FlSpot(2, 1.5),
-                      FlSpot(4, 1.2),
-                      FlSpot(6, 2.5),
-                      FlSpot(8, 2.0),
-                      FlSpot(10, 3.5),
+                      const FlSpot(0, 1),
+                      const FlSpot(2, 1.5),
+                      const FlSpot(4, 1.2),
+                      const FlSpot(6, 2.5),
+                      const FlSpot(8, 2.0),
+                      const FlSpot(10, 3.5),
                     ],
                     isCurved: true,
                     color: Colors.cyanAccent,
@@ -606,7 +606,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: Colors.cyanAccent,
+            activeThumbColor: Colors.cyanAccent,
             activeTrackColor: Colors.cyanAccent.withOpacity(0.3),
           ),
         ],
