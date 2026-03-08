@@ -112,29 +112,49 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
     },
   ];
 
-  List<Map<String, dynamic>> _getFilteredEvents(List<EventModel> providerEventsList) {
-    final providerEvents = providerEventsList.map((event) {
-      return {
-        'title': event.title,
-        'date': DateFormat('MMM dd, yyyy').format(event.startDate),
-        'location': event.location,
-        'category': event.category,
-        'imageUrl': event.imageUrl ??
-            'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200',
-        'juice': 4.5,
-      };
+  List<EventModel> _getMergedEventModels(List<EventModel> providerEvents) {
+    final List<EventModel> localStaticEvents = _allEvents.map((e) {
+      DateTime date;
+      try {
+        date = DateFormat('MMM dd, yyyy').parse(e['date']);
+      } catch (_) {
+        date = DateTime.now();
+      }
+      return EventModel(
+        id: 'static_${e['title'].hashCode}',
+        title: e['title'],
+        description: e['title'],
+        startDate: date,
+        endDate: date,
+        location: e['location'],
+        category: e['category'],
+        imageUrl: e['imageUrl'],
+        organizerId: 'system',
+        organizerName: 'System',
+        isApproved: true,
+        status: 'approved',
+        submittedAt: DateTime.now(),
+      );
     }).toList();
 
-    var events = [...providerEvents, ..._allEvents];
+    // De-duplicate: If provider has an event with same title as static, prefer provider
+    final staticTitles = localStaticEvents.map((e) => e.title.toLowerCase()).toSet();
+    final uniqueProviderEvents = providerEvents.where((e) => !staticTitles.contains(e.title.toLowerCase())).toList();
+
+    return [...uniqueProviderEvents, ...localStaticEvents];
+  }
+
+  List<EventModel> _getFilteredEvents(List<EventModel> mergedEvents) {
+    var events = mergedEvents;
 
     if (_selectedCategory != 'All') {
-      events = events.where((e) => e['category'] == _selectedCategory).toList();
+      events = events.where((e) => e.category == _selectedCategory).toList();
     }
 
     if (_searchQuery.isNotEmpty) {
       events = events.where((e) {
-        final title = e['title'].toLowerCase();
-        final location = e['location'].toLowerCase();
+        final title = e.title.toLowerCase();
+        final location = e.location.toLowerCase();
         final query = _searchQuery.toLowerCase();
         return title.contains(query) || location.contains(query);
       }).toList();
@@ -335,8 +355,9 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                               padding: const EdgeInsets.only(bottom: 24),
                               child: Consumer<EventProvider>(
                                 builder: (context, eventProvider, child) {
+                                  final merged = _getMergedEventModels(eventProvider.upcomingEvents);
                                   return EventCalendar(
-                                    events: eventProvider.upcomingEvents,
+                                    events: _getFilteredEvents(merged),
                                     onDateSelected: (date) {},
                                     onEventsForDateChanged: (events) {},
                                   );
@@ -345,8 +366,13 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                             ),
                           Container(
                             key: _eventsKey,
-                            child: _buildEventSection(isDesktop, isTablet,
-                                _getFilteredEvents(context.watch<EventProvider>().upcomingEvents)),
+                            child: Consumer<EventProvider>(
+                              builder: (context, eventProvider, child) {
+                                final merged = _getMergedEventModels(eventProvider.upcomingEvents);
+                                final filtered = _getFilteredEvents(merged);
+                                return _buildEventSection(isDesktop, isTablet, filtered);
+                              },
+                            ),
                           ),
                           const SizedBox(height: 40),
                           const AppFooter(),
@@ -947,52 +973,41 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
   }
 
   Widget _buildEventSection(
-      bool isDesktop, bool isTablet, List<Map<String, dynamic>> events) {
+      bool isDesktop, bool isTablet, List<EventModel> events) {
     if (events.isEmpty) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(40),
-          child: Column(
-            children: [
-              const Icon(
-                Icons.search_off,
-                size: 64,
-                color: Colors.white38,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No events found',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  color: Colors.white70,
-                ),
-              ),
-            ],
-          ),
+        child: Column(
+          children: [
+            const SizedBox(height: 40),
+            Icon(Icons.event_busy, size: 64, color: Colors.white.withOpacity(0.2)),
+            const SizedBox(height: 16),
+            Text(
+              'No events found',
+              style: GoogleFonts.poppins(color: Colors.white54, fontSize: 16),
+            ),
+          ],
         ),
       );
     }
 
-    final columns = isDesktop ? 3 : isTablet ? 2 : 1;
-
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: columns,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: isDesktop ? 1.1 : 1.0,
-      ),
       itemCount: events.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isDesktop ? 3 : (isTablet ? 2 : 1),
+        childAspectRatio: isDesktop ? 0.85 : 1.1,
+        crossAxisSpacing: 24,
+        mainAxisSpacing: 24,
+      ),
       itemBuilder: (context, index) {
         final event = events[index];
         return _buildEventCard(
-          title: event['title']!,
-          date: event['date']!,
-          location: event['location']!,
-          imageUrl: event['imageUrl']!,
-          juice: event['juice']! as double,
+          title: event.title,
+          date: DateFormat('MMM dd, yyyy').format(event.startDate),
+          location: event.location,
+          imageUrl: event.imageUrl ?? 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200',
+          juice: 4.5, // Default rating for now
         );
       },
     );
