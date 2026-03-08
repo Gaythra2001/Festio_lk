@@ -162,6 +162,12 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
     )).toList();
   }
 
+  List<EventModel> _getStaticEvents() {
+    final base = _getBaseEvents();
+    final poya = _generatePoyaDays();
+    return [...base, ...poya].map((e) => _convertToEventModel(e)).toList();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -286,33 +292,27 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    // Merge provider events (includes newly submitted ones) with built-in list
-    final providerEvents = context
-        .watch<EventProvider>()
-        .upcomingEvents
-        .map((e) => _Event(
-              title: e.title,
-              date: e.startDate,
-              location: e.location,
-              category: e.category,
-              image: e.imageUrl ??
-                  'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800',
-              juice: 4.5,
-              price: e.ticketPrice != null
-                  ? (e.ticketPrice! == 0
-                      ? 'Free'
-                      : 'LKR ${e.ticketPrice!.toStringAsFixed(0)}')
-                  : 'Free',
-            ))
-        .toList();
+    final providerEvents = context.watch<EventProvider>().upcomingEvents;
+    final staticEvents = _getStaticEvents();
 
-    // De-duplicate: only keep provider events whose title isn't already in _events
-    final existingTitles = _events.map((e) => e.title.toLowerCase()).toSet();
-    final newProviderEvents = providerEvents
-        .where((e) => !existingTitles.contains(e.title.toLowerCase()))
-        .toList();
+    // De-duplicate: If provider has an event with same title as static, prefer provider
+    final staticTitles = staticEvents.map((e) => e.title.toLowerCase()).toSet();
+    final uniqueProviderEvents = providerEvents.where((e) => !staticTitles.contains(e.title.toLowerCase())).toList();
 
-    final allEvents = [...newProviderEvents, ..._events];
+    final List<EventModel> allEventsModels = [...uniqueProviderEvents, ...staticEvents];
+
+    // Convert all back to _Event for the existing UI logic (to avoid breaking too many widgets)
+    final allEvents = allEventsModels.map((e) => _Event(
+      title: e.title,
+      date: e.startDate,
+      location: e.location,
+      category: e.category,
+      image: e.imageUrl ?? 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800',
+      juice: 4.5,
+      price: e.ticketPrice != null 
+          ? (e.ticketPrice! == 0 ? 'Free' : 'LKR ${e.ticketPrice!.toStringAsFixed(0)}')
+          : 'Free',
+    )).toList();
 
     final categoryFiltered = _selectedCategory == 'All'
         ? allEvents
@@ -565,7 +565,6 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
 
           const SizedBox(height: 24),
 
-          // Calendar Widget
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -583,7 +582,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
               ],
             ),
             child: EventCalendar(
-              events: filteredEvents.map(_convertToEventModel).toList(),
+              events: allEventsModels, // Use the full merged list for the calendar
               onDateSelected: (date) {
                 _scrollToDate(date);
               },
