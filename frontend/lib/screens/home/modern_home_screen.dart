@@ -355,7 +355,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                               padding: const EdgeInsets.only(bottom: 24),
                               child: Consumer<EventProvider>(
                                 builder: (context, eventProvider, child) {
-                                  final merged = _getMergedEventModels(eventProvider.upcomingEvents);
+                                  final merged = _getMergedEventModels(eventProvider.events);
                                   return EventCalendar(
                                     events: _getFilteredEvents(merged),
                                     onDateSelected: (date) {},
