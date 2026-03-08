@@ -211,8 +211,8 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
           ticketPrice: _priceController.text.isNotEmpty
               ? double.tryParse(_priceController.text)
               : null,
-          isApproved: false,
-          status: 'pending',
+          isApproved: true,
+          status: 'approved',
         );
 
         // Submit event with image

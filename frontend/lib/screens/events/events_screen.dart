@@ -292,7 +292,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    final providerEvents = context.watch<EventProvider>().upcomingEvents;
+    final providerEvents = context.watch<EventProvider>().events;
     final staticEvents = _getStaticEvents();
 
     // De-duplicate: If provider has an event with same title as static, prefer provider
