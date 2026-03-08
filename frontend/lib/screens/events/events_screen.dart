@@ -48,7 +48,6 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   String _selectedCategory = 'All';
   final List<String> _categories = ['All', 'Festival', 'Dance', 'Music', 'Theater', 'Art', 'Food', 'Poya Days'];
   late final TabController _tabController;
-  late final List<_Event> _events;
   final MLRecommendationService _mlService = MLRecommendationService();
   late Future<List<RecommendationModel>> _mlFuture;
   String _currentUserId = 'guest_user';
@@ -171,7 +170,6 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _events = [..._getBaseEvents(), ..._generatePoyaDays()];
     _tabController = TabController(length: 2, vsync: this);
     _mlFuture = Future.value(<RecommendationModel>[]); // Hydrated once auth/user context is available
     _searchController = TextEditingController();
