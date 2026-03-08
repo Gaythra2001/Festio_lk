@@ -102,6 +102,48 @@ class MockFirestoreService {
     return newEvent.id;
   }
 
+  /// Auto-approve the most recently submitted event (demo mode shortcut so
+  /// submitted events appear immediately in the UI without a separate admin step).
+  Future<void> autoApproveLatest() async {
+    if (_mockEvents.isEmpty) return;
+    final idx = _mockEvents.length - 1;
+    final e = _mockEvents[idx];
+    if (e.status == 'pending') {
+      _mockEvents[idx] = EventModel(
+        id: e.id,
+        title: e.title,
+        description: e.description,
+        titleSi: e.titleSi,
+        titleTa: e.titleTa,
+        descriptionSi: e.descriptionSi,
+        descriptionTa: e.descriptionTa,
+        startDate: e.startDate,
+        endDate: e.endDate,
+        location: e.location,
+        locationSi: e.locationSi,
+        locationTa: e.locationTa,
+        category: e.category,
+        tags: e.tags,
+        organizerId: e.organizerId,
+        organizerName: e.organizerName,
+        imageUrl: e.imageUrl,
+        latitude: e.latitude,
+        longitude: e.longitude,
+        isApproved: true,
+        isSpam: e.isSpam,
+        spamScore: e.spamScore,
+        trustScore: e.trustScore,
+        submittedAt: e.submittedAt,
+        approvedAt: DateTime.now(),
+        status: 'approved',
+        rejectionReason: null,
+        maxAttendees: e.maxAttendees,
+        ticketPrice: e.ticketPrice,
+        ticketUrl: e.ticketUrl,
+      );
+    }
+  }
+
   Future<List<EventModel>> getPendingEvents() async {
     await Future.delayed(const Duration(milliseconds: 300));
     return _mockEvents

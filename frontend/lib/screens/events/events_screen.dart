@@ -244,6 +244,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
       endDate: event.date,
       location: event.location,
       category: event.category,
+      imageUrl: event.image,
       organizerId: 'system',
       organizerName: 'System',
       isApproved: true,
@@ -284,9 +285,38 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+
+    // Merge provider events (includes newly submitted ones) with built-in list
+    final providerEvents = context
+        .watch<EventProvider>()
+        .upcomingEvents
+        .map((e) => _Event(
+              title: e.title,
+              date: e.startDate,
+              location: e.location,
+              category: e.category,
+              image: e.imageUrl ??
+                  'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800',
+              juice: 4.5,
+              price: e.ticketPrice != null
+                  ? (e.ticketPrice! == 0
+                      ? 'Free'
+                      : 'LKR ${e.ticketPrice!.toStringAsFixed(0)}')
+                  : 'Free',
+            ))
+        .toList();
+
+    // De-duplicate: only keep provider events whose title isn't already in _events
+    final existingTitles = _events.map((e) => e.title.toLowerCase()).toSet();
+    final newProviderEvents = providerEvents
+        .where((e) => !existingTitles.contains(e.title.toLowerCase()))
+        .toList();
+
+    final allEvents = [...newProviderEvents, ..._events];
+
     final categoryFiltered = _selectedCategory == 'All'
-      ? _events
-      : _events.where((e) => e.category == _selectedCategory).toList();
+        ? allEvents
+        : allEvents.where((e) => e.category == _selectedCategory).toList();
     final filteredEvents = _applyFilters(categoryFiltered, today);
     final upcomingEvents = filteredEvents
         .where((event) => !event.date.isBefore(today))
