@@ -1,3 +1,4 @@
+import 'package:festio_lk/core/services/EventR_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
@@ -29,17 +30,39 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
+  DateTime? _openedAt;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _trackSessionStart();
   }
 
   @override
   void dispose() {
+     _trackSessionEnd();
     _tabController.dispose();
     super.dispose();
   }
+
+
+   Future<void> _trackSessionStart() async {
+  _openedAt = DateTime.now();
+
+  await FirebaseService().startOrUpdateEventSession(
+    eventTitle: widget.title,
+  );
+}
+
+Future<void> _trackSessionEnd() async {
+  if (_openedAt != null) {
+    await FirebaseService().endEventSession(
+      eventTitle: widget.title,
+      openedAt: _openedAt!,
+    );
+  }
+}
 
   @override
   Widget build(BuildContext context) {
