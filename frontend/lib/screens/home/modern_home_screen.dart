@@ -15,6 +15,7 @@ import '../../widgets/event_calendar.dart';
 import '../../widgets/juice_rating.dart';
 import '../../core/providers/notification_provider.dart';
 import '../../core/providers/event_provider.dart';
+import '../../core/models/event_model.dart';
 import '../../widgets/app_footer.dart';
 
 class ModernHomeScreen extends StatefulWidget {
@@ -111,9 +112,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
     },
   ];
 
-  List<Map<String, dynamic>> get _filteredEvents {
-    final eventProvider = Provider.of<EventProvider>(context, listen: false);
-    final providerEvents = eventProvider.upcomingEvents.map((event) {
+  List<Map<String, dynamic>> _getFilteredEvents(List<EventModel> providerEventsList) {
+    final providerEvents = providerEventsList.map((event) {
       return {
         'title': event.title,
         'date': DateFormat('MMM dd, yyyy').format(event.startDate),
@@ -345,7 +345,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                             ),
                           Container(
                             key: _eventsKey,
-                            child: _buildEventSection(isDesktop, isTablet),
+                            child: _buildEventSection(isDesktop, isTablet,
+                                _getFilteredEvents(context.watch<EventProvider>().upcomingEvents)),
                           ),
                           const SizedBox(height: 40),
                           const AppFooter(),
@@ -945,8 +946,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
     );
   }
 
-  Widget _buildEventSection(bool isDesktop, bool isTablet) {
-    final events = _filteredEvents;
+  Widget _buildEventSection(
+      bool isDesktop, bool isTablet, List<Map<String, dynamic>> events) {
     if (events.isEmpty) {
       return Center(
         child: Padding(

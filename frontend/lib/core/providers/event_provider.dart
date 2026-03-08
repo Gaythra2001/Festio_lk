@@ -289,8 +289,11 @@ class EventProvider with ChangeNotifier {
         newId = await _firestoreService!.submitEvent(eventWithImage);
       } else if (_mockFirestoreService != null) {
         newId = await _mockFirestoreService!.submitEvent(eventWithImage);
+        // Demo mode: auto-approve so the event appears immediately in the UI
+        await _mockFirestoreService!.autoApproveLatest();
       }
       await loadPendingEvents();
+      await loadUpcomingEvents();
       if (event.organizerId.isNotEmpty) {
         loadOrganizerEvents(event.organizerId);
       }
