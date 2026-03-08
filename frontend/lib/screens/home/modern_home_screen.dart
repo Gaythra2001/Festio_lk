@@ -360,6 +360,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                                 builder: (context, eventProvider, child) {
                                   final merged = _getMergedEventModels(
                                       eventProvider.upcomingEvents);
+                                  final merged = _getMergedEventModels(eventProvider.events);
                                   return EventCalendar(
                                     events: _getFilteredEvents(merged),
                                     onDateSelected: (date) {},
