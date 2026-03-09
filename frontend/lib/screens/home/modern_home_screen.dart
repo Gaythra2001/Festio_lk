@@ -139,17 +139,19 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
       );
     }).toList();
 
-    // De-duplicate: If provider has an event with same title as static, prefer provider
-    final staticTitles =
-        localStaticEvents.map((e) => e.title.toLowerCase()).toSet();
-    final uniqueProviderEvents = providerEvents
-        .where((e) => !staticTitles.contains(e.title.toLowerCase()))
+    // De-duplicate: Prioritize provider events over static ones
+    final providerTitles =
+        providerEvents.map((e) => e.title.toLowerCase()).toSet();
+    
+    final uniqueStaticEvents = localStaticEvents
+        .where((e) => !providerTitles.contains(e.title.toLowerCase()))
         .toList();
 
-    return [...uniqueProviderEvents, ...localStaticEvents];
+    return [...providerEvents, ...uniqueStaticEvents];
   }
 
-  List<EventModel> _getFilteredEvents(List<EventModel> mergedEvents) {
+  List<EventModel> _getFilteredEvents(List<EventModel> mergedEvents,
+      {bool upcomingOnly = false}) {
     var events = mergedEvents;
 
     if (_selectedCategory != 'All') {
@@ -163,6 +165,13 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
         final query = _searchQuery.toLowerCase();
         return title.contains(query) || location.contains(query);
       }).toList();
+    }
+
+    if (upcomingOnly) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      events = events.where((e) => !e.startDate.isBefore(today)).toList();
+      events.sort((a, b) => a.startDate.compareTo(b.startDate));
     }
 
     return events;
@@ -358,9 +367,11 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                               padding: const EdgeInsets.only(bottom: 24),
                               child: Consumer<EventProvider>(
                                 builder: (context, eventProvider, child) {
-                                  final merged = _getMergedEventModels(eventProvider.events);
+                                  final merged =
+                                      _getMergedEventModels(eventProvider.events);
                                   return EventCalendar(
-                                    events: _getFilteredEvents(merged),
+                                    events: _getFilteredEvents(merged,
+                                        upcomingOnly: false),
                                     onDateSelected: (date) {},
                                     onEventsForDateChanged: (events) {},
                                   );
@@ -371,9 +382,10 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                             key: _eventsKey,
                             child: Consumer<EventProvider>(
                               builder: (context, eventProvider, child) {
-                                final merged = _getMergedEventModels(
-                                    eventProvider.upcomingEvents);
-                                final filtered = _getFilteredEvents(merged);
+                                final merged =
+                                    _getMergedEventModels(eventProvider.events);
+                                final filtered = _getFilteredEvents(merged,
+                                    upcomingOnly: true);
                                 return _buildEventSection(
                                     isDesktop, isTablet, filtered);
                               },

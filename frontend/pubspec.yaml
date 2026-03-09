@@ -48,6 +48,7 @@ dependencies:
   # Date & Time
   intl_phone_field: ^3.2.0
   table_calendar: ^3.0.9
+  uuid: ^4.5.3
 
 dev_dependencies:
   flutter_test:

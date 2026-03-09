@@ -293,11 +293,11 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
     final providerEvents = context.watch<EventProvider>().events;
     final staticEvents = _getStaticEvents();
 
-    // De-duplicate: If provider has an event with same title as static, prefer provider
-    final staticTitles = staticEvents.map((e) => e.title.toLowerCase()).toSet();
-    final uniqueProviderEvents = providerEvents.where((e) => !staticTitles.contains(e.title.toLowerCase())).toList();
+    // De-duplicate: Prioritize provider events over static ones
+    final providerTitles = providerEvents.map((e) => e.title.toLowerCase()).toSet();
+    final uniqueStaticEvents = staticEvents.where((e) => !providerTitles.contains(e.title.toLowerCase())).toList();
 
-    final List<EventModel> allEventsModels = [...uniqueProviderEvents, ...staticEvents];
+    final List<EventModel> allEventsModels = [...providerEvents, ...uniqueStaticEvents];
 
     // Convert all back to _Event for the existing UI logic (to avoid breaking too many widgets)
     final allEvents = allEventsModels.map((e) => _Event(

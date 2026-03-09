@@ -216,10 +216,9 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
         );
 
         // Submit event with image
-        final File? imageFile = _selectedImage != null && !kIsWeb
-            ? File(_selectedImage!.path)
-            : null;
-        final newEventId = await eventProvider.submitEvent(event, imageFile);
+        final XFile? imageFile = _selectedImage;
+        final String? authToken = await authProvider.getAuthToken();
+        final newEventId = await eventProvider.submitEvent(event, imageFile, authToken: authToken);
 
         if (mounted) {
           setState(() {
@@ -231,6 +230,10 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
             await eventProvider.loadUpcomingEvents();
             final organizerId = authProvider.user?.id ?? '';
             eventProvider.loadOrganizerEvents(organizerId);
+            
+            // Give Firebase a moment to propagate
+            await Future.delayed(const Duration(milliseconds: 800));
+            eventProvider.loadEvents(); 
 
             // Show success message
             ScaffoldMessenger.of(context).showSnackBar(
@@ -241,7 +244,7 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Event "${_titleController.text}" submitted and pending admin approval.',
+                        'Event "${_titleController.text}" submitted and published successfully!',
                         style: GoogleFonts.poppins(),
                       ),
                     ),
