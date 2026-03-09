@@ -28,11 +28,11 @@ class RecommendationService:
         try:
             if os.path.exists(self.model_path):
                 self.model.load_model(self.model_path)
-                print(f"[OK] Loaded recommendation model from {self.model_path}")
+                print(f"✅ Loaded recommendation model from {self.model_path}")
             else:
-                print(f"[WARNING] No model found at {self.model_path}, will train on first request")
+                print(f"⚠️ No model found at {self.model_path}, will train on first request")
         except Exception as e:
-            print(f"[ERROR] Error loading model: {e}")
+            print(f"❌ Error loading model: {e}")
     
     def train_model(self, interactions: List[Dict[str, Any]], n_factors: int = 50) -> Dict[str, Any]:
         """

@@ -1,0 +1,36 @@
+# Add environment variables here
+# Copy this file to .env and fill in your values
+
+# Server Configuration
+PORT=8000
+ENVIRONMENT=development
+
+# Database (Migrated to Firebase-only)
+# DATABASE_URL=postgresql://user:password@localhost:5432/festio_lk
+# MONGODB_URL=mongodb://localhost:27017/festio_lk
+
+# Firebase Configuration
+FIREBASE_PROJECT_ID=festio-lk
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-fbsvc@festio-lk.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDGOUbDr3F/e65/\nRURYL4w05GY7+QguYcO7mJcEBxW/I1Xj0jnBrZEdpyWHTim5pVjAMGGrUQ+tCOGv\nt9KpI9Lfzh35H9jqxvwmZCnQtUsRZevEkrJgRFiPtC2/vC7YTzFRaQ5rUYkCSD1D\nUWXr5nJwYsOVTRyg5/EzhAXmtw3cFWOxVSjGSvPQGesJ1Mm1TEiEwznwPB2LSUlv\nYH0Cj5VlEteW9hSXrn86jZEVIlUr0wQIFLA6xvjzb3XkrkyK9WEGk/QjdQdrj2TG\nMA+U5DHLxVDF7Y2bwseEDnCLizhGH5WvKtPRGJCReXRMdb30HuIrxpRkgdONe4OU\nhFHHnE6zAgMBAAECgf8xbRa4CdxtwpPq0tq3zSNTYkrGVCeLaSqPxvyLhI4SRZKl\nEUZVhMcqcwMTOeotiuJrtE9Q6GWAP+FbxKTtMoGM91gsm5mlm6LummB9f2G4dNwq\nUmnSlzgonO92Ckuj+XB9XDS8OG3Go+dNYdPdfm4Kl+sszzgpkawTAa3MWYNF3PPB\nojL+eJOZeUimRIzuzQLH2OF5ZzG/X0oIrEg0EC1jjO5N8IiIHDQH9EFfCggA2AFC\nUR2Wd0ahV+DU0qPt4GOLmDTZ65F/Bb9lddJOYJ4+PXhJIQoYbPtzUS0EfzyYzkRo\naKILoekwJA9mMturtCnrMQbq8vaD9RYk4G3sogUCgYEA/H2J54cl4lj+E75loHjo\ntvcH00gqRlpF/+b/q+YFZI7ZZAQsin9f8Kgcwm0b/FlEM5mZWRwFlzUtylU9hioI\nTEvRwnhGduzRnDHQYzbE7JCVT3EgNgVZqkQ5zx60qsV/OT5W234t+rz21g6dFUwu\nXl4T19RS9EbmdU6Y01nGu40CgYEAyPqiqQGjHTa9ZSvP8kpab8536bZN/VrbCRLj\n5P2+zhrTPVh8p56/6ZPQk95SRJmTdcjDXNmVJTNrE8zLyrcVPycba155v5519FoO\nlz8+/TprTsNcahI0qsenVzoDpzGViwqGRV/jaG4JTzV0s9/WcUPrGbO0XRQaVAyV\npKhngz8CgYEAi6CY7JKOXre7+gsmhDGY7+V4TFzyE+nEIBoMdXFEtjFRAsBUKVr7\nIUi2bsaL3Wc4Ehj09pRKey4LXoL4/QKtiBO9sf91aDraR7g8d0FIcVIbX809dOJM\njZ4hIernGjERhAR3X/ZNUwXAsutt7uMsGT+JVaezICc9Ns36MZbKEdkCgYB6GHmU\n/t+fMdAhlFpCMZV7cw06OHxsvDNw8b7tMJIoF/fYvtcL5c9lEV2XV2rXLg19crfs\nwmpvLSuR3cq4nj0UHqfztHN2S8gQ6F0Q2WVk5YanVNvhvKmuTpiEz0PE4MSesYgc\nwUIgASk6q5j4ZbWbHc3H0XpzSXEtOm/2ljA8dQKBgQDgaoC8256EK9/fhwPGjjF+\nWHMmVFlXgy3qG4t/afNy8rkC7prmIKBauYcG+2jhMjNBD/TSXO+mupHGh1mHmBcX\nuPECcu6JJOgQFAPYwts9CncBUh6uoVFMLkhxL6OEuLmMDroGw85KEomb/Lo0AtuX\nQ9cAHfstNLpxLJ28Mi3O1w==\n-----END PRIVATE KEY-----"
+FIREBASE_CREDENTIALS_PATH=c:\Users\User\Desktop\festio_lk\festio_lk\backend\festio-lk-firebase-adminsdk-fbsvc-cc715d279f.json
+
+# Firebase Web SDK Configuration (For Frontend Reference)
+# FIREBASE_API_KEY=AIzaSyB-XMJNG-3_fQAmppLtH87BILzOfil9t5E
+# FIREBASE_AUTH_DOMAIN=festio-lk.firebaseapp.com
+# FIREBASE_STORAGE_BUCKET=festio-lk.firebasestorage.app
+# FIREBASE_MESSAGING_SENDER_ID=811092831294
+# FIREBASE_APP_ID=1:811092831294:web:dc457f84d98e591d55356f
+# FIREBASE_MEASUREMENT_ID=G-MPWJSSNJP2
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_ALGORITHM=HS256
+JWT_EXPIRES_IN_MINUTES=10080
+
+# API Keys
+OPENAI_API_KEY=your-openai-api-key
+GOOGLE_PLACES_API_KEY=your-google-places-api-key
+
+# CORS
+ALLOWED_ORIGINS=["http://localhost:3000","http://localhost:8080","http://localhost:5000"]

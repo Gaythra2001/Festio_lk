@@ -16,9 +16,10 @@ from services.firestore_service import get_firestore_service
 from services.storage_service import get_storage_service
 from routes import (
     auth, events, bookings, users, organizers, recommendations,
-    research_behavior, research_features, research_models, promotion_ma_epom,
-    trust_and_budget, organizer_ml_routes, organizer_chatbot_routes,
-    revenue_optimization, analytics
+    research_behavior, research_features, research_models,
+    revenue_optimization
+    # Temporarily disabled missing routes:
+    # promotion_ma_epom, trust_and_budget, organizer_ml_routes, organizer_chatbot_routes, analytics
     # research_evaluation  # Temporarily disabled due to file corruption
 )
 
@@ -109,27 +110,21 @@ app.include_router(research_features.router)
 app.include_router(research_models.router)
 # app.include_router(research_evaluation.router)  # Temporarily disabled
 
-# Multilingual Promotion routers
-app.include_router(promotion_ma_epom.router)
-
-# Trust Assessment & Budget Planning routers
-app.include_router(trust_and_budget.router)
-
-# Organizer ML routers
-app.include_router(organizer_ml_routes.router)
-
-# Organizer Chatbot routers
-app.include_router(organizer_chatbot_routes.router)
+# Temporarily disabled missing routers:
+# app.include_router(promotion_ma_epom.router)
+# app.include_router(trust_and_budget.router)
+# app.include_router(organizer_ml_routes.router)
+# app.include_router(organizer_chatbot_routes.router)
 
 # Revenue Optimization (Using Firestore) - DISABLED in favor of new AI Revenue Optimization
 # app.include_router(revenue_optimization.router)
 
-# New AI Revenue Optimization (As requested)
-from revenue_optimizer_api import router as revenue_api
-app.include_router(revenue_api)
+# Temporarily disabled missing router:
+# from revenue_optimizer_api import router as revenue_api
+# app.include_router(revenue_api)
 
-# Analytics routers
-app.include_router(analytics.router)
+# Temporarily disabled missing router:
+# app.include_router(analytics.router)
 
 
 @app.get("/")
