@@ -132,4 +132,13 @@ class AuthProvider with ChangeNotifier {
     }
     notifyListeners();
   }
+
+  Future<String?> getAuthToken() async {
+    if (useFirebase && _authService != null) {
+      return await _authService!.getAuthToken();
+    } else if (_mockAuthService != null) {
+      return "mock-token";
+    }
+    return null;
+  }
 }

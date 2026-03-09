@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Query, Path, Depends, HTTPException, status, UploadFile, File, Header
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Path, Header, Query
+from starlette.concurrency import run_in_threadpool
 from typing import List, Optional
 from datetime import datetime
 import uuid
@@ -301,36 +301,35 @@ async def upload_event_image(
             detail="Only organizers can upload event images"
         )
     
+    print(f"📸 Image upload request for event: {event_id}")
     try:
-        # Verify ownership
-        event = firestore_service.get_event(event_id)
-        if not event:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Event not found"
-            )
-        
-        if event['organizer_id'] != current_user['id']:
+        # Verify ownership if event exists
+        event = await run_in_threadpool(firestore_service.get_event, event_id)
+        if event and event.get('organizer_id') != current_user['id']:
+            print(f"❌ Ownership mismatch for event {event_id}")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="You can only upload images to your own events"
+                detail="You can only upload images for your own events"
             )
         
-        # Upload to Firebase Storage
+        print(f"💾 Saving file locally for {event_id}...")
+        # Upload to Local Storage (prioritized)
         unique_filename = storage_service.generate_unique_filename(file.filename)
         storage_path = f"event_images/{event_id}/{unique_filename}"
-        image_url = await storage_service.upload_file(file, storage_path)
+        image_url = await storage_service.save_local_file(file, storage_path)
         
-        # Update event with image URL
-        event_images = event.get('images', [])
-        event_images.append(image_url)
-        firestore_service.update_event(
-            event_id,
-            {
-                'images': event_images,
-                'image_url': image_url  # Set as primary image if first upload
-            }
-        )
+        # Update event with image URL if it exists
+        if event:
+            event_images = event.get('images', [])
+            event_images.append(image_url)
+            await run_in_threadpool(
+                firestore_service.update_event,
+                event_id,
+                {
+                    'images': event_images,
+                    'image_url': image_url
+                }
+            )
         
         return {"image_url": image_url}
     except HTTPException:

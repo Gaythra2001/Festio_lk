@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 import '../models/event_model.dart';
 import '../services/firestore_service.dart';
 import '../services/mock_firestore_service.dart';
@@ -238,21 +240,27 @@ class EventProvider with ChangeNotifier {
     }).toList();
   }
 
-  Future<String?> submitEvent(EventModel event, File? imageFile) async {
+  Future<String?> submitEvent(EventModel event, XFile? imageFile, {String? authToken}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      String? imageUrl;
-      if (imageFile != null && useFirebase && _storageService != null) {
-        // First create a temporary ID for the event
-        final tempId = DateTime.now().millisecondsSinceEpoch.toString();
-        imageUrl = await _storageService!.uploadEventImage(imageFile, tempId);
+      debugPrint('Starting event submission for: ${event.title}');
+      // 1. Ensure we have a consistent ID for both Backend Image and Firestore
+      final String finalEventId = event.id.isEmpty ? const Uuid().v4() : event.id;
+      debugPrint('Generated/using Event ID: $finalEventId');
+      
+      String? uploadedImageUrl;
+
+      if (imageFile != null && _storageService != null) {
+        debugPrint('Uploading image for event: $finalEventId');
+        // Use the synchronized ID for image upload
+        uploadedImageUrl = await _storageService!.uploadEventImage(imageFile, finalEventId, authToken: authToken);
+        debugPrint('Image upload result: $uploadedImageUrl');
       }
-      // In mock mode, skip image upload
 
       final eventWithImage = EventModel(
-        id: event.id,
+        id: finalEventId,
         title: event.title,
         description: event.description,
         titleSi: event.titleSi,
@@ -268,7 +276,7 @@ class EventProvider with ChangeNotifier {
         tags: event.tags,
         organizerId: event.organizerId,
         organizerName: event.organizerName,
-        imageUrl: imageUrl ?? event.imageUrl,
+        imageUrl: uploadedImageUrl ?? event.imageUrl,
         latitude: event.latitude,
         longitude: event.longitude,
         isApproved: event.isApproved,
@@ -286,14 +294,19 @@ class EventProvider with ChangeNotifier {
 
       String? newId;
       if (useFirebase && _firestoreService != null) {
+        debugPrint('Submitting to Firestore...');
         newId = await _firestoreService!.submitEvent(eventWithImage);
+        debugPrint('Firestore submission result ID: $newId');
       } else if (_mockFirestoreService != null) {
+        debugPrint('Submitting to Mock Firestore...');
         newId = await _mockFirestoreService!.submitEvent(eventWithImage);
         // Demo mode: auto-approve so the event appears immediately in the UI
         await _mockFirestoreService!.autoApproveLatest();
+        debugPrint('Mock Firestore submission result ID: $newId');
       }
       await loadPendingEvents();
       await loadUpcomingEvents();
+      loadEvents(); // Re-trigger stream listener or force refresh
       if (event.organizerId.isNotEmpty) {
         loadOrganizerEvents(event.organizerId);
       }
