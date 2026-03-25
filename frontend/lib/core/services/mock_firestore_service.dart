@@ -79,8 +79,19 @@ class MockFirestoreService {
     // Simulate network delay
     await Future.delayed(const Duration(seconds: 1));
 
+    final locationStr = event.location.trim().toLowerCase();
+    
+    // Check for overlap against existing mock events
+    for (final existingEvent in _mockEvents) {
+      if (existingEvent.location.trim().toLowerCase() == locationStr && existingEvent.id != event.id) {
+         if (event.startDate.isBefore(existingEvent.endDate) && event.endDate.isAfter(existingEvent.startDate)) {
+            throw Exception('conflict_error');
+         }
+      }
+    }
+
     final newEvent = EventModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: event.id.isNotEmpty ? event.id : DateTime.now().millisecondsSinceEpoch.toString(),
       title: event.title,
       description: event.description,
       startDate: event.startDate,
@@ -97,9 +108,34 @@ class MockFirestoreService {
       rejectionReason: event.rejectionReason,
       ticketPrice: event.ticketPrice,
     );
-
-    _mockEvents.add(newEvent);
+    
+    if (event.id.isNotEmpty) {
+      final index = _mockEvents.indexWhere((e) => e.id == event.id);
+      if (index != -1) {
+        _mockEvents[index] = newEvent;
+      } else {
+        _mockEvents.add(newEvent);
+      }
+    } else {
+      _mockEvents.add(newEvent);
+    }
+    
     return newEvent.id;
+  }
+
+  Future<List<Map<String, dynamic>>> getBookedSlots(String location, DateTime date) async {
+    final locationStr = location.trim().toLowerCase();
+    
+    return _mockEvents.where((e) {
+      return e.location.trim().toLowerCase() == locationStr &&
+             e.startDate.year == date.year &&
+             e.startDate.month == date.month &&
+             e.startDate.day == date.day;
+    }).map((e) => {
+      'startTime': e.startDate,
+      'endTime': e.endDate,
+      'eventId': e.id,
+    }).toList();
   }
 
   /// Auto-approve the most recently submitted event (demo mode shortcut so

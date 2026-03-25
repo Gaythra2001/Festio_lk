@@ -240,6 +240,45 @@ class EventProvider with ChangeNotifier {
     }).toList();
   }
 
+  /// Check location availability and return a warning/suggestion if occupied
+  Future<String?> checkLocationAvailability(String location, DateTime start, DateTime end) async {
+    if (location.trim().isEmpty) return null;
+
+    try {
+      List<Map<String, dynamic>> bookedSlots = [];
+      if (useFirebase && _firestoreService != null) {
+        bookedSlots = await _firestoreService!.getBookedSlots(location, start);
+      } else if (_mockFirestoreService != null) {
+        bookedSlots = await _mockFirestoreService!.getBookedSlots(location, start);
+      }
+
+      for (final slot in bookedSlots) {
+        final slotStart = slot['startTime'] as DateTime;
+        final slotEnd = slot['endTime'] as DateTime;
+
+        if (start.isBefore(slotEnd) && end.isAfter(slotStart)) {
+          // Conflict detected. Find nearest available times
+          return _findNearestAvailableSlot(start, end, bookedSlots);
+        }
+      }
+      return null; // Available
+    } catch (e) {
+      debugPrint('Error checking availability: $e');
+      return null; // default to true if error, allow backend failure to catch it
+    }
+  }
+
+  String _findNearestAvailableSlot(DateTime start, DateTime end, List<Map<String, dynamic>> slots) {
+    // Basic suggestion engine: find the earliest end time of the conflicting slots
+    slots.sort((a, b) => (a['endTime'] as DateTime).compareTo(b['endTime'] as DateTime));
+    
+    // Suggest the time immediately after the latest conflicting slot
+    DateTime suggestedTime = slots.last['endTime'] as DateTime;
+    
+    final hourFormat = "${suggestedTime.hour.toString().padLeft(2, '0')}:${suggestedTime.minute.toString().padLeft(2, '0')}";
+    return "This location is already booked. Nearest available time is after $hourFormat.";
+  }
+
   Future<String?> submitEvent(EventModel event, XFile? imageFile, {String? authToken}) async {
     _isLoading = true;
     notifyListeners();
@@ -317,6 +356,9 @@ class EventProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       debugPrint('Error submitting event: $e');
+      if (e.toString().contains('conflict_error')) {
+        return 'conflict_error';
+      }
       return null;
     }
   }
