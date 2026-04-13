@@ -8,14 +8,14 @@ import '../services/storage_service.dart';
 import '../services/ml/multi_language_nlp_service.dart';
 import '../services/ml/text_classifier_service.dart';
 import '../config/app_config.dart';
-import 'dart:io';
 
 class EventProvider with ChangeNotifier {
   final FirestoreService? _firestoreService =
       useFirebase ? FirestoreService() : null;
   final MockFirestoreService? _mockFirestoreService =
       useFirebase ? null : MockFirestoreService();
-  final StorageService? _storageService = useFirebase ? StorageService() : null;
+  // Cloudinary-backed — works in both Firebase and mock modes
+  final StorageService _storageService = StorageService();
   final MultiLanguageNLPService _nlpService = MultiLanguageNLPService();
   final TextClassifierService _classifierService = TextClassifierService();
 
@@ -279,23 +279,20 @@ class EventProvider with ChangeNotifier {
     return "This location is already booked. Nearest available time is after $hourFormat.";
   }
 
-  Future<String?> submitEvent(EventModel event, XFile? imageFile, {String? authToken}) async {
+  Future<Map<String, dynamic>> submitEvent(EventModel event, XFile? imageFile, {String? authToken}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
       debugPrint('Starting event submission for: ${event.title}');
-      // 1. Ensure we have a consistent ID for both Backend Image and Firestore
       final String finalEventId = event.id.isEmpty ? const Uuid().v4() : event.id;
-      debugPrint('Generated/using Event ID: $finalEventId');
       
       String? uploadedImageUrl;
 
-      if (imageFile != null && _storageService != null) {
-        debugPrint('Uploading image for event: $finalEventId');
-        // Use the synchronized ID for image upload
-        uploadedImageUrl = await _storageService!.uploadEventImage(imageFile, finalEventId, authToken: authToken);
-        debugPrint('Image upload result: $uploadedImageUrl');
+      if (imageFile != null) {
+        debugPrint('Uploading image to Cloudinary for event: $finalEventId');
+        uploadedImageUrl = await _storageService.uploadEventImage(imageFile, finalEventId, authToken: authToken);
+        debugPrint('Cloudinary image URL: $uploadedImageUrl');
       }
 
       final eventWithImage = EventModel(
@@ -339,27 +336,29 @@ class EventProvider with ChangeNotifier {
       } else if (_mockFirestoreService != null) {
         debugPrint('Submitting to Mock Firestore...');
         newId = await _mockFirestoreService!.submitEvent(eventWithImage);
-        // Demo mode: auto-approve so the event appears immediately in the UI
         await _mockFirestoreService!.autoApproveLatest();
         debugPrint('Mock Firestore submission result ID: $newId');
       }
+
       await loadPendingEvents();
       await loadUpcomingEvents();
-      loadEvents(); // Re-trigger stream listener or force refresh
+      loadEvents(); 
       if (event.organizerId.isNotEmpty) {
         loadOrganizerEvents(event.organizerId);
       }
+      
       _isLoading = false;
       notifyListeners();
-      return newId;
+      return {'success': true, 'id': newId};
     } catch (e) {
       _isLoading = false;
       notifyListeners();
       debugPrint('Error submitting event: $e');
+      
       if (e.toString().contains('conflict_error')) {
-        return 'conflict_error';
+        return {'success': false, 'error': 'conflict_error'};
       }
-      return null;
+      return {'success': false, 'error': e.toString()};
     }
   }
 }

@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     # API Keys
     OPENAI_API_KEY: str = ""
     GOOGLE_PLACES_API_KEY: str = ""
+    CLOUDINARY_URL: str = ""
     
     class Config:
         env_file = ".env"

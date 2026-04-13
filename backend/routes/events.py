@@ -3,8 +3,11 @@ from starlette.concurrency import run_in_threadpool
 from typing import List, Optional
 from datetime import datetime
 import uuid
+import cloudinary
+import cloudinary.uploader
 from services.firestore_service import get_firestore_service
 from services.storage_service import get_storage_service
+from config.settings import settings
 from models.firestore_models import (
     Event, EventCreate, EventUpdate, EventStatus, EventCategory, EventLocation
 )
@@ -14,6 +17,9 @@ router = APIRouter()
 
 firestore_service = get_firestore_service()
 storage_service = get_storage_service()
+
+if settings.CLOUDINARY_URL:
+    cloudinary.config(cloudinary_url=settings.CLOUDINARY_URL, secure=True)
 
 
 # ============ HELPER FUNCTIONS ============
@@ -294,29 +300,58 @@ async def upload_event_image(
     """
     Upload an image for an event
     """
-    current_user = await get_current_user(authorization)
-    if not is_organizer(current_user):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only organizers can upload event images"
-        )
+    current_user = None
+    if authorization:
+        current_user = await get_current_user(authorization)
+        if not is_organizer(current_user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only organizers can upload event images"
+            )
     
     print(f"📸 Image upload request for event: {event_id}")
     try:
         # Verify ownership if event exists
         event = await run_in_threadpool(firestore_service.get_event, event_id)
-        if event and event.get('organizer_id') != current_user['id']:
+        if event and current_user and event.get('organizer_id') != current_user['id']:
             print(f"❌ Ownership mismatch for event {event_id}")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You can only upload images for your own events"
             )
-        
-        print(f"💾 Saving file locally for {event_id}...")
-        # Upload to Local Storage (prioritized)
-        unique_filename = storage_service.generate_unique_filename(file.filename)
-        storage_path = f"event_images/{event_id}/{unique_filename}"
-        image_url = await storage_service.save_local_file(file, storage_path)
+        if event and not current_user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authorization required to upload image for an existing event"
+            )
+
+        file_bytes = await file.read()
+        if not file_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Empty image file"
+            )
+
+        image_url = None
+
+        if settings.CLOUDINARY_URL:
+            print(f"☁️ Uploading image to Cloudinary for event {event_id}...")
+            upload_result = await run_in_threadpool(
+                lambda: cloudinary.uploader.upload(
+                    file_bytes,
+                    folder=f"festio_lk/events/{event_id}",
+                    public_id=str(uuid.uuid4()),
+                    resource_type="image",
+                )
+            )
+            image_url = upload_result.get('secure_url')
+
+        if not image_url:
+            print(f"💾 Cloudinary unavailable; saving file locally for {event_id}...")
+            file.file.seek(0)
+            unique_filename = storage_service.generate_unique_filename(file.filename)
+            storage_path = f"event_images/{event_id}/{unique_filename}"
+            image_url = await storage_service.save_local_file(file, storage_path)
         
         # Update event with image URL if it exists
         if event:
