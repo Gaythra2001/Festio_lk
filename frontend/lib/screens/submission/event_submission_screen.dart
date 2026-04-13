@@ -285,22 +285,14 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
         // Submit event with image
         final XFile? imageFile = _selectedImage;
         final String? authToken = await authProvider.getAuthToken();
-        final newEventId = await eventProvider.submitEvent(event, imageFile, authToken: authToken);
+        final result = await eventProvider.submitEvent(event, imageFile, authToken: authToken);
 
         if (mounted) {
           setState(() {
             _isSubmitting = false;
           });
 
-          if (newEventId == 'conflict_error') {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Location was just booked by someone else! Please choose a different time or location.'),
-                backgroundColor: Colors.red,
-                duration: Duration(seconds: 5),
-              ),
-            );
-          } else if (newEventId != null && newEventId.isNotEmpty) {
+          if (result['success'] == true) {
             // Reload upcoming events on home page
             await eventProvider.loadUpcomingEvents();
             final organizerId = authProvider.user?.id ?? '';
@@ -333,12 +325,26 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
             // Go back to previous screen
             Navigator.of(context).pop();
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Failed to submit event. Please try again.'),
-                backgroundColor: Colors.red,
-              ),
-            );
+            final error = result['error']?.toString() ?? 'Unknown error';
+            final friendlyError = _getFriendlySubmitError(error);
+            
+            if (error == 'conflict_error') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Location was just booked by someone else! Please choose a different time or location.'),
+                  backgroundColor: Colors.red,
+                  duration: Duration(seconds: 5),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to submit event: $friendlyError'),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 8),
+                ),
+              );
+            }
           }
         }
       } catch (e) {
@@ -356,6 +362,20 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
         }
       }
     }
+  }
+
+  String _getFriendlySubmitError(String rawError) {
+    final normalized = rawError.toLowerCase();
+
+    if (normalized.contains('upload preset not found')) {
+      return 'Image upload is not configured yet. Create an unsigned Cloudinary upload preset named "festio_lk_events" and try again.';
+    }
+
+    if (normalized.contains('cloudinary configuration missing')) {
+      return 'Cloudinary settings are missing. Run with CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET.';
+    }
+
+    return rawError.replaceFirst('Exception: ', '');
   }
 
   @override
