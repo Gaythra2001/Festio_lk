@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -50,7 +51,8 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
   @override
   void initState() {
     super.initState();
-    _apiBaseUrl = widget.apiBaseUrl ?? 'http://localhost:8001';
+    _apiBaseUrl = widget.apiBaseUrl ??
+        (kIsWeb ? 'http://127.0.0.1:8001' : 'http://10.0.2.2:8001');
     _loadMappings();
   }
 
