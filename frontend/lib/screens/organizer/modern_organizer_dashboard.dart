@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -416,7 +417,7 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                 weatherForecast: _weatherForecast,
                 pastAttendance: _pastAttendanceCount.toInt(),
                 isWeekend: _isWeekend,
-                apiBaseUrl: 'http://localhost:8001',
+                apiBaseUrl: kIsWeb ? 'http://127.0.0.1:8001' : 'http://10.0.2.2:8001',
                 onPriceUpdated: (newPrice) {
                   setState(() {
                     _currentPrice = newPrice;
