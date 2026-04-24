@@ -15,7 +15,7 @@ from config.settings import settings
 from services.firestore_service import get_firestore_service
 from services.storage_service import get_storage_service
 from routes import (
-    auth, events, bookings, users, organizers, recommendations,
+    auth, events, bookings, users, organizers, recommendations, trust,
     research_behavior, research_features, research_models,
     revenue_optimization
     # Temporarily disabled missing routes:
@@ -103,6 +103,7 @@ app.include_router(events.router, prefix="/api/events", tags=["Events"])
 app.include_router(bookings.router, prefix="/api/bookings", tags=["Bookings"])
 app.include_router(organizers.router, prefix="/api/organizers", tags=["Organizers"])
 app.include_router(recommendations.router, prefix="/api/recommendations", tags=["AI Recommendations"])
+app.include_router(trust.router, tags=["Trust Assessment"])
 
 # Research routers
 app.include_router(research_behavior.router)

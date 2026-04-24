@@ -13,6 +13,11 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models.ml_recommendation_model import EventRecommendationModel
+from models.organizer_trust_model import (
+    OrganizerReputationScorer,
+    EventFraudDetector,
+    EventValidationSystem
+)
 
 
 class RecommendationService:
@@ -21,6 +26,12 @@ class RecommendationService:
     def __init__(self):
         self.model = EventRecommendationModel()
         self.model_path = os.path.join(os.path.dirname(__file__), '..', 'models', 'recommendation_model.pkl')
+        
+        # Initialize trust assessment components
+        self.reputation_scorer = OrganizerReputationScorer()
+        self.fraud_detector = EventFraudDetector()
+        self.validation_system = EventValidationSystem()
+        
         self._load_or_create_model()
     
     def _load_or_create_model(self):
@@ -286,6 +297,104 @@ class RecommendationService:
             "explained_variance": float(self.model.svd_model.explained_variance_ratio_.sum()),
             "model_path": self.model_path
         }
+    
+    # ====== TRUST SCORE INTEGRATION ======
+    
+    def calculate_organizer_trust_score(self, organizer_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Calculate trust score for an organizer using ML model
+        
+        Args:
+            organizer_data: Dict with keys:
+                - total_events, completed_events, average_rating, 
+                - total_reviews, account_age_days, is_verified
+        
+        Returns:
+            Trust score and assessment details
+        """
+        try:
+            result = self.reputation_scorer.calculate_reputation_score(organizer_data)
+            return {
+                'status': 'success',
+                'trust_score': result.get('reputation_score', 0),
+                'trust_level': result.get('trust_level', 'UNKNOWN'),
+                'is_trustworthy': result.get('is_trustworthy', False),
+                'factors': result.get('factors', {})
+            }
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': str(e),
+                'trust_score': 50  # Default middle value on error
+            }
+    
+    def detect_event_fraud(self, event_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Detect fraudulent events using ML anomaly detection
+        
+        Args:
+            event_data: Event details (title, price, capacity, etc.)
+        
+        Returns:
+            Fraud detection results
+        """
+        try:
+            result = self.fraud_detector.calculate_fraud_score(event_data)
+            return {
+                'status': 'success',
+                'fraud_score': result.get('fraud_score', 0),
+                'is_fraudulent': result.get('is_fraudulent', False),
+                'risk_level': result.get('risk_level', 'MEDIUM'),
+                'details': result.get('details', {})
+            }
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': str(e),
+                'fraud_score': 50
+            }
+    
+    def validate_event_with_trust(self, event_data: Dict[str, Any], 
+                                 organizer_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Complete event validation combining fraud detection and organizer reputation
+        
+        Args:
+            event_data: Event details
+            organizer_data: Organizer information
+        
+        Returns:
+            Combined validation result with trust score
+        """
+        try:
+            result = self.validation_system.validate_event_complete(event_data, organizer_data)
+            return {
+                'status': 'success',
+                'validation_result': result
+            }
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': str(e)
+            }
+    
+    def get_trust_score_for_recommendations(self, event_data: Dict[str, Any]) -> float:
+        """
+        Get trust score to enhance recommendations
+        Used in feature engineering to weight recommendations based on event trust
+        
+        Returns value between 0 and 100 for use in recommendation weighting
+        """
+        try:
+            fraud_result = self.detect_event_fraud(event_data)
+            
+            if fraud_result.get('is_fraudulent'):
+                return 0  # Fraudulent events get 0 weight
+            
+            # Return inverse of fraud score (100 - fraud_score)
+            return 100 - fraud_result.get('fraud_score', 50)
+        except:
+            return 70  # Default safe value
 
 
 # Global service instance
