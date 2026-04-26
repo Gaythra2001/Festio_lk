@@ -230,6 +230,85 @@ class RecommendationService:
             print(f"Error getting similar events: {e}")
             return []
     
+    def detect_event_fraud(self, event_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Detect potential fraud in an event
+        
+        Args:
+            event_data: Dict with keys:
+                - title
+                - description
+                - ticket_price
+                - venue_capacity
+                - image_count
+                - email
+                - category (optional)
+                - phone (optional)
+                - website (optional)
+        
+        Returns:
+            Fraud detection result with fraud_score, risk_level, and is_fraudulent
+        """
+        try:
+            from models.organizer_trust_model import EventFraudDetector
+            
+            detector = EventFraudDetector()
+            result = detector.calculate_fraud_score(event_data)
+            
+            return {
+                'status': 'success',
+                'fraud_score': result['fraud_score'],
+                'risk_level': result['risk_level'],
+                'is_fraudulent': result['is_fraudulent'],
+                'details': result.get('details', {})
+            }
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': str(e),
+                'fraud_score': 50,
+                'risk_level': 'UNKNOWN',
+                'is_fraudulent': False
+            }
+    
+    def calculate_organizer_trust_score(self, organizer_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Calculate trust score for an organizer
+        
+        Args:
+            organizer_data: Dict with keys:
+                - total_events
+                - completed_events
+                - average_rating
+                - total_reviews
+                - account_age_days
+                - is_verified
+        
+        Returns:
+            Trust score result with score, trust_level, and is_trustworthy
+        """
+        try:
+            from models.organizer_trust_model import OrganizerReputationScorer
+            
+            scorer = OrganizerReputationScorer()
+            result = scorer.calculate_reputation_score(organizer_data)
+            
+            return {
+                'status': 'success',
+                'trust_score': result['reputation_score'],
+                'trust_level': result['trust_level'],
+                'is_trustworthy': result['is_trustworthy'],
+                'risk_factors': result.get('risk_factors', [])
+            }
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': str(e),
+                'trust_score': 0,
+                'trust_level': 'UNKNOWN',
+                'is_trustworthy': False
+            }
+    
     def record_interaction(self, user_id: str, event_id: str, interaction_type: str, 
                           rating: Optional[float] = None) -> Dict[str, Any]:
         """
