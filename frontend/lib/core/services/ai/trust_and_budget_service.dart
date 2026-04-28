@@ -121,18 +121,58 @@ class TrustAssessmentService {
   /// Run sample validation
   Future<Map<String, dynamic>> runSampleValidation() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/trust/sample-validation'),
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8001/predict-event'),
         headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          "title": "Food Festival Colombo",
+          "description": "A community event with local food stalls.",
+          "price": 1500,
+          "location": "Colombo",
+          "category": "Food"
+        }),
       );
 
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        final data = json.decode(response.body);
+        return {
+          'prediction': data['prediction'],
+          'trust_score': '${data['trust_score']}%',
+          'real_probability': '${(data['real_probability'] * 100).toStringAsFixed(1)}%',
+          'fake_probability': '${(data['fake_probability'] * 100).toStringAsFixed(1)}%',
+          'trust_level': data['prediction'] == 'Real' ? 'trusted' : 'not_trusted'
+        };
       } else {
         throw Exception('Failed to run sample: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Error running sample: $e');
+      throw Exception('Error predicting event: $e');
+    }
+  }
+
+  /// Verify specific event authenticity
+  Future<Map<String, dynamic>> verifyEventAuthenticity(Map<String, dynamic> eventData) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8001/predict-event'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(eventData),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'prediction': data['prediction'],
+          'trust_score': '${data['trust_score']}%',
+          'real_probability': '${(data['real_probability'] * 100).toStringAsFixed(1)}%',
+          'fake_probability': '${(data['fake_probability'] * 100).toStringAsFixed(1)}%',
+          'trust_level': data['prediction'] == 'Real' ? 'trusted' : 'not_trusted'
+        };
+      } else {
+        throw Exception('Failed to verify event: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error verifying event: $e');
     }
   }
 }
