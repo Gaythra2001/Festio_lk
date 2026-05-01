@@ -16,62 +16,7 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
   Map<String, dynamic>? clickData;
   String userDistrict = "";
 
-  final List<Map<String, dynamic>> _allEvents = [
-    {
-      'title': 'Kandy Esala Perahera',
-      'date': 'Aug 15, 2024',
-      'location': 'Kandy, Sri Lanka',
-      'category': 'Festival',
-      'imageUrl':
-          'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200',
-      'juice': 4.8,
-    },
-    {
-      'title': 'Traditional Dance Performance',
-      'date': 'Aug 20, 2024',
-      'location': 'Colombo, Sri Lanka',
-      'category': 'Dance',
-      'imageUrl':
-          'https://images.unsplash.com/photo-1504609773096-104ff2c73ba4?w=1200',
-      'juice': 4.2,
-    },
-    {
-      'title': 'Cultural Music Festival',
-      'date': 'Sep 5, 2024',
-      'location': 'Galle, Sri Lanka',
-      'category': 'Music',
-      'imageUrl':
-          'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200',
-      'juice': 4.6,
-    },
-    {
-      'title': 'Vesak Lantern Festival',
-      'date': 'May 23, 2024',
-      'location': 'Colombo, Sri Lanka',
-      'category': 'Festival',
-      'imageUrl':
-          'https://images.unsplash.com/photo-1478145787956-f6f12c59624d?w=1200',
-      'juice': 3.9,
-    },
-    {
-      'title': 'Traditional Theater Show',
-      'date': 'Sep 10, 2024',
-      'location': 'Kandy, Sri Lanka',
-      'category': 'Theater',
-      'imageUrl':
-          'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=1200',
-      'juice': 3.5,
-    },
-    {
-      'title': 'The Night Concert',
-      'date': 'Oct 2, 2024',
-      'location': 'Kandy, Sri Lanka',
-      'category': 'Music',
-      'imageUrl':
-          'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=1200',
-      'juice': 4.4,
-    },
-  ];
+  List<Map<String, dynamic>> allEvents = [];
 
   List<Map<String, dynamic>> sameDistrictEvents = [];
   List<Map<String, dynamic>> similarOtherDistrictEvents = [];
@@ -82,11 +27,23 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
     loadSuggestions();
   }
 
+
+  String normalize(String value) {
+  return value.toLowerCase().trim();
+}
+
+String formatDate(DateTime? date) {
+  if (date == null) return "";
+  return "${date.day}/${date.month}/${date.year}";
+}
+
  Future<void> loadSuggestions() async {
   debugPrint("🔵 ===== loadSuggestions START =====");
 
   final prefs = await FirebaseService().getUserPreferences();
   final clicks = await FirebaseService().getUserClicks();
+  final events = await FirebaseService().getApprovedEvents();
+  allEvents = events;
 
   debugPrint("📦 Raw Preferences: $prefs");
   debugPrint("📊 Raw Click Data: $clicks");
@@ -109,12 +66,13 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
   debugPrint("🎯 Preferred Categories: $preferred");
 
   // 1️⃣ Filter user's district events by preferred categories
-  sameDistrictEvents = _allEvents.where((event) {
-    bool categoryMatch =
-        preferred.contains(event['category']);
-    bool districtMatch = event['location']
-        .toString()
-        .contains(userDistrict);
+  sameDistrictEvents = allEvents.where((event)  {
+   bool categoryMatch = preferred
+    .map((e) => normalize(e))
+    .contains(normalize(event['category']));
+
+bool districtMatch = normalize(event['location'])
+    .contains(normalize(userDistrict));
 
     debugPrint(
         "🔎 Checking Event: ${event['title']} | "
@@ -175,15 +133,14 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
         "🥇 Top Event Selected: ${topEvent['title']}");
 
     // Filter similar events in other districts
-    similarOtherDistrictEvents =
-        _allEvents.where((event) {
-      bool sameCategory =
-          event['category'] ==
-              topEvent['category'];
-      bool differentDistrict =
-          !event['location']
-              .toString()
-              .contains(userDistrict);
+   similarOtherDistrictEvents = allEvents.where((event)  {
+     bool sameCategory =
+    normalize(event['category']) ==
+    normalize(topEvent['category']);
+
+bool differentDistrict =
+    !normalize(event['location'])
+        .contains(normalize(userDistrict));
 
       debugPrint(
           "🔁 Checking Similar Event: ${event['title']} | "
@@ -367,16 +324,20 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
 
       // Navigate to event detail page
       await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ModernEventDetailScreen(
-            title: event['title'],
-            date: event['date'],
-            location: event['location'],
-            imageUrl: event['imageUrl'],
-          ),
-        ),
-      );
+  context,
+  MaterialPageRoute(
+    builder: (_) => ModernEventDetailScreen(
+      title: event['title'],
+      date: event['date'] != null
+          ? "${(event['date'] as DateTime).day}/"
+            "${(event['date'] as DateTime).month}/"
+            "${(event['date'] as DateTime).year}"
+          : "",
+      location: event['location'],
+      imageUrl: event['imageUrl'],
+    ),
+  ),
+);
 
       // After returning, end session and update duration
       await FirebaseService().endEventSession(

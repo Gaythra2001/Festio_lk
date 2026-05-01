@@ -43,31 +43,42 @@ class FirebaseService {
     return doc.data();
   }
 
-  /// Get Approved Events
-  Future<List<Map<String, dynamic>>> getApprovedEvents() async {
-    try {
-      final snapshot = await _firestore
-          .collection('events')
-          .where('isApproved', isEqualTo: true)
-          .where('isSpam', isEqualTo: false)
-          .orderBy('startDate')
-          .get();
+ Future<List<Map<String, dynamic>>> getApprovedEvents() async {
+  try {
+    final snapshot = await _firestore
+        .collection('events')
+        .where('isApproved', isEqualTo: true)
+        .where('isSpam', isEqualTo: false)
+        .get();
 
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        return {
-          'title': data['title'] ?? '',
-          'date': data['date'] ?? '',
-          'location': data['location'] ?? '',
-          'category': data['category'] ?? '',
-          'imageUrl': data['imageUrl'] ?? '',
-        };
-      }).toList();
-    } catch (e) {
-      print("Error fetching events: $e");
-      return [];
-    }
+    final events = snapshot.docs.map((doc) {
+      final data = doc.data();
+
+      return {
+        'title': data['title'] ?? '',
+        'date': (data['startDate'] as Timestamp?)?.toDate(), // KEEP DateTime
+        'location': data['location'] ?? '',
+        'category': data['category'] ?? '',
+        'imageUrl': data['imageUrl'] ?? '',
+      };
+    }).toList();
+
+    // sort safely (no crash fix)
+    events.sort((a, b) {
+      final dateA = a['date'] as DateTime?;
+      final dateB = b['date'] as DateTime?;
+
+      if (dateA == null || dateB == null) return 0;
+
+      return dateA.compareTo(dateB);
+    });
+
+    return events;
+  } catch (e) {
+    print("Error fetching events: $e");
+    return [];
   }
+}
 
   /// Start Event View Session
   Future<void> startOrUpdateEventSession({
