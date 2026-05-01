@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 import '../models/event_model.dart';
 import '../services/firestore_service.dart';
 import '../services/mock_firestore_service.dart';
@@ -6,14 +8,14 @@ import '../services/storage_service.dart';
 import '../services/ml/multi_language_nlp_service.dart';
 import '../services/ml/text_classifier_service.dart';
 import '../config/app_config.dart';
-import 'dart:io';
 
 class EventProvider with ChangeNotifier {
   final FirestoreService? _firestoreService =
       useFirebase ? FirestoreService() : null;
   final MockFirestoreService? _mockFirestoreService =
       useFirebase ? null : MockFirestoreService();
-  final StorageService? _storageService = useFirebase ? StorageService() : null;
+  // Cloudinary-backed — works in both Firebase and mock modes
+  final StorageService _storageService = StorageService();
   final MultiLanguageNLPService _nlpService = MultiLanguageNLPService();
   final TextClassifierService _classifierService = TextClassifierService();
 
@@ -238,21 +240,63 @@ class EventProvider with ChangeNotifier {
     }).toList();
   }
 
-  Future<String?> submitEvent(EventModel event, File? imageFile) async {
+  /// Check location availability and return a warning/suggestion if occupied
+  Future<String?> checkLocationAvailability(String location, DateTime start, DateTime end) async {
+    if (location.trim().isEmpty) return null;
+
+    try {
+      List<Map<String, dynamic>> bookedSlots = [];
+      if (useFirebase && _firestoreService != null) {
+        bookedSlots = await _firestoreService!.getBookedSlots(location, start);
+      } else if (_mockFirestoreService != null) {
+        bookedSlots = await _mockFirestoreService!.getBookedSlots(location, start);
+      }
+
+      for (final slot in bookedSlots) {
+        final slotStart = slot['startTime'] as DateTime;
+        final slotEnd = slot['endTime'] as DateTime;
+
+        if (start.isBefore(slotEnd) && end.isAfter(slotStart)) {
+          // Conflict detected. Find nearest available times
+          return _findNearestAvailableSlot(start, end, bookedSlots);
+        }
+      }
+      return null; // Available
+    } catch (e) {
+      debugPrint('Error checking availability: $e');
+      return null; // default to true if error, allow backend failure to catch it
+    }
+  }
+
+  String _findNearestAvailableSlot(DateTime start, DateTime end, List<Map<String, dynamic>> slots) {
+    // Basic suggestion engine: find the earliest end time of the conflicting slots
+    slots.sort((a, b) => (a['endTime'] as DateTime).compareTo(b['endTime'] as DateTime));
+    
+    // Suggest the time immediately after the latest conflicting slot
+    DateTime suggestedTime = slots.last['endTime'] as DateTime;
+    
+    final hourFormat = "${suggestedTime.hour.toString().padLeft(2, '0')}:${suggestedTime.minute.toString().padLeft(2, '0')}";
+    return "This location is already booked. Nearest available time is after $hourFormat.";
+  }
+
+  Future<Map<String, dynamic>> submitEvent(EventModel event, XFile? imageFile, {String? authToken}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      String? imageUrl;
-      if (imageFile != null && useFirebase && _storageService != null) {
-        // First create a temporary ID for the event
-        final tempId = DateTime.now().millisecondsSinceEpoch.toString();
-        imageUrl = await _storageService!.uploadEventImage(imageFile, tempId);
+      debugPrint('Starting event submission for: ${event.title}');
+      final String finalEventId = event.id.isEmpty ? const Uuid().v4() : event.id;
+      
+      String? uploadedImageUrl;
+
+      if (imageFile != null) {
+        debugPrint('Uploading image to Cloudinary for event: $finalEventId');
+        uploadedImageUrl = await _storageService.uploadEventImage(imageFile, finalEventId, authToken: authToken);
+        debugPrint('Cloudinary image URL: $uploadedImageUrl');
       }
-      // In mock mode, skip image upload
 
       final eventWithImage = EventModel(
-        id: event.id,
+        id: finalEventId,
         title: event.title,
         description: event.description,
         titleSi: event.titleSi,
@@ -268,16 +312,16 @@ class EventProvider with ChangeNotifier {
         tags: event.tags,
         organizerId: event.organizerId,
         organizerName: event.organizerName,
-        imageUrl: imageUrl ?? event.imageUrl,
+        imageUrl: uploadedImageUrl ?? event.imageUrl,
         latitude: event.latitude,
         longitude: event.longitude,
-        isApproved: false,
+        isApproved: event.isApproved,
         isSpam: event.isSpam,
         spamScore: event.spamScore,
         trustScore: event.trustScore,
         submittedAt: event.submittedAt,
-        approvedAt: null,
-        status: 'pending',
+        approvedAt: event.isApproved ? DateTime.now() : null,
+        status: event.status,
         rejectionReason: null,
         maxAttendees: event.maxAttendees,
         ticketPrice: event.ticketPrice,
@@ -286,22 +330,35 @@ class EventProvider with ChangeNotifier {
 
       String? newId;
       if (useFirebase && _firestoreService != null) {
+        debugPrint('Submitting to Firestore...');
         newId = await _firestoreService!.submitEvent(eventWithImage);
+        debugPrint('Firestore submission result ID: $newId');
       } else if (_mockFirestoreService != null) {
+        debugPrint('Submitting to Mock Firestore...');
         newId = await _mockFirestoreService!.submitEvent(eventWithImage);
+        await _mockFirestoreService!.autoApproveLatest();
+        debugPrint('Mock Firestore submission result ID: $newId');
       }
+
       await loadPendingEvents();
+      await loadUpcomingEvents();
+      loadEvents(); 
       if (event.organizerId.isNotEmpty) {
         loadOrganizerEvents(event.organizerId);
       }
+      
       _isLoading = false;
       notifyListeners();
-      return newId;
+      return {'success': true, 'id': newId};
     } catch (e) {
       _isLoading = false;
       notifyListeners();
       debugPrint('Error submitting event: $e');
-      return null;
+      
+      if (e.toString().contains('conflict_error')) {
+        return {'success': false, 'error': 'conflict_error'};
+      }
+      return {'success': false, 'error': e.toString()};
     }
   }
 }

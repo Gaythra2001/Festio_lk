@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
@@ -75,25 +76,35 @@ app = FastAPI(
 )
 
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
-    print(f"Incoming request: {request.method} {request.url}")
+async def add_cors_headers(request: Request, call_next):
+    print(f"Incoming {request.method} request to {request.url}")
     try:
         response = await call_next(request)
-        print(f"Response status: {response.status_code}")
+        # Ensure consistent CORS headers for all responses
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        response.headers["Access-Control-Expose-Headers"] = "Content-Length, Content-Range"
         return response
     except Exception as e:
-        print(f"Request failed with error: {str(e)}")
+        print(f"❗ Request processing error: {str(e)}")
+        # Even on error, try to provide a response with CORS headers if possible
+        # but here we just re-raise and let FastAPI handle the 500
         raise e
 
-# CORS Configuration
+# CORS Configuration - Keep this as a secondary layer
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
+
+# Static Files
+uploads_path = Path(settings.uploads_dir)
+uploads_path.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(uploads_path)), name="uploads")
 
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])

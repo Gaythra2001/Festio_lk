@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Header
+from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from services.firebase_auth_service import get_firebase_auth_service
@@ -70,11 +71,11 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> dict:
     
     try:
         # Verify Firebase ID token
-        decoded_token = get_auth_service().verify_id_token(token)
+        decoded_token = await run_in_threadpool(firebase_auth_service.verify_id_token, token)
         uid = decoded_token.get('uid')
         
         # Get user profile from Firestore
-        user = get_auth_service().get_user_by_uid(uid)
+        user = await run_in_threadpool(firebase_auth_service.get_user_by_uid, uid)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -221,7 +222,8 @@ async def update_user_profile(
     """
     update_dict = update_data.dict(exclude_unset=True)
     
-    updated_user = get_auth_service().update_user(
+    updated_user = await run_in_threadpool(
+        firebase_auth_service.update_user,
         uid=current_user['id'],
         **update_dict
     )
