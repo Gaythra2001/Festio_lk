@@ -31,6 +31,7 @@ class EventModel {
   final int? maxAttendees;
   final double? ticketPrice;
   final String? ticketUrl;
+  final List<Map<String, dynamic>> tickets;
 
   EventModel({
     required this.id,
@@ -63,6 +64,7 @@ class EventModel {
     this.maxAttendees,
     this.ticketPrice,
     this.ticketUrl,
+    this.tickets = const [],
   }) : status = status ?? (isApproved ? 'approved' : 'pending');
 
   factory EventModel.fromMap(Map<String, dynamic> map, String id) {
@@ -70,6 +72,21 @@ class EventModel {
     final String resolvedStatus =
         (map['status'] as String?) ?? (approvedFlag ? 'approved' : 'pending');
     final dynamic rawImageUrl = map['imageUrl'] ?? map['image_url'];
+    final List<Map<String, dynamic>> parsedTickets =
+        (map['tickets'] as List<dynamic>?)
+                ?.map((ticket) => Map<String, dynamic>.from(ticket as Map))
+                .toList(growable: false) ??
+            const [];
+    double? resolvedTicketPrice = (map['ticketPrice'] as num?)?.toDouble();
+    if (resolvedTicketPrice == null) {
+      for (final ticket in parsedTickets) {
+        final dynamic rawPrice = ticket['price'];
+        if (rawPrice is num) {
+          resolvedTicketPrice = rawPrice.toDouble();
+          break;
+        }
+      }
+    }
     return EventModel(
       id: id,
       title: map['title'] ?? '',
@@ -100,8 +117,9 @@ class EventModel {
       status: resolvedStatus,
       rejectionReason: map['rejectionReason'],
       maxAttendees: map['maxAttendees'],
-      ticketPrice: (map['ticketPrice'] as num?)?.toDouble(),
+      ticketPrice: resolvedTicketPrice,
       ticketUrl: map['ticketUrl'],
+      tickets: parsedTickets,
     );
   }
 
@@ -137,6 +155,7 @@ class EventModel {
       'maxAttendees': maxAttendees,
       'ticketPrice': ticketPrice,
       'ticketUrl': ticketUrl,
+      'tickets': tickets,
     };
   }
 }

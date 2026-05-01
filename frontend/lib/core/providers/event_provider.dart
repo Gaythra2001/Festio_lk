@@ -326,6 +326,7 @@ class EventProvider with ChangeNotifier {
         maxAttendees: event.maxAttendees,
         ticketPrice: event.ticketPrice,
         ticketUrl: event.ticketUrl,
+        tickets: event.tickets,
       );
 
       String? newId;
