@@ -107,6 +107,8 @@ class MockFirestoreService {
       status: event.status,
       rejectionReason: event.rejectionReason,
       ticketPrice: event.ticketPrice,
+      ticketUrl: event.ticketUrl,
+      tickets: event.tickets,
     );
     
     if (event.id.isNotEmpty) {
@@ -223,6 +225,7 @@ class MockFirestoreService {
         maxAttendees: event.maxAttendees,
         ticketPrice: event.ticketPrice,
         ticketUrl: event.ticketUrl,
+        tickets: event.tickets,
       );
     }
   }
@@ -263,6 +266,7 @@ class MockFirestoreService {
         maxAttendees: event.maxAttendees,
         ticketPrice: event.ticketPrice,
         ticketUrl: event.ticketUrl,
+        tickets: event.tickets,
       );
     }
   }
