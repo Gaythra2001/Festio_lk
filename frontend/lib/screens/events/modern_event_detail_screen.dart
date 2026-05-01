@@ -64,7 +64,7 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _trackSessionStart();
   }
 
@@ -290,6 +290,7 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
                       tabs: const [
                         Tab(text: 'About'),
                         Tab(text: 'Details'),
+                        Tab(text: 'AI Trust'),
                         Tab(text: 'Ratings'),
                       ],
                     ),
@@ -305,6 +306,7 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
                       children: [
                         _buildAboutTab(),
                         _buildDetailsTab(),
+                        _buildAITrustTab(),
                         _buildRatingTab(),
                       ],
                     ),
@@ -690,6 +692,112 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAITrustTab() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'AI Trust Insights',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF10B981).withOpacity(0.5)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.verified, color: Color(0xFF10B981), size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      'SECURED',
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF10B981),
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1F3A),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('TRUST SCORE', style: TextStyle(color: Colors.white54, fontSize: 10, letterSpacing: 1)),
+                        const SizedBox(height: 4),
+                        const Text('94.5%', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const Icon(Icons.security, color: Color(0xFF6366F1), size: 32),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const LinearProgressIndicator(
+                  value: 0.945,
+                  backgroundColor: Colors.white10,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                  minHeight: 6,
+                ),
+                const SizedBox(height: 20),
+                _buildInsightRow('Event Authenticity', 'High', Colors.greenAccent),
+                _buildInsightRow('Organizer Record', 'Verified', Colors.blueAccent),
+                _buildInsightRow('Risk Probability', '2.1%', Colors.redAccent),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'AI Analysis Remarks',
+            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'The AI system has analyzed this event based on its description, location, and pricing metadata. The high trust score is attributed to consistent historical patterns and verified organizer credentials.',
+            style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13, height: 1.5),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInsightRow(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.white60, fontSize: 13)),
+          Text(value, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13)),
         ],
       ),
     );

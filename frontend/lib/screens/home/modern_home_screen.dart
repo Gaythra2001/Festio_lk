@@ -1238,6 +1238,40 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                   ],
                 ),
               ),
+              // AI Trust Badge for Every Event
+              Positioned(
+                top: 16,
+                left: 16,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withOpacity(0.2),
+                        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.5), width: 1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.verified_user, color: Color(0xFF10B981), size: 14),
+                          const SizedBox(width: 4),
+                          Text(
+                            'AI: 92%',
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFF10B981),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
               Positioned(
                 top: 16,
                 right: 16,
