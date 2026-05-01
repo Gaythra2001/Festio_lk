@@ -11,6 +11,44 @@ class EventDetailScreen extends StatelessWidget {
 
   const EventDetailScreen({super.key, required this.event});
 
+  Widget _buildHeroImage() {
+    final String? imageUrl = event.imageUrl;
+
+    if (imageUrl == null || imageUrl.trim().isEmpty) {
+      return Container(
+        color: Colors.grey[300],
+        child: const Icon(Icons.event, size: 64),
+      );
+    }
+
+    final uri = Uri.tryParse(imageUrl);
+    final bool isNetworkImage = uri != null && uri.hasScheme;
+
+    if (isNetworkImage) {
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey[300],
+            child: const Icon(Icons.event, size: 64),
+          );
+        },
+      );
+    }
+
+    return Image.asset(
+      imageUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Colors.grey[300],
+          child: const Icon(Icons.event, size: 64),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,21 +58,7 @@ class EventDetailScreen extends StatelessWidget {
             expandedHeight: 300,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              background: event.imageUrl != null
-                  ? Image.network(
-                      event.imageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.event, size: 64),
-                        );
-                      },
-                    )
-                  : Container(
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.event, size: 64),
-                    ),
+              background: _buildHeroImage(),
             ),
           ),
           SliverToBoxAdapter(
@@ -50,7 +74,8 @@ class EventDetailScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+                      Icon(Icons.calendar_today,
+                          size: 16, color: Colors.grey[600]),
                       const SizedBox(width: 8),
                       Text(
                         '${DateFormat('MMM dd, yyyy').format(event.startDate)} - ${DateFormat('MMM dd, yyyy').format(event.endDate)}',
@@ -61,7 +86,8 @@ class EventDetailScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
+                      Icon(Icons.location_on,
+                          size: 16, color: Colors.grey[600]),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -126,7 +152,8 @@ class EventDetailScreen extends StatelessWidget {
 
   Future<void> _bookEvent(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+    final bookingProvider =
+        Provider.of<BookingProvider>(context, listen: false);
 
     if (authProvider.user == null) return;
 
@@ -153,10 +180,10 @@ class EventDetailScreen extends StatelessWidget {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to book event. Please try again.')),
+          const SnackBar(
+              content: Text('Failed to book event. Please try again.')),
         );
       }
     }
   }
 }
-
