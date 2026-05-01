@@ -32,6 +32,35 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
 
   DateTime? _openedAt;
 
+  Widget _buildHeroImage(String imageUrl) {
+    final uri = Uri.tryParse(imageUrl);
+    final bool isNetworkImage = uri != null && uri.hasScheme;
+
+    if (isNetworkImage) {
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: const Color(0xFF1A1F3A),
+            child: const Icon(Icons.event, size: 72, color: Colors.white54),
+          );
+        },
+      );
+    }
+
+    return Image.asset(
+      imageUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: const Color(0xFF1A1F3A),
+          child: const Icon(Icons.event, size: 72, color: Colors.white54),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -41,28 +70,27 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
 
   @override
   void dispose() {
-     _trackSessionEnd();
+    _trackSessionEnd();
     _tabController.dispose();
     super.dispose();
   }
 
+  Future<void> _trackSessionStart() async {
+    _openedAt = DateTime.now();
 
-   Future<void> _trackSessionStart() async {
-  _openedAt = DateTime.now();
-
-  await FirebaseService().startOrUpdateEventSession(
-    eventTitle: widget.title,
-  );
-}
-
-Future<void> _trackSessionEnd() async {
-  if (_openedAt != null) {
-    await FirebaseService().endEventSession(
+    await FirebaseService().startOrUpdateEventSession(
       eventTitle: widget.title,
-      openedAt: _openedAt!,
     );
   }
-}
+
+  Future<void> _trackSessionEnd() async {
+    if (_openedAt != null) {
+      await FirebaseService().endEventSession(
+        eventTitle: widget.title,
+        openedAt: _openedAt!,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,10 +108,7 @@ Future<void> _trackSessionEnd() async {
                 children: [
                   // Image
                   Positioned.fill(
-                    child: Image.network(
-                      widget.imageUrl,
-                      fit: BoxFit.cover,
-                    ),
+                    child: _buildHeroImage(widget.imageUrl),
                   ),
 
                   // Gradient Overlay
@@ -435,13 +460,14 @@ Future<void> _trackSessionEnd() async {
                     ),
                   ),
                   IconButton(
-                    icon:
-                        const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                    icon: const Icon(Icons.arrow_forward_ios,
+                        color: Colors.white),
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const OrganizerTrustProfileScreen(
+                          builder: (context) =>
+                              const OrganizerTrustProfileScreen(
                             organizerId: 'org_demo_1',
                             organizerName: 'Cultural Events LK',
                           ),

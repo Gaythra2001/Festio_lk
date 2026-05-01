@@ -67,8 +67,9 @@ class EventModel {
 
   factory EventModel.fromMap(Map<String, dynamic> map, String id) {
     final bool approvedFlag = map['isApproved'] ?? false;
-    final String resolvedStatus = (map['status'] as String?) ??
-        (approvedFlag ? 'approved' : 'pending');
+    final String resolvedStatus =
+        (map['status'] as String?) ?? (approvedFlag ? 'approved' : 'pending');
+    final dynamic rawImageUrl = map['imageUrl'] ?? map['image_url'];
     return EventModel(
       id: id,
       title: map['title'] ?? '',
@@ -86,14 +87,15 @@ class EventModel {
       tags: List<String>.from(map['tags'] ?? []),
       organizerId: map['organizerId'] ?? '',
       organizerName: map['organizerName'] ?? '',
-      imageUrl: map['imageUrl'],
+      imageUrl: rawImageUrl is String ? rawImageUrl : rawImageUrl?.toString(),
       latitude: (map['latitude'] as num?)?.toDouble(),
       longitude: (map['longitude'] as num?)?.toDouble(),
       isApproved: approvedFlag,
       isSpam: map['isSpam'] ?? false,
       spamScore: (map['spamScore'] as num?)?.toDouble() ?? 0.0,
       trustScore: map['trustScore'] ?? 0,
-      submittedAt: (map['submittedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      submittedAt:
+          (map['submittedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       approvedAt: (map['approvedAt'] as Timestamp?)?.toDate(),
       status: resolvedStatus,
       rejectionReason: map['rejectionReason'],
@@ -121,6 +123,7 @@ class EventModel {
       'organizerId': organizerId,
       'organizerName': organizerName,
       'imageUrl': imageUrl,
+      'image_url': imageUrl,
       'latitude': latitude,
       'longitude': longitude,
       'isApproved': isApproved,
@@ -137,4 +140,3 @@ class EventModel {
     };
   }
 }
-
