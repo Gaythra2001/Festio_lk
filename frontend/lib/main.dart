@@ -71,7 +71,7 @@ class MyApp extends StatelessWidget {
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,
-        home: const ModernHomeScreen(), // Bypassed login for demo
+        home: const ModernLoginScreen(), 
         routes: {
           AppRoutes.trustAssessment: (context) => const TrustAssessmentScreen(),
           AppRoutes.budgetPlanning: (context) => const BudgetPlanningScreen(),
