@@ -732,7 +732,7 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
             style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'The AI system has analyzed this event based on its description, location, and pricing metadata. The high trust score is attributed to consistent historical patterns and verified organizer credentials.',
             style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13, height: 1.5),
           ),

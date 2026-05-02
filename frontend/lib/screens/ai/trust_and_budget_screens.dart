@@ -287,12 +287,16 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
             if (_errorMessage.isNotEmpty)
               _buildErrorDisplay(),
               
-            if (_validationResult != null)
+            if (_validationResult != null) ...[
+              const SizedBox(height: 32),
+              _buildSectionHeader('Analysis Result', Icons.analytics),
+              const SizedBox(height: 16),
               _buildResultCard(
                 title: 'AI Verification Result',
                 data: _validationResult!,
                 color: _getTrustColor(_validationResult?['trust_level'] ?? ''),
               ),
+            ],
             const SizedBox(height: 40),
           ],
         ),
