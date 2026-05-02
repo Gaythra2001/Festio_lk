@@ -44,11 +44,20 @@ class EventsScreen extends StatefulWidget {
   State<EventsScreen> createState() => _EventsScreenState();
 }
 
-class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderStateMixin {
+class _EventsScreenState extends State<EventsScreen>
+    with SingleTickerProviderStateMixin {
   String _selectedCategory = 'All';
-  final List<String> _categories = ['All', 'Festival', 'Dance', 'Music', 'Theater', 'Art', 'Food', 'Poya Days'];
+  final List<String> _categories = [
+    'All',
+    'Festival',
+    'Dance',
+    'Music',
+    'Theater',
+    'Art',
+    'Food',
+    'Poya Days'
+  ];
   late final TabController _tabController;
-  late final List<_Event> _events;
   final MLRecommendationService _mlService = MLRecommendationService();
   late Future<List<RecommendationModel>> _mlFuture;
   String _currentUserId = 'guest_user';
@@ -60,114 +69,182 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   bool _thisMonthOnly = false;
 
   List<_Event> _getBaseEvents() => [
-    _Event(
-      title: 'Kandy Esala Perahera',
-      date: DateTime(2026, 8, 15),
-      location: 'Kandy',
-      category: 'Festival',
-      image: 'assetsimages\festivalKandy Esala Perahera.jpg',
-      juice: 4.8,
-      price: 'Free',
-    ),
-    _Event(
-      title: 'Traditional Dance Show',
-      date: DateTime(2026, 1, 2),
-      location: 'Colombo',
-      category: 'Dance',
-      image: 'assets/images/dance_show.jpg',
-      juice: 4.2,
-      price: 'LKR 1500',
-    ),
-    _Event(
-      title: 'Baila Music Concert',
-      date: DateTime(2026, 2, 5),
-      location: 'Galle',
-      category: 'Music',
-      image: 'assets/images/music_concert.jpg',
-      juice: 4.5,
-      price: 'LKR 2000',
-    ),
-    _Event(
-      title: 'Vesak Festival',
-      date: DateTime(2026, 5, 12),
-      location: 'Colombo',
-      category: 'Festival',
-      image: 'assets/images/festival/Vesak festival.jpg',
-      juice: 4.9,
-      price: 'Free',
-    ),
-    _Event(
-      title: 'Classical Theater Performance',
-      date: DateTime(2026, 3, 18),
-      location: 'Kandy',
-      category: 'Theater',
-      image: 'assets/images/theater.jpg',
-      juice: 4.0,
-      price: 'LKR 1200',
-    ),
-    _Event(
-      title: 'Art Exhibition',
-      date: DateTime(2025, 4, 8),
-      location: 'Colombo',
-      category: 'Art',
-      image: 'assets/images/art.jpg',
-      juice: 3.8,
-      price: 'LKR 800',
-    ),
-    _Event(
-      title: 'Food Festival',
-      date: DateTime(2026, 1, 25),
-      location: 'Negombo',
-      category: 'Food',
-      image: '../assets/images/aaa/food.png',
-      juice: 4.3,
-      price: 'LKR 500',
-    ),
-    _Event(
-      title: 'Drumming Workshop',
-      date: DateTime(2026, 2, 14),
-      location: 'Galle',
-      category: 'Music',
-      image: 'assets/images/drums.jpg',
-      juice: 4.1,
-      price: 'LKR 3000',
-    ),
-  ];
+        _Event(
+          title: 'Kandy Esala Perahera',
+          date: DateTime(2026, 8, 15),
+          location: 'Kandy',
+          category: 'Festival',
+          image: 'assets/images/festival/Kandy Esala Perahera.jpg',
+          juice: 4.8,
+          price: 'Free',
+        ),
+        _Event(
+          title: 'Traditional Dance Show',
+          date: DateTime(2026, 1, 2),
+          location: 'Colombo',
+          category: 'Dance',
+          image: 'assets/images/festival/Festival 1.jpg',
+          juice: 4.2,
+          price: 'LKR 1500',
+        ),
+        _Event(
+          title: 'Baila Music Concert',
+          date: DateTime(2026, 2, 5),
+          location: 'Galle',
+          category: 'Music',
+          image: 'assets/images/festival/Festival 2.jpg',
+          juice: 4.5,
+          price: 'LKR 2000',
+        ),
+        _Event(
+          title: 'Vesak Festival',
+          date: DateTime(2026, 5, 12),
+          location: 'Colombo',
+          category: 'Festival',
+          image: 'assets/images/festival/Vesak festival.jpg',
+          juice: 4.9,
+          price: 'Free',
+        ),
+        _Event(
+          title: 'Classical Theater Performance',
+          date: DateTime(2026, 3, 18),
+          location: 'Kandy',
+          category: 'Theater',
+          image: 'assets/images/festival/Festival 3.jpg',
+          juice: 4.0,
+          price: 'LKR 1200',
+        ),
+        _Event(
+          title: 'Art Exhibition',
+          date: DateTime(2025, 4, 8),
+          location: 'Colombo',
+          category: 'Art',
+          image: 'assets/images/festival/Festival 4.jpg',
+          juice: 3.8,
+          price: 'LKR 800',
+        ),
+        _Event(
+          title: 'Food Festival',
+          date: DateTime(2026, 1, 25),
+          location: 'Negombo',
+          category: 'Food',
+          image: 'assets/images/aaa/food.png',
+          juice: 4.3,
+          price: 'LKR 500',
+        ),
+        _Event(
+          title: 'Drumming Workshop',
+          date: DateTime(2026, 2, 14),
+          location: 'Galle',
+          category: 'Music',
+          image: 'assets/images/festival/Festival 5.jpg',
+          juice: 4.1,
+          price: 'LKR 3000',
+        ),
+      ];
 
   // Poya days for 2026 with actual full moon dates
   List<_Event> _generatePoyaDays() {
     final poyaDays = [
-      {'name': 'Duruthu Full Moon Poya', 'date': DateTime(2026, 1, 3), 'location': 'Kelaniya Temple', 'image': 'assets/images/poya/Poya 1.jpg'},
-      {'name': 'Navam Full Poya', 'date': DateTime(2026, 2, 10), 'location': 'Gangaramaya Temple', 'image': 'assets/images/poya/Poya 2.jpg'},
-      {'name': 'Medin Full Poya', 'date': DateTime(2026, 3, 12), 'location': 'Temples Nationwide', 'image': 'assets/images/poya/Poya 3.jpg'},
-      {'name': 'Bak Full Poya', 'date': DateTime(2026, 4, 10), 'location': 'Temples Nationwide', 'image': 'assets/images/poya/Poya 4.jpg'},
-      {'name': 'Vesak Full Poya', 'date': DateTime(2026, 5, 11), 'location': 'All Buddhist Temples', 'image': 'assets/images/poya/Poya 5.jpg'},
-      {'name': 'Poson Full Poya', 'date': DateTime(2026, 6, 9), 'location': 'Mihintale', 'image': 'assets/images/poya/Poya 6.jpg'},
-      {'name': 'Esala Full Poya', 'date': DateTime(2026, 7, 9), 'location': 'Temples Nationwide', 'image': 'assets/images/poya/Poya 7.jpg'},
-      {'name': 'Nikini Full Poya', 'date': DateTime(2026, 8, 7), 'location': 'Temples Nationwide', 'image': 'assets/images/poya/Poya 8.jpg'},
-      {'name': 'Binara Full Poya', 'date': DateTime(2026, 9, 6), 'location': 'Temples Nationwide', 'image': 'assets/images/poya/Poya 9.png'},
-      {'name': 'Vap Full Poya', 'date': DateTime(2026, 10, 5), 'location': 'Temples Nationwide', 'image': 'assets/images/poya/Poya 10.png'},
-      {'name': 'Il Full Poya', 'date': DateTime(2026, 11, 4), 'location': 'Temples Nationwide', 'image': 'assets/images/poya/Poya 11.jpg'},
-      {'name': 'Unduvap Full Poya', 'date': DateTime(2026, 12, 3), 'location': 'Anuradhapura', 'image': 'assets/images/poya/Poya 12.jpg'},
+      {
+        'name': 'Duruthu Full Moon Poya',
+        'date': DateTime(2026, 1, 3),
+        'location': 'Kelaniya Temple',
+        'image': 'assets/images/poya/Poya 1.jpg'
+      },
+      {
+        'name': 'Navam Full Poya',
+        'date': DateTime(2026, 2, 10),
+        'location': 'Gangaramaya Temple',
+        'image': 'assets/images/poya/Poya 2.jpg'
+      },
+      {
+        'name': 'Medin Full Poya',
+        'date': DateTime(2026, 3, 12),
+        'location': 'Temples Nationwide',
+        'image': 'assets/images/poya/Poya 3.jpg'
+      },
+      {
+        'name': 'Bak Full Poya',
+        'date': DateTime(2026, 4, 10),
+        'location': 'Temples Nationwide',
+        'image': 'assets/images/poya/Poya 4.jpg'
+      },
+      {
+        'name': 'Vesak Full Poya',
+        'date': DateTime(2026, 5, 11),
+        'location': 'All Buddhist Temples',
+        'image': 'assets/images/poya/Poya 5.jpg'
+      },
+      {
+        'name': 'Poson Full Poya',
+        'date': DateTime(2026, 6, 9),
+        'location': 'Mihintale',
+        'image': 'assets/images/poya/Poya 6.jpg'
+      },
+      {
+        'name': 'Esala Full Poya',
+        'date': DateTime(2026, 7, 9),
+        'location': 'Temples Nationwide',
+        'image': 'assets/images/poya/Poya 7.jpg'
+      },
+      {
+        'name': 'Nikini Full Poya',
+        'date': DateTime(2026, 8, 7),
+        'location': 'Temples Nationwide',
+        'image': 'assets/images/poya/Poya 8.jpg'
+      },
+      {
+        'name': 'Binara Full Poya',
+        'date': DateTime(2026, 9, 6),
+        'location': 'Temples Nationwide',
+        'image': 'assets/images/poya/Poya 9.png'
+      },
+      {
+        'name': 'Vap Full Poya',
+        'date': DateTime(2026, 10, 5),
+        'location': 'Temples Nationwide',
+        'image': 'assets/images/poya/Poya 10.png'
+      },
+      {
+        'name': 'Il Full Poya',
+        'date': DateTime(2026, 11, 4),
+        'location': 'Temples Nationwide',
+        'image': 'assets/images/poya/Poya 11.jpg'
+      },
+      {
+        'name': 'Unduvap Full Poya',
+        'date': DateTime(2026, 12, 3),
+        'location': 'Anuradhapura',
+        'image': 'assets/images/poya/Poya 12.jpg'
+      },
     ];
 
-    return poyaDays.map((poya) => _Event(
-      title: poya['name'] as String,
-      date: poya['date'] as DateTime,
-      location: poya['location'] as String,
-      category: 'Poya Days',
-      image: poya['image'] as String,
-      juice: 4.7,
-      price: 'Free',
-    )).toList();
+    return poyaDays
+        .map((poya) => _Event(
+              title: poya['name'] as String,
+              date: poya['date'] as DateTime,
+              location: poya['location'] as String,
+              category: 'Poya Days',
+              image: poya['image'] as String,
+              juice: 4.7,
+              price: 'Free',
+            ))
+        .toList();
+  }
+
+  List<EventModel> _getStaticEvents() {
+    final base = _getBaseEvents();
+    final poya = _generatePoyaDays();
+    return [...base, ...poya].map((e) => _convertToEventModel(e)).toList();
   }
 
   @override
   void initState() {
     super.initState();
-    _events = [..._getBaseEvents(), ..._generatePoyaDays()];
     _tabController = TabController(length: 2, vsync: this);
-    _mlFuture = Future.value(<RecommendationModel>[]); // Hydrated once auth/user context is available
+    _mlFuture = Future.value(
+        <RecommendationModel>[]); // Hydrated once auth/user context is available
     _searchController = TextEditingController();
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
@@ -199,7 +276,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   }
 
   Future<List<RecommendationModel>> _loadMlRecommendations(String userId) {
-    return _mlService.getRecommendations(userId: userId, limit: 6, excludeViewed: true);
+    return _mlService.getRecommendations(
+        userId: userId, limit: 6, excludeViewed: true);
   }
 
   EventModel? _findEventForRec(String eventId, List<EventModel> events) {
@@ -210,7 +288,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
     }
 
     try {
-      return events.firstWhere((event) => event.title.toLowerCase() == eventId.toLowerCase());
+      return events.firstWhere(
+          (event) => event.title.toLowerCase() == eventId.toLowerCase());
     } catch (_) {
       return null;
     }
@@ -219,7 +298,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   void _scrollToDate(DateTime date) {
     final dateKey = '${date.year}-${date.month}-${date.day}';
     final key = _dateKeys[dateKey];
-    
+
     if (key?.currentContext != null) {
       Scrollable.ensureVisible(
         key!.currentContext!,
@@ -244,6 +323,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
       endDate: event.date,
       location: event.location,
       category: event.category,
+      imageUrl: event.image,
       organizerId: 'system',
       organizerName: 'System',
       isApproved: true,
@@ -268,7 +348,9 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
     }
 
     if (_freeOnly) {
-      results = results.where((event) => event.price.toLowerCase().contains('free')).toList();
+      results = results
+          .where((event) => event.price.toLowerCase().contains('free'))
+          .toList();
     }
 
     if (_thisMonthOnly) {
@@ -284,9 +366,43 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+
+    final providerEvents = context.watch<EventProvider>().events;
+    final staticEvents = _getStaticEvents();
+
+    // De-duplicate: Prioritize provider events over static ones
+    final providerTitles =
+        providerEvents.map((e) => e.title.toLowerCase()).toSet();
+    final uniqueStaticEvents = staticEvents
+        .where((e) => !providerTitles.contains(e.title.toLowerCase()))
+        .toList();
+
+    final List<EventModel> allEventsModels = [
+      ...providerEvents,
+      ...uniqueStaticEvents
+    ];
+
+    // Convert all back to _Event for the existing UI logic (to avoid breaking too many widgets)
+    final allEvents = allEventsModels
+        .map((e) => _Event(
+              title: e.title,
+              date: e.startDate,
+              location: e.location,
+              category: e.category,
+              image: e.imageUrl ??
+                  'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800',
+              juice: 4.5,
+              price: e.ticketPrice != null
+                  ? (e.ticketPrice! == 0
+                      ? 'Free'
+                      : 'LKR ${e.ticketPrice!.toStringAsFixed(0)}')
+                  : 'Free',
+            ))
+        .toList();
+
     final categoryFiltered = _selectedCategory == 'All'
-      ? _events
-      : _events.where((e) => e.category == _selectedCategory).toList();
+        ? allEvents
+        : allEvents.where((e) => e.category == _selectedCategory).toList();
     final filteredEvents = _applyFilters(categoryFiltered, today);
     final upcomingEvents = filteredEvents
         .where((event) => !event.date.isBefore(today))
@@ -397,7 +513,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                       GestureDetector(
                         onTap: _scrollToToday,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.92),
                             borderRadius: BorderRadius.circular(12),
@@ -408,7 +525,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.today, color: Color(0xFF0B1F2A), size: 18),
+                              const Icon(Icons.today,
+                                  color: Color(0xFF0B1F2A), size: 18),
                               const SizedBox(width: 8),
                               Text(
                                 'Today',
@@ -470,7 +588,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                                 _searchController.clear();
                               });
                             },
-                            icon: const Icon(Icons.close, color: Colors.white70),
+                            icon:
+                                const Icon(Icons.close, color: Colors.white70),
                             tooltip: 'Clear search',
                           ),
                     filled: true,
@@ -479,7 +598,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                       borderRadius: BorderRadius.circular(14),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -491,7 +611,9 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                       label: Text(
                         'Free entry',
                         style: GoogleFonts.manrope(
-                          color: _freeOnly ? const Color(0xFF0B1F2A) : Colors.white,
+                          color: _freeOnly
+                              ? const Color(0xFF0B1F2A)
+                              : Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -509,7 +631,9 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                       label: Text(
                         'This month',
                         style: GoogleFonts.manrope(
-                          color: _thisMonthOnly ? const Color(0xFF0B1F2A) : Colors.white,
+                          color: _thisMonthOnly
+                              ? const Color(0xFF0B1F2A)
+                              : Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -535,7 +659,6 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
 
           const SizedBox(height: 24),
 
-          // Calendar Widget
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -553,7 +676,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
               ],
             ),
             child: EventCalendar(
-              events: filteredEvents.map(_convertToEventModel).toList(),
+              events:
+                  allEventsModels, // Use the full merged list for the calendar
               onDateSelected: (date) {
                 _scrollToDate(date);
               },
@@ -605,7 +729,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: const Color(0xFF7CCFB2).withOpacity(0.35),
+                                color:
+                                    const Color(0xFF7CCFB2).withOpacity(0.35),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -617,7 +742,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                       style: GoogleFonts.manrope(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: isSelected ? const Color(0xFF0B1F2A) : Colors.white,
+                        color:
+                            isSelected ? const Color(0xFF0B1F2A) : Colors.white,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -637,7 +763,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildTabSwitcher(List<_Event> upcomingEvents, List<_Event> pastEvents) {
+  Widget _buildTabSwitcher(
+      List<_Event> upcomingEvents, List<_Event> pastEvents) {
     final tabs = [
       _TabData(label: 'Upcoming', events: upcomingEvents),
       _TabData(label: 'Past', events: pastEvents),
@@ -725,49 +852,50 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
     // Group events by date for section headers
     final Map<String, List<_Event>> eventsByDate = {};
     for (final event in events) {
-      final dateKey = '${event.date.year}-${event.date.month}-${event.date.day}';
+      final dateKey =
+          '${event.date.year}-${event.date.month}-${event.date.day}';
       eventsByDate.putIfAbsent(dateKey, () => []).add(event);
     }
 
     final dateKeys = eventsByDate.keys.toList()..sort();
-    
+
     return Column(
       children: [
-        for (int i = 0; i < dateKeys.length; i++) ..._buildDateSection(dateKeys[i], eventsByDate[dateKeys[i]]!, i),
+        for (int i = 0; i < dateKeys.length; i++)
+          ..._buildDateSection(dateKeys[i], eventsByDate[dateKeys[i]]!, i),
       ],
     );
   }
 
-  List<Widget> _buildDateSection(String dateKey, List<_Event> dateEvents, int sectionIndex) {
+  List<Widget> _buildDateSection(
+      String dateKey, List<_Event> dateEvents, int sectionIndex) {
     final firstEvent = dateEvents.first;
     final date = firstEvent.date;
-    
+
     // Create or reuse GlobalKey for this date
     _dateKeys.putIfAbsent(dateKey, () => GlobalKey());
     final key = _dateKeys[dateKey]!;
-    
+
     final now = DateTime.now();
-    final isToday = date.year == now.year && 
-                   date.month == now.month && 
-                   date.day == now.day;
-    
+    final isToday =
+        date.year == now.year && date.month == now.month && date.day == now.day;
+
     return [
       Container(
         key: key,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         margin: EdgeInsets.only(bottom: 12, top: sectionIndex > 0 ? 24 : 0),
         decoration: BoxDecoration(
-          gradient: isToday 
-            ? const LinearGradient(
-                colors: [Color(0xFF7CCFB2), Color(0xFFFFD7A3)],
-              )
-            : null,
+          gradient: isToday
+              ? const LinearGradient(
+                  colors: [Color(0xFF7CCFB2), Color(0xFFFFD7A3)],
+                )
+              : null,
           color: isToday ? null : Colors.white.withOpacity(0.05),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isToday 
-              ? Colors.transparent 
-              : Colors.white.withOpacity(0.08),
+            color:
+                isToday ? Colors.transparent : Colors.white.withOpacity(0.08),
           ),
         ),
         child: Row(
@@ -787,7 +915,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                 color: isToday ? const Color(0xFF0B1F2A) : Colors.white70,
               ),
             ),
-            if (isToday) ... [
+            if (isToday) ...[
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -901,9 +1029,7 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
               title: event.title,
               date: DateFormat('MMM d, yyyy').format(event.date),
               location: event.location,
-              imageUrl: event.image.startsWith('http')
-                  ? event.image
-                  : 'https://via.placeholder.com/800x400',
+              imageUrl: event.image,
               eventId: event.title.hashCode.toString(),
             ),
           ),
@@ -970,7 +1096,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                 top: 10,
                 left: 10,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(10),
@@ -979,7 +1106,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.category_outlined, size: 14, color: Colors.white),
+                      const Icon(Icons.category_outlined,
+                          size: 14, color: Colors.white),
                       const SizedBox(width: 6),
                       Text(
                         event.category,
@@ -997,7 +1125,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                 top: 10,
                 right: 10,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFFff9a9e), Color(0xFFfecfef)],
@@ -1108,7 +1237,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [Color(0xFF7CCFB2), Color(0xFFFFD7A3)],
@@ -1126,7 +1256,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                           ),
                           const Spacer(),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(10),
@@ -1142,7 +1273,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                                   ),
                                 ),
                                 const SizedBox(width: 6),
-                                const Icon(Icons.arrow_forward, size: 14, color: Color(0xFF0B1F2A)),
+                                const Icon(Icons.arrow_forward,
+                                    size: 14, color: Color(0xFF0B1F2A)),
                               ],
                             ),
                           ),
@@ -1196,7 +1328,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                     colors: [Color(0xFF7CCFB2), Color(0xFFFFD7A3)],
                   ),
                 ),
-                child: const Icon(Icons.psychology, color: Colors.white, size: 20),
+                child:
+                    const Icon(Icons.psychology, color: Colors.white, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1245,7 +1378,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                       child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                     SizedBox(width: 12),
-                    Text('Loading recommendations...', style: TextStyle(color: Colors.white70)),
+                    Text('Loading recommendations...',
+                        style: TextStyle(color: Colors.white70)),
                   ],
                 );
               }
@@ -1253,7 +1387,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
               if (snapshot.hasError) {
                 return Text(
                   'Could not load recommendations',
-                  style: GoogleFonts.poppins(color: Colors.redAccent, fontSize: 13),
+                  style: GoogleFonts.poppins(
+                      color: Colors.redAccent, fontSize: 13),
                 );
               }
 
@@ -1261,7 +1396,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
               if (recs.isEmpty) {
                 return Text(
                   'No recommendations available. Try again later.',
-                  style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13),
+                  style:
+                      GoogleFonts.poppins(color: Colors.white70, fontSize: 13),
                 );
               }
 
@@ -1269,7 +1405,8 @@ class _EventsScreenState extends State<EventsScreen> with SingleTickerProviderSt
                 spacing: 10,
                 runSpacing: 10,
                 children: recs.map((rec) {
-                  final matchedEvent = _findEventForRec(rec.eventId, eventProvider.events);
+                  final matchedEvent =
+                      _findEventForRec(rec.eventId, eventProvider.events);
                   if (matchedEvent != null) {
                     return _buildRecommendedEventCard(
                       context: context,
@@ -1368,7 +1505,7 @@ class _RecommendationCardState extends State<_RecommendationCard> {
 
   Future<void> _handleFeedback(bool liked) async {
     if (_isProcessing) return;
-    
+
     setState(() {
       _isProcessing = true;
       _feedbackGiven = liked;
@@ -1380,7 +1517,7 @@ class _RecommendationCardState extends State<_RecommendationCard> {
         eventId: widget.event.id,
         interactionType: liked ? 'like' : 'dislike',
       );
-      
+
       await widget.recProvider.provideFeedback(
         userId: widget.userId,
         eventId: widget.event.id,
@@ -1391,12 +1528,15 @@ class _RecommendationCardState extends State<_RecommendationCard> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              liked ? '👍 Thanks for the feedback!' : '👎 We\'ll improve our recommendations',
+              liked
+                  ? '👍 Thanks for the feedback!'
+                  : '👎 We\'ll improve our recommendations',
               style: GoogleFonts.poppins(),
             ),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: liked ? const Color(0xFF23C864) : const Color(0xFFff6b6b),
+            backgroundColor:
+                liked ? const Color(0xFF23C864) : const Color(0xFFff6b6b),
           ),
         );
       }
@@ -1430,7 +1570,7 @@ class _RecommendationCardState extends State<_RecommendationCard> {
         await widget.recProvider.trackEventView(widget.userId, widget.event);
 
         if (!mounted) return;
-        
+
         // Navigate to rich detail screen
         await Navigator.of(context).push(
           MaterialPageRoute(
@@ -1438,7 +1578,8 @@ class _RecommendationCardState extends State<_RecommendationCard> {
               title: widget.event.title,
               date: DateFormat('MMM d, yyyy').format(widget.event.startDate),
               location: widget.event.location,
-              imageUrl: widget.event.imageUrl ?? 'https://via.placeholder.com/800x400',
+              imageUrl: widget.event.imageUrl ??
+                  'https://via.placeholder.com/800x400',
               eventId: widget.event.id,
             ),
           ),
@@ -1446,7 +1587,8 @@ class _RecommendationCardState extends State<_RecommendationCard> {
 
         // Track view end when returning
         if (mounted) {
-          await widget.recProvider.trackEventViewEnd(widget.userId, widget.event.id);
+          await widget.recProvider
+              .trackEventViewEnd(widget.userId, widget.event.id);
         }
       },
       child: AnimatedContainer(
@@ -1486,7 +1628,8 @@ class _RecommendationCardState extends State<_RecommendationCard> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF23C864).withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
@@ -1504,7 +1647,9 @@ class _RecommendationCardState extends State<_RecommendationCard> {
                 IconButton(
                   onPressed: _isProcessing ? null : () => _handleFeedback(true),
                   icon: Icon(
-                    _feedbackGiven == true ? Icons.thumb_up : Icons.thumb_up_alt_outlined,
+                    _feedbackGiven == true
+                        ? Icons.thumb_up
+                        : Icons.thumb_up_alt_outlined,
                     size: 18,
                     color: _feedbackGiven == true
                         ? const Color(0xFF23C864)
@@ -1513,9 +1658,12 @@ class _RecommendationCardState extends State<_RecommendationCard> {
                   tooltip: 'Like this recommendation',
                 ),
                 IconButton(
-                  onPressed: _isProcessing ? null : () => _handleFeedback(false),
+                  onPressed:
+                      _isProcessing ? null : () => _handleFeedback(false),
                   icon: Icon(
-                    _feedbackGiven == false ? Icons.thumb_down : Icons.thumb_down_alt_outlined,
+                    _feedbackGiven == false
+                        ? Icons.thumb_down
+                        : Icons.thumb_down_alt_outlined,
                     size: 18,
                     color: _feedbackGiven == false
                         ? const Color(0xFFff6b6b)
@@ -1540,14 +1688,16 @@ class _RecommendationCardState extends State<_RecommendationCard> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.location_on_outlined, size: 14, color: Colors.white60),
+                const Icon(Icons.location_on_outlined,
+                    size: 14, color: Colors.white60),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     widget.event.location,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12),
+                    style: GoogleFonts.poppins(
+                        color: Colors.white70, fontSize: 12),
                   ),
                 ),
               ],
@@ -1567,18 +1717,21 @@ class _RecommendationCardState extends State<_RecommendationCard> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     DateFormat('MMM d, yyyy').format(widget.event.startDate),
-                    style: GoogleFonts.poppins(color: Colors.white, fontSize: 12),
+                    style:
+                        GoogleFonts.poppins(color: Colors.white, fontSize: 12),
                   ),
                 ),
                 const Spacer(),
-                const Icon(Icons.chevron_right, color: Colors.white70, size: 20),
+                const Icon(Icons.chevron_right,
+                    color: Colors.white70, size: 20),
               ],
             ),
           ],
@@ -1587,4 +1740,3 @@ class _RecommendationCardState extends State<_RecommendationCard> {
     );
   }
 }
-

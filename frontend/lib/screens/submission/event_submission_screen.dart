@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -33,6 +34,11 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
   bool _isSubmitting = false;
   XFile? _selectedImage;
 
+  bool _isCheckingLocation = false;
+  String? _locationAvailabilityMessage;
+  bool _isLocationAvailable = true;
+  Timer? _debounce;
+
   final List<String> _categories = [
     'Festival',
     'Music',
@@ -58,6 +64,7 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _tabController.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
@@ -88,6 +95,7 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
       setState(() {
         _selectedDate = picked;
       });
+      _triggerLocationCheck();
     }
   }
 
@@ -111,6 +119,7 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
       setState(() {
         _selectedTime = picked;
       });
+      _triggerLocationCheck();
     }
   }
 
@@ -137,6 +146,54 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
           ),
         );
       }
+    }
+  }
+
+  void _triggerLocationCheck() {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 800), () {
+      _checkLocationAvailability();
+    });
+  }
+
+  Future<void> _checkLocationAvailability() async {
+    final location = _locationController.text;
+    if (location.trim().isEmpty) {
+      setState(() {
+        _locationAvailabilityMessage = null;
+        _isLocationAvailable = true;
+      });
+      return;
+    }
+
+    setState(() {
+      _isCheckingLocation = true;
+    });
+
+    final eventProvider = Provider.of<EventProvider>(context, listen: false);
+    
+    final startDateTime = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      _selectedTime.hour,
+      _selectedTime.minute,
+    );
+    final endDateTime = startDateTime.add(const Duration(hours: 3));
+
+    final suggestion = await eventProvider.checkLocationAvailability(location, startDateTime, endDateTime);
+
+    if (mounted) {
+      setState(() {
+        _isCheckingLocation = false;
+        if (suggestion != null) {
+          _isLocationAvailable = false;
+          _locationAvailabilityMessage = suggestion;
+        } else {
+          _isLocationAvailable = true;
+          _locationAvailabilityMessage = 'Location available';
+        }
+      });
     }
   }
 
@@ -177,6 +234,16 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
   }
 
   Future<void> _submitEvent() async {
+    if (!_isLocationAvailable) {
+       ScaffoldMessenger.of(context).showSnackBar(
+         const SnackBar(
+           content: Text('Please resolve the location conflict before submitting.'),
+           backgroundColor: Colors.red,
+         ),
+       );
+       return;
+    }
+
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isSubmitting = true;
@@ -211,26 +278,29 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
           ticketPrice: _priceController.text.isNotEmpty
               ? double.tryParse(_priceController.text)
               : null,
-          isApproved: false,
-          status: 'pending',
+          isApproved: true,
+          status: 'approved',
         );
 
         // Submit event with image
-        final File? imageFile = _selectedImage != null && !kIsWeb
-            ? File(_selectedImage!.path)
-            : null;
-        final newEventId = await eventProvider.submitEvent(event, imageFile);
+        final XFile? imageFile = _selectedImage;
+        final String? authToken = await authProvider.getAuthToken();
+        final result = await eventProvider.submitEvent(event, imageFile, authToken: authToken);
 
         if (mounted) {
           setState(() {
             _isSubmitting = false;
           });
 
-          if (newEventId != null && newEventId.isNotEmpty) {
+          if (result['success'] == true) {
             // Reload upcoming events on home page
             await eventProvider.loadUpcomingEvents();
             final organizerId = authProvider.user?.id ?? '';
             eventProvider.loadOrganizerEvents(organizerId);
+            
+            // Give Firebase a moment to propagate
+            await Future.delayed(const Duration(milliseconds: 800));
+            eventProvider.loadEvents(); 
 
             // Show success message
             ScaffoldMessenger.of(context).showSnackBar(
@@ -241,7 +311,7 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Event "${_titleController.text}" submitted and pending admin approval.',
+                        'Event "${_titleController.text}" submitted and published successfully!',
                         style: GoogleFonts.poppins(),
                       ),
                     ),
@@ -255,12 +325,26 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
             // Go back to previous screen
             Navigator.of(context).pop();
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Failed to submit event. Please try again.'),
-                backgroundColor: Colors.red,
-              ),
-            );
+            final error = result['error']?.toString() ?? 'Unknown error';
+            final friendlyError = _getFriendlySubmitError(error);
+            
+            if (error == 'conflict_error') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Location was just booked by someone else! Please choose a different time or location.'),
+                  backgroundColor: Colors.red,
+                  duration: Duration(seconds: 5),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to submit event: $friendlyError'),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 8),
+                ),
+              );
+            }
           }
         }
       } catch (e) {
@@ -278,6 +362,20 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
         }
       }
     }
+  }
+
+  String _getFriendlySubmitError(String rawError) {
+    final normalized = rawError.toLowerCase();
+
+    if (normalized.contains('upload preset not found')) {
+      return 'Image upload is not configured yet. Create an unsigned Cloudinary upload preset named "festio_lk_events" and try again.';
+    }
+
+    if (normalized.contains('cloudinary configuration missing')) {
+      return 'Cloudinary settings are missing. Run with CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET.';
+    }
+
+    return rawError.replaceFirst('Exception: ', '');
   }
 
   @override
@@ -691,6 +789,7 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
                 controller: _locationController,
                 hintText: 'Enter event location',
                 prefixIcon: Icons.location_on,
+                onChanged: (_) => _triggerLocationCheck(),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter location';
@@ -698,6 +797,42 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
                   return null;
                 },
               ),
+
+              if (_isCheckingLocation || _locationAvailabilityMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, left: 4.0),
+                  child: Row(
+                    children: [
+                      if (_isCheckingLocation)
+                        const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Color(0xFF667eea),
+                          ),
+                        )
+                      else
+                        Icon(
+                          _isLocationAvailable ? Icons.check_circle : Icons.error_outline,
+                          color: _isLocationAvailable ? Colors.green : Colors.redAccent,
+                          size: 16,
+                        ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _isCheckingLocation ? 'Checking availability...' : _locationAvailabilityMessage!,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: _isCheckingLocation 
+                                ? Colors.white70 
+                                : (_isLocationAvailable ? Colors.green : Colors.redAccent),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
               const SizedBox(height: 24),
 
@@ -1150,6 +1285,7 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
     int maxLines = 1,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
+    void Function(String)? onChanged,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -1163,6 +1299,7 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
         maxLines: maxLines,
         keyboardType: keyboardType,
         validator: validator,
+        onChanged: onChanged,
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: GoogleFonts.poppins(color: Colors.white38),

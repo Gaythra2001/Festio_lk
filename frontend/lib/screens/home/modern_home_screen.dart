@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:festio_lk/core/services/EventR_service.dart';
+import 'package:festio_lk/screens/Erecommendation/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +17,7 @@ import '../../widgets/event_calendar.dart';
 import '../../widgets/juice_rating.dart';
 import '../../core/providers/notification_provider.dart';
 import '../../core/providers/event_provider.dart';
+import '../../core/models/event_model.dart';
 import '../../widgets/app_footer.dart';
 
 class ModernHomeScreen extends StatefulWidget {
@@ -111,33 +114,64 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
     },
   ];
 
-  List<Map<String, dynamic>> get _filteredEvents {
-    final eventProvider = Provider.of<EventProvider>(context, listen: false);
-    final providerEvents = eventProvider.upcomingEvents.map((event) {
-      return {
-        'title': event.title,
-        'date': DateFormat('MMM dd, yyyy').format(event.startDate),
-        'location': event.location,
-        'category': event.category,
-        'imageUrl': event.imageUrl ??
-            'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200',
-        'juice': 4.5,
-      };
+  List<EventModel> _getMergedEventModels(List<EventModel> providerEvents) {
+    final List<EventModel> localStaticEvents = _allEvents.map((e) {
+      DateTime date;
+      try {
+        date = DateFormat('MMM dd, yyyy').parse(e['date']);
+      } catch (_) {
+        date = DateTime.now();
+      }
+      return EventModel(
+        id: 'static_${e['title'].hashCode}',
+        title: e['title'],
+        description: e['title'],
+        startDate: date,
+        endDate: date,
+        location: e['location'],
+        category: e['category'],
+        imageUrl: e['imageUrl'],
+        organizerId: 'system',
+        organizerName: 'System',
+        isApproved: true,
+        status: 'approved',
+        submittedAt: DateTime.now(),
+      );
     }).toList();
 
-    var events = [...providerEvents, ..._allEvents];
+    // De-duplicate: Prioritize provider events over static ones
+    final providerTitles =
+        providerEvents.map((e) => e.title.toLowerCase()).toSet();
+    
+    final uniqueStaticEvents = localStaticEvents
+        .where((e) => !providerTitles.contains(e.title.toLowerCase()))
+        .toList();
+
+    return [...providerEvents, ...uniqueStaticEvents];
+  }
+
+  List<EventModel> _getFilteredEvents(List<EventModel> mergedEvents,
+      {bool upcomingOnly = false}) {
+    var events = mergedEvents;
 
     if (_selectedCategory != 'All') {
-      events = events.where((e) => e['category'] == _selectedCategory).toList();
+      events = events.where((e) => e.category == _selectedCategory).toList();
     }
 
     if (_searchQuery.isNotEmpty) {
       events = events.where((e) {
-        final title = e['title'].toLowerCase();
-        final location = e['location'].toLowerCase();
+        final title = e.title.toLowerCase();
+        final location = e.location.toLowerCase();
         final query = _searchQuery.toLowerCase();
         return title.contains(query) || location.contains(query);
       }).toList();
+    }
+
+    if (upcomingOnly) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      events = events.where((e) => !e.startDate.isBefore(today)).toList();
+      events.sort((a, b) => a.startDate.compareTo(b.startDate));
     }
 
     return events;
@@ -232,8 +266,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              const TrustAssessmentScreen(),
+                          builder: (context) => const TrustAssessmentScreen(),
                         ),
                       );
                     },
@@ -245,8 +278,7 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              const BudgetPlanningScreen(),
+                          builder: (context) => const BudgetPlanningScreen(),
                         ),
                       );
                     },
@@ -335,8 +367,11 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                               padding: const EdgeInsets.only(bottom: 24),
                               child: Consumer<EventProvider>(
                                 builder: (context, eventProvider, child) {
+                                  final merged =
+                                      _getMergedEventModels(eventProvider.events);
                                   return EventCalendar(
-                                    events: eventProvider.upcomingEvents,
+                                    events: _getFilteredEvents(merged,
+                                        upcomingOnly: false),
                                     onDateSelected: (date) {},
                                     onEventsForDateChanged: (events) {},
                                   );
@@ -345,7 +380,16 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                             ),
                           Container(
                             key: _eventsKey,
-                            child: _buildEventSection(isDesktop, isTablet),
+                            child: Consumer<EventProvider>(
+                              builder: (context, eventProvider, child) {
+                                final merged =
+                                    _getMergedEventModels(eventProvider.events);
+                                final filtered = _getFilteredEvents(merged,
+                                    upcomingOnly: true);
+                                return _buildEventSection(
+                                    isDesktop, isTablet, filtered);
+                              },
+                            ),
                           ),
                           const SizedBox(height: 40),
                           const AppFooter(),
@@ -834,6 +878,21 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
           );
         },
       ),
+      _QuickAction(
+        title: 'My Picks', // <-- shorter title
+        subtitle: 'Personalized events', // optional shorter subtitle
+        icon: Icons.app_registration,
+        gradient: const [Color(0xFF43cea2), Color(0xFF185a9d)],
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const HomeScreen(), // or your personal recommendation page
+            ),
+          );
+        },
+      ),
     ];
 
     return Wrap(
@@ -945,53 +1004,44 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
     );
   }
 
-  Widget _buildEventSection(bool isDesktop, bool isTablet) {
-    final events = _filteredEvents;
+  Widget _buildEventSection(
+      bool isDesktop, bool isTablet, List<EventModel> events) {
     if (events.isEmpty) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(40),
-          child: Column(
-            children: [
-              const Icon(
-                Icons.search_off,
-                size: 64,
-                color: Colors.white38,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No events found',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  color: Colors.white70,
-                ),
-              ),
-            ],
-          ),
+        child: Column(
+          children: [
+            const SizedBox(height: 40),
+            Icon(Icons.event_busy,
+                size: 64, color: Colors.white.withOpacity(0.2)),
+            const SizedBox(height: 16),
+            Text(
+              'No events found',
+              style: GoogleFonts.poppins(color: Colors.white54, fontSize: 16),
+            ),
+          ],
         ),
       );
     }
 
-    final columns = isDesktop ? 3 : isTablet ? 2 : 1;
-
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: columns,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: isDesktop ? 1.1 : 1.0,
-      ),
       itemCount: events.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isDesktop ? 3 : (isTablet ? 2 : 1),
+        childAspectRatio: isDesktop ? 0.85 : 1.1,
+        crossAxisSpacing: 24,
+        mainAxisSpacing: 24,
+      ),
       itemBuilder: (context, index) {
         final event = events[index];
         return _buildEventCard(
-          title: event['title']!,
-          date: event['date']!,
-          location: event['location']!,
-          imageUrl: event['imageUrl']!,
-          juice: event['juice']! as double,
+          title: event.title,
+          date: DateFormat('MMM dd, yyyy').format(event.startDate),
+          location: event.location,
+          imageUrl: event.imageUrl ??
+              'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200',
+          juice: 4.5, // Default rating for now
         );
       },
     );
@@ -1061,7 +1111,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
     required double juice,
   }) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
+         await FirebaseService().incrementEventClick(title);
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -1348,8 +1399,8 @@ class _ModernHomeScreenState extends State<ModernHomeScreen> {
                         });
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text(
-                                'AI found 6 events near you in Colombo!'),
+                            content:
+                                Text('AI found 6 events near you in Colombo!'),
                             duration: Duration(seconds: 3),
                           ),
                         );

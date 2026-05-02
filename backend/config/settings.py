@@ -8,6 +8,14 @@ class Settings(BaseSettings):
     PORT: int = 8000
     ENVIRONMENT: str = "development"
     
+    @property
+    def backend_dir(self) -> str:
+        return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    @property
+    def uploads_dir(self) -> str:
+        return os.path.join(self.backend_dir, "uploads")
+    
     # CORS
     # Allow all origins in development to support Flutter web's random port.
     ALLOWED_ORIGINS: List[str] = ["*"]
@@ -31,6 +39,7 @@ class Settings(BaseSettings):
     # API Keys
     OPENAI_API_KEY: str = ""
     GOOGLE_PLACES_API_KEY: str = ""
+    CLOUDINARY_URL: str = ""
     
     class Config:
         env_file = ".env"

@@ -11,6 +11,19 @@ class AuthService {
   User? get currentUser => _auth.currentUser;
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
+  
+  Future<String?> getAuthToken() async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        return await user.getIdToken();
+      }
+      return null;
+    } catch (e) {
+      print('Error getting auth token: $e');
+      return null;
+    }
+  }
 
   Future<UserModel?> signInWithEmailAndPassword(String email, String password) async {
     try {

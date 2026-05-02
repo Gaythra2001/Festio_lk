@@ -36,6 +36,7 @@ dependencies:
 
   # Utilities
   http: ^1.1.2
+  http_parser: ^4.0.2
   shared_preferences: ^2.2.2
   qr_flutter: ^4.1.0
   url_launcher: ^6.2.2
@@ -48,6 +49,7 @@ dependencies:
   # Date & Time
   intl_phone_field: ^3.2.0
   table_calendar: ^3.0.9
+  uuid: ^4.5.3
 
 dev_dependencies:
   flutter_test:
