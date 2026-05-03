@@ -7,8 +7,6 @@ import 'firebase_options.dart';
 
 import 'package:festio_lk/core/theme/modern_theme.dart';
 import 'package:festio_lk/screens/splash/auth_wrapper_screen.dart';
-import 'package:festio_lk/screens/auth/modern_login_screen.dart';
-import 'package:festio_lk/screens/home/modern_home_screen.dart';
 import 'package:festio_lk/screens/ai/trust_and_budget_screens.dart';
 import 'package:festio_lk/screens/organizer/modern_organizer_dashboard.dart';
 import 'package:festio_lk/screens/admin/event_approval_screen.dart';

@@ -276,7 +276,7 @@ class EventProvider with ChangeNotifier {
     DateTime suggestedTime = slots.last['endTime'] as DateTime;
     
     final hourFormat = "${suggestedTime.hour.toString().padLeft(2, '0')}:${suggestedTime.minute.toString().padLeft(2, '0')}";
-    return "This location is already booked. Nearest available time is after $hourFormat.";
+    return 'This location is already booked. Nearest available time is after $hourFormat.';
   }
 
   Future<Map<String, dynamic>> submitEvent(EventModel event, XFile? imageFile, {String? authToken}) async {

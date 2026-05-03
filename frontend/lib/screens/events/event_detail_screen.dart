@@ -6,13 +6,21 @@ import '../../core/providers/booking_provider.dart';
 import '../../core/providers/auth_provider.dart';
 import 'package:intl/intl.dart';
 
-class EventDetailScreen extends StatelessWidget {
+class EventDetailScreen extends StatefulWidget {
   final EventModel event;
 
   const EventDetailScreen({super.key, required this.event});
 
+  @override
+  State<EventDetailScreen> createState() => _EventDetailScreenState();
+}
+
+class _EventDetailScreenState extends State<EventDetailScreen> {
+  int _selectedTicketIndex = 0;
+  int _selectedQuantity = 1;
+
   Widget _buildHeroImage() {
-    final String? imageUrl = event.imageUrl;
+    final String? imageUrl = widget.event.imageUrl;
 
     if (imageUrl == null || imageUrl.trim().isEmpty) {
       return Container(
@@ -68,7 +76,7 @@ class EventDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    event.title,
+                    widget.event.title,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 8),
@@ -78,7 +86,7 @@ class EventDetailScreen extends StatelessWidget {
                           size: 16, color: Colors.grey[600]),
                       const SizedBox(width: 8),
                       Text(
-                        '${DateFormat('MMM dd, yyyy').format(event.startDate)} - ${DateFormat('MMM dd, yyyy').format(event.endDate)}',
+                        '${DateFormat('MMM dd, yyyy').format(widget.event.startDate)} - ${DateFormat('MMM dd, yyyy').format(widget.event.endDate)}',
                         style: TextStyle(color: Colors.grey[600]),
                       ),
                     ],
@@ -91,7 +99,7 @@ class EventDetailScreen extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          event.location,
+                          widget.event.location,
                           style: TextStyle(color: Colors.grey[600]),
                         ),
                       ),
@@ -99,7 +107,7 @@ class EventDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Chip(
-                    label: Text(event.category),
+                    label: Text(widget.event.category),
                     backgroundColor: Colors.deepPurple[100],
                   ),
                   const SizedBox(height: 16),
@@ -108,9 +116,90 @@ class EventDetailScreen extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
-                  Text(event.description),
+                  Text(widget.event.description),
                   const SizedBox(height: 24),
-                  if (event.tags.isNotEmpty) ...[
+                  if (widget.event.tickets.isNotEmpty) ...[
+                    Text(
+                      'Tickets',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DropdownButtonFormField<int>(
+                          value: _selectedTicketIndex.clamp(0, widget.event.tickets.length - 1),
+                          decoration: const InputDecoration(border: InputBorder.none),
+                          dropdownColor: const Color(0xFF1A1F3A),
+                          style: TextStyle(color: Colors.white),
+                          items: List.generate(widget.event.tickets.length, (i) {
+                            final t = widget.event.tickets[i];
+                            final price = (t['price'] as num?)?.toDouble() ?? 0.0;
+                            final label = price == 0 ? 'Free' : 'LKR ${price.toStringAsFixed(0)}';
+                            return DropdownMenuItem<int>(
+                              value: i,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(t['ticket_type']?.toString() ?? 'Ticket', style: TextStyle(color: Colors.white)),
+                                  Text(label, style: TextStyle(color: Colors.white70)),
+                                ],
+                              ),
+                            );
+                          }),
+                          onChanged: (idx) {
+                            if (idx == null) return;
+                            setState(() {
+                              _selectedTicketIndex = idx;
+                              _selectedQuantity = 1;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Text('Quantity', style: Theme.of(context).textTheme.bodyMedium),
+                            const SizedBox(width: 12),
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  if (_selectedQuantity > 1) _selectedQuantity--;
+                                });
+                              },
+                              icon: const Icon(Icons.remove_circle_outline),
+                            ),
+                            Text('$_selectedQuantity', style: Theme.of(context).textTheme.bodyMedium),
+                            IconButton(
+                              onPressed: () {
+                                final available = (widget.event.tickets[_selectedTicketIndex]['quantity'] is num)
+                                    ? (widget.event.tickets[_selectedTicketIndex]['quantity'] as num).toInt()
+                                    : int.tryParse(widget.event.tickets[_selectedTicketIndex]['quantity']?.toString() ?? '0') ?? 0;
+                                setState(() {
+                                  if (_selectedQuantity < available) _selectedQuantity++;
+                                });
+                              },
+                              icon: const Icon(Icons.add_circle_outline),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Builder(builder: (ctx) {
+                                  final p = (widget.event.tickets[_selectedTicketIndex]['price'] as num?)?.toDouble() ?? widget.event.ticketPrice ?? 0.0;
+                                  final total = p * _selectedQuantity;
+                                  return Text('Total: ${p == 0 ? 'Free' : 'LKR ${total.toStringAsFixed(0)}'}', style: TextStyle(fontWeight: FontWeight.w600));
+                                }),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                  ] else ...[
+                    const SizedBox.shrink(),
+                  ],
+                  if (widget.event.tags.isNotEmpty) ...[
                     Text(
                       'Tags',
                       style: Theme.of(context).textTheme.titleMedium,
@@ -118,7 +207,7 @@ class EventDetailScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
-                      children: event.tags
+                      children: widget.event.tags
                           .map((tag) => Chip(
                                 label: Text(tag),
                                 labelStyle: const TextStyle(fontSize: 12),
@@ -157,18 +246,31 @@ class EventDetailScreen extends StatelessWidget {
 
     if (authProvider.user == null) return;
 
+    int ticketsToBook = 1;
+    double total = 0.0;
+
+    if (widget.event.tickets.isNotEmpty) {
+      ticketsToBook = _selectedQuantity;
+      final dynamic p = widget.event.tickets[_selectedTicketIndex]['price'];
+      final double unitPrice = p is num ? p.toDouble() : (widget.event.ticketPrice ?? 0.0);
+      total = unitPrice * ticketsToBook;
+    } else {
+      ticketsToBook = 1;
+      total = widget.event.ticketPrice ?? 0.0;
+    }
+
     final booking = BookingModel(
       id: '',
-      eventId: event.id,
+      eventId: widget.event.id,
       userId: authProvider.user!.id,
-      eventTitle: event.title,
-      eventDate: event.startDate,
-      eventLocation: event.location,
-      eventImageUrl: event.imageUrl,
+      eventTitle: widget.event.title,
+      eventDate: widget.event.startDate,
+      eventLocation: widget.event.location,
+      eventImageUrl: widget.event.imageUrl,
       status: BookingStatus.upcoming,
       bookedAt: DateTime.now(),
-      numberOfTickets: 1,
-      totalPrice: event.ticketPrice,
+      numberOfTickets: ticketsToBook,
+      totalPrice: total,
     );
 
     final success = await bookingProvider.createBooking(booking);

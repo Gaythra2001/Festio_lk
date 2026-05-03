@@ -400,12 +400,12 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF1E293B),
-            const Color(0xFF0F172A),
+            Color(0xFF1E293B),
+            Color(0xFF0F172A),
           ],
         ),
         borderRadius: BorderRadius.circular(24),

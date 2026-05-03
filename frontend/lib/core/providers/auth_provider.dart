@@ -158,7 +158,7 @@ class AuthProvider with ChangeNotifier {
     if (useFirebase && _authService != null) {
       return await _authService!.getAuthToken();
     } else if (_mockAuthService != null) {
-      return "mock-token";
+      return 'mock-token';
     }
     return null;
   }
