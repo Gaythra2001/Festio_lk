@@ -22,7 +22,6 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
-  final _priceController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
 
   late TabController _tabController;
@@ -38,6 +37,39 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
   String? _locationAvailabilityMessage;
   bool _isLocationAvailable = true;
   Timer? _debounce;
+
+  // ── Ticketing ──────────────────────────────────────────────────────────
+  /// Each entry holds { nameCtrl, priceCtrl, qtyCtrl, type }
+  final List<Map<String, dynamic>> _tickets = [];
+
+  static const List<Map<String, dynamic>> _ticketPresets = [
+    {'label': 'General',    'icon': Icons.confirmation_number,  'color': Color(0xFF667eea)},
+    {'label': 'VIP',        'icon': Icons.star,                 'color': Color(0xFFFFD700)},
+    {'label': 'Early Bird', 'icon': Icons.alarm,                'color': Color(0xFF00CEC9)},
+    {'label': 'Group',      'icon': Icons.group,                'color': Color(0xFFE84393)},
+    {'label': 'Student',    'icon': Icons.school,               'color': Color(0xFF6C5CE7)},
+    {'label': 'Free',       'icon': Icons.card_giftcard,        'color': Color(0xFF00B894)},
+  ];
+
+  void _addTicket(String type) {
+    setState(() {
+      _tickets.add({
+        'type': type,
+        'nameCtrl': TextEditingController(text: type),
+        'priceCtrl': TextEditingController(text: type == 'Free' ? '0' : ''),
+        'qtyCtrl': TextEditingController(text: '100'),
+      });
+    });
+  }
+
+  void _removeTicket(int index) {
+    final t = _tickets.removeAt(index);
+    (t['nameCtrl'] as TextEditingController).dispose();
+    (t['priceCtrl'] as TextEditingController).dispose();
+    (t['qtyCtrl'] as TextEditingController).dispose();
+    setState(() {});
+  }
+  // ───────────────────────────────────────────────────────────────────────
 
   final List<String> _categories = [
     'Festival',
@@ -69,7 +101,11 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
     _titleController.dispose();
     _descriptionController.dispose();
     _locationController.dispose();
-    _priceController.dispose();
+    for (final t in _tickets) {
+      (t['nameCtrl'] as TextEditingController).dispose();
+      (t['priceCtrl'] as TextEditingController).dispose();
+      (t['qtyCtrl'] as TextEditingController).dispose();
+    }
     super.dispose();
   }
 
@@ -263,6 +299,22 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
           _selectedTime.minute,
         );
 
+        // Build ticket list from form
+        final List<Map<String, dynamic>> ticketList = _tickets.map((t) {
+          return {
+            'ticket_type': (t['nameCtrl'] as TextEditingController).text.trim(),
+            'price': double.tryParse((t['priceCtrl'] as TextEditingController).text) ?? 0.0,
+            'quantity': int.tryParse((t['qtyCtrl'] as TextEditingController).text) ?? 0,
+          };
+        }).toList();
+
+        // Derive base price from first paid tier (fallback null = free)
+        double? basePrice;
+        for (final t in ticketList) {
+          final p = t['price'] as double;
+          if (p > 0) { basePrice = p; break; }
+        }
+
         // Create event model
         final event = EventModel(
           id: '',
@@ -275,9 +327,8 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
           organizerId: authProvider.user?.id ?? 'demo_user',
           organizerName: authProvider.user?.displayName ?? 'Demo User',
           submittedAt: DateTime.now(),
-          ticketPrice: _priceController.text.isNotEmpty
-              ? double.tryParse(_priceController.text)
-              : null,
+          ticketPrice: basePrice,
+          tickets: ticketList,
           isApproved: true,
           status: 'approved',
         );
@@ -836,22 +887,8 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
 
               const SizedBox(height: 24),
 
-              // Price
-              Text(
-                'Price (LKR)',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(
-                controller: _priceController,
-                hintText: 'Enter price (0 for free)',
-                prefixIcon: Icons.attach_money,
-                keyboardType: TextInputType.number,
-              ),
+              // ── Ticketing Options ──────────────────────────────────────
+              _buildTicketingSection(),
 
               const SizedBox(height: 32),
 
@@ -898,6 +935,284 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
           ),
         ),
       );
+  }
+
+  // ────────────────────────────────────────────────────────────────────────
+  //  Ticketing Section Widget
+  // ────────────────────────────────────────────────────────────────────────
+  Widget _buildTicketingSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Section Header ──
+        Row(
+          children: [
+            const Icon(Icons.confirmation_number, color: Color(0xFF667eea), size: 22),
+            const SizedBox(width: 10),
+            Text(
+              'Ticketing Options',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Add one or more ticket tiers for your event.',
+          style: GoogleFonts.poppins(fontSize: 12, color: Colors.white54),
+        ),
+        const SizedBox(height: 16),
+
+        // ── Quick-add preset chips ──
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _ticketPresets.map((preset) {
+            final label = preset['label'] as String;
+            final color = preset['color'] as Color;
+            final icon  = preset['icon']  as IconData;
+            final alreadyAdded = _tickets.any((t) => t['type'] == label);
+            return GestureDetector(
+              onTap: alreadyAdded ? null : () => _addTicket(label),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: alreadyAdded
+                      ? color.withOpacity(0.1)
+                      : color.withOpacity(0.2),
+                  border: Border.all(
+                    color: alreadyAdded ? color.withOpacity(0.3) : color,
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      alreadyAdded ? Icons.check : icon,
+                      color: alreadyAdded ? color.withOpacity(0.4) : color,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      label,
+                      style: GoogleFonts.poppins(
+                        color: alreadyAdded ? color.withOpacity(0.4) : color,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+
+        const SizedBox(height: 20),
+
+        // ── Per-ticket cards ──
+        if (_tickets.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 28),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1F3A),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.08),
+                style: BorderStyle.solid,
+              ),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.confirmation_number_outlined,
+                    color: Colors.white24, size: 40),
+                const SizedBox(height: 10),
+                Text(
+                  'No tickets added yet.\nTap a tier above to add.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                      color: Colors.white38, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+
+        ...List.generate(_tickets.length, (i) {
+          final t = _tickets[i];
+          final type = t['type'] as String;
+          final preset = _ticketPresets.firstWhere(
+            (p) => p['label'] == type,
+            orElse: () => {'color': const Color(0xFF667eea), 'icon': Icons.confirmation_number},
+          );
+          final color = preset['color'] as Color;
+          final icon  = preset['icon']  as IconData;
+          final isLast = i == _tickets.length - 1;
+
+          return Padding(
+            padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1F3A),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: color.withOpacity(0.3)),
+              ),
+              child: Column(
+                children: [
+                  // Card header
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.12),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(14),
+                        topRight: Radius.circular(14),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(icon, color: color, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            type,
+                            style: GoogleFonts.poppins(
+                              color: color,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close,
+                              color: Colors.white38, size: 20),
+                          onPressed: () => _removeTicket(i),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          tooltip: 'Remove',
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Fields
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        // Ticket name (customisable)
+                        TextFormField(
+                          controller: t['nameCtrl'] as TextEditingController,
+                          style: GoogleFonts.poppins(color: Colors.white),
+                          decoration: InputDecoration(
+                            labelText: 'Ticket Name',
+                            labelStyle: GoogleFonts.poppins(
+                                color: Colors.white54, fontSize: 13),
+                            prefixIcon: Icon(Icons.label_outline,
+                                color: color.withOpacity(0.7)),
+                            filled: true,
+                            fillColor: const Color(0xFF0A0E27),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 12),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        Row(
+                          children: [
+                            // Price
+                            Expanded(
+                              child: TextFormField(
+                                controller:
+                                    t['priceCtrl'] as TextEditingController,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
+                                style: GoogleFonts.poppins(color: Colors.white),
+                                decoration: InputDecoration(
+                                  labelText: 'Price (LKR)',
+                                  labelStyle: GoogleFonts.poppins(
+                                      color: Colors.white54, fontSize: 13),
+                                  prefixIcon: Icon(Icons.attach_money,
+                                      color: color.withOpacity(0.7)),
+                                  filled: true,
+                                  fillColor: const Color(0xFF0A0E27),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 12),
+                                ),
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Required';
+                                  }
+                                  if (double.tryParse(v) == null) {
+                                    return 'Invalid';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+
+                            // Quantity
+                            Expanded(
+                              child: TextFormField(
+                                controller:
+                                    t['qtyCtrl'] as TextEditingController,
+                                keyboardType: TextInputType.number,
+                                style: GoogleFonts.poppins(color: Colors.white),
+                                decoration: InputDecoration(
+                                  labelText: 'Qty Available',
+                                  labelStyle: GoogleFonts.poppins(
+                                      color: Colors.white54, fontSize: 13),
+                                  prefixIcon: Icon(Icons.people_outline,
+                                      color: color.withOpacity(0.7)),
+                                  filled: true,
+                                  fillColor: const Color(0xFF0A0E27),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 12),
+                                ),
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Required';
+                                  }
+                                  if (int.tryParse(v) == null) {
+                                    return 'Invalid';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+      ],
+    );
   }
 
   Widget _buildBudgetTips() {
