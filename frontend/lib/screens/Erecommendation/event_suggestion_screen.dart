@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../events/modern_event_detail_screen.dart';
 import 'package:festio_lk/screens/Erecommendation/AIRecommendationPage.dart';
+import 'home_screen.dart';
 
 class EventSuggestionScreen extends StatefulWidget {
   const EventSuggestionScreen({super.key});
@@ -49,6 +50,10 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
 
   List<Map<String, dynamic>> sameDistrictEvents = [];
   List<Map<String, dynamic>> similarOtherDistrictEvents = [];
+  List<Map<String, dynamic>> fallbackCategoryEvents = [];
+
+  bool _isLoading = true;
+  bool _noPreferences = false;
 
   @override
   void initState() {
@@ -78,8 +83,13 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
 
     if (prefs == null) {
       debugPrint('❌ Preferences are NULL. Stopping.');
+      setState(() {
+        _isLoading = false;
+        _noPreferences = true;
+      });
       return;
     }
+    _noPreferences = false;
 
     clickData = (clicks ?? {}).map((k, v) => MapEntry(k.toString().trim(), v));
 
@@ -180,9 +190,23 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
       debugPrint('⚠️ No Same District Events Found.');
     }
 
+    // 3️⃣ Fallback: if no same-district events, show all events matching preferred categories
+    if (sameDistrictEvents.isEmpty) {
+      fallbackCategoryEvents = allEvents.where((event) {
+        return preferred
+            .map((e) => normalize(e))
+            .contains(normalize(event['category']));
+      }).toList();
+      debugPrint('🔄 Fallback Category Events: ${fallbackCategoryEvents.length}');
+    } else {
+      fallbackCategoryEvents = [];
+    }
+
     debugPrint('🔵 ===== loadSuggestions END =====');
 
-    setState(() {});
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -192,113 +216,243 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF141A3D),
         title: const Text('Recommended For You'),
+        actions: [
+          if (!_isLoading)
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              onPressed: () {
+                setState(() => _isLoading = true);
+                loadSuggestions();
+              },
+            ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 🔥🔥🔥 ADDED AI BUTTON HERE (TOP LEFT)
-              if (sameDistrictEvents.isNotEmpty) ...[
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orangeAccent,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    icon: const Icon(Icons.smart_toy, color: Colors.white),
-                    label: const Text(
-                      'AI Insights',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    onPressed: () {
-                      final topEvent = sameDistrictEvents.first;
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => AIRecommendationPage(
-                            topEventTitle: topEvent['title'],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-
-              // 🔥 YOUR ORIGINAL CODE CONTINUES BELOW (UNCHANGED)
-
-              if (sameDistrictEvents.isNotEmpty) ...[
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    'Events You May Like',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(
-                  height: 280,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: sameDistrictEvents.length,
-                    itemBuilder: (context, index) {
-                      final event = sameDistrictEvents[index];
-                      bool isMostPopular = index == 0;
-                      return buildEventCard(event,
-                          isMostPopular: isMostPopular);
-                    },
-                  ),
-                ),
-              ],
-              if (similarOtherDistrictEvents.isNotEmpty) ...[
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Text(
-                    'Recommended Similar Events in Other Districts',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(
-                  height: 280,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: similarOtherDistrictEvents.length,
-                    itemBuilder: (context, index) {
-                      final event = similarOtherDistrictEvents[index];
-                      return buildEventCard(event, isMostPopular: false);
-                    },
-                  ),
-                ),
-              ],
-              if (sameDistrictEvents.isNotEmpty &&
-                  similarOtherDistrictEvents.isEmpty) ...[
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Text(
-                    'No similar events available in other districts',
+      body: _isLoading
+          ? const Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(color: Color(0xFF667eea)),
+                  SizedBox(height: 16),
+                  Text(
+                    'Finding events for you...',
                     style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
+                ],
+              ),
+            )
+          : _noPreferences
+              ? _buildNoPreferencesView()
+              : Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // AI Insights button
+                        if (sameDistrictEvents.isNotEmpty) ...[
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orangeAccent,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              icon: const Icon(Icons.smart_toy, color: Colors.white),
+                              label: const Text(
+                                'AI Insights',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              onPressed: () {
+                                final topEvent = sameDistrictEvents.first;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AIRecommendationPage(
+                                      topEventTitle: topEvent['title'],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+
+                        // Events in user's district
+                        if (sameDistrictEvents.isNotEmpty) ...[
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Events You May Like',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 280,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: sameDistrictEvents.length,
+                              itemBuilder: (context, index) {
+                                final event = sameDistrictEvents[index];
+                                bool isMostPopular = index == 0;
+                                return buildEventCard(event,
+                                    isMostPopular: isMostPopular);
+                              },
+                            ),
+                          ),
+                        ],
+
+                        // Similar events in other districts
+                        if (similarOtherDistrictEvents.isNotEmpty) ...[
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Text(
+                              'Recommended Similar Events in Other Districts',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 280,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: similarOtherDistrictEvents.length,
+                              itemBuilder: (context, index) {
+                                final event = similarOtherDistrictEvents[index];
+                                return buildEventCard(event, isMostPopular: false);
+                              },
+                            ),
+                          ),
+                        ],
+
+                        // Fallback: category match across all districts
+                        if (sameDistrictEvents.isEmpty &&
+                            fallbackCategoryEvents.isNotEmpty) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'No events found near $userDistrict — showing similar events nearby',
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 13),
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 4),
+                            child: Text(
+                              'Events Matching Your Interests',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 280,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: fallbackCategoryEvents.length,
+                              itemBuilder: (context, index) {
+                                final event = fallbackCategoryEvents[index];
+                                return buildEventCard(event,
+                                    isMostPopular: index == 0);
+                              },
+                            ),
+                          ),
+                        ],
+
+                        // Truly nothing to show
+                        if (sameDistrictEvents.isEmpty &&
+                            fallbackCategoryEvents.isEmpty) ...[
+                          const SizedBox(height: 60),
+                          const Center(
+                            child: Column(
+                              children: [
+                                Icon(Icons.event_busy,
+                                    color: Colors.white38, size: 64),
+                                SizedBox(height: 16),
+                                Text(
+                                  'No events found for your preferences.',
+                                  style: TextStyle(
+                                      color: Colors.white70, fontSize: 15),
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Try updating your preferences in the Register tab.',
+                                  style: TextStyle(
+                                      color: Colors.white38, fontSize: 13),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
-              ],
-            ],
-          ),
+    );
+  }
+
+  Widget _buildNoPreferencesView() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.star_border, color: Color(0xFF667eea), size: 72),
+            const SizedBox(height: 24),
+            const Text(
+              'No Preferences Set',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Go to the Register tab and fill in your district, event types and preferences to get personalised suggestions.',
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF667eea),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: const Icon(Icons.edit, color: Colors.white),
+              label: const Text(
+                'Set My Preferences',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              onPressed: () {
+                // Switch back to the Register tab (index 0) in the parent HomeScreen
+                final homeScreen = context
+                    .findAncestorStateOfType<HomeScreenState>();
+                homeScreen?.switchToRegisterTab();
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -314,14 +468,14 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
     return GestureDetector(
       onTap: () async {
         final openedAt = DateTime.now();
+        final navigator = Navigator.of(context);
 
         // Start or update the session in Firestore
         await FirebaseService()
             .startOrUpdateEventSession(eventTitle: event['title']);
 
         // Navigate to event detail page
-        await Navigator.push(
-          context,
+        await navigator.push(
           MaterialPageRoute(
             builder: (_) => ModernEventDetailScreen(
               title: event['title'],
@@ -357,8 +511,8 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
           boxShadow: [
             BoxShadow(
               color: isMostPopular
-                  ? Colors.orange.withOpacity(0.6)
-                  : Colors.black.withOpacity(0.3),
+                  ? Colors.orange.withValues(alpha: 0.6)
+                  : Colors.black.withValues(alpha: 0.3),
               blurRadius: isMostPopular ? 12 : 6,
               offset: const Offset(0, 3),
             ),
@@ -380,7 +534,7 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        Colors.black.withOpacity(0.85),
+                        Colors.black.withValues(alpha: 0.85),
                         Colors.transparent,
                       ],
                     ),

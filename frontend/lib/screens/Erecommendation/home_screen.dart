@@ -6,14 +6,15 @@ import 'package:flutter/material.dart';
 
 
 
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _pages =  [
@@ -21,6 +22,14 @@ class _HomeScreenState extends State<HomeScreen> {
    const EventSuggestionScreen(),
   
   ];
+
+  void switchToRegisterTab() {
+    setState(() => _currentIndex = 0);
+  }
+
+  void switchToSuggestionsTab() {
+    setState(() => _currentIndex = 1);
+  }
 
   @override
   Widget build(BuildContext context) {

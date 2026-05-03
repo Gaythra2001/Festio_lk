@@ -1,6 +1,7 @@
 import 'package:festio_lk/core/services/EventR_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'home_screen.dart';
 
 class EventRegistrationScreen extends StatefulWidget {
   const EventRegistrationScreen({super.key});
@@ -239,24 +240,33 @@ class _EventRegistrationScreenState extends State<EventRegistrationScreen> {
         timeOfDay: selectedTime!,
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('✅ Preferences saved successfully!'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Preferences saved successfully!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
 
-     
+      // Auto-navigate to Suggestions tab
+      if (mounted) {
+        final homeScreen =
+            context.findAncestorStateOfType<HomeScreenState>();
+        homeScreen?.switchToSuggestionsTab();
+      }
     } catch (e) {
-      print('❌ Error saving preferences: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to save preferences: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      debugPrint('❌ Error saving preferences: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save preferences: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     } finally {
       setState(() => _isSubmitting = false);
     }
