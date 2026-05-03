@@ -43,9 +43,6 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
   bool _isLoading = false;
   Map<String, dynamic>? _recommendation;
   String? _error;
-  Map<String, int> _categoryMapping = {};
-  Map<String, int> _locationMapping = {};
-  Map<String, int> _weatherMapping = {};
   late String _apiBaseUrl;
 
   @override
@@ -53,26 +50,6 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
     super.initState();
     _apiBaseUrl = widget.apiBaseUrl ??
         (kIsWeb ? 'http://127.0.0.1:8001' : 'http://10.0.2.2:8001');
-    _loadMappings();
-  }
-
-  Future<void> _loadMappings() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$_apiBaseUrl/api/revenue-optimization/categories'),
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          _categoryMapping = Map<String, int>.from(data['categories'] ?? {});
-          _locationMapping = Map<String, int>.from(data['locations'] ?? {});
-          _weatherMapping = Map<String, int>.from(data['weather'] ?? {});
-        });
-      }
-    } catch (e) {
-      print('Error loading mappings: $e');
-    }
   }
 
   Future<void> _getAIRecommendation() async {
@@ -83,25 +60,21 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
     });
 
     try {
-      // Map strings to encoded IDs
-      int categoryEncoded = _categoryMapping[widget.eventCategory] ?? 0;
-      int locationEncoded = _locationMapping[widget.location] ?? 0;
-      int weatherEncoded = _weatherMapping[widget.weatherForecast] ?? 0;
+      final eventCategory = widget.eventCategory.trim().isEmpty
+          ? 'Music'
+          : widget.eventCategory.trim();
 
-      final response = await http.post(
-        Uri.parse('$_apiBaseUrl/api/revenue-optimization/optimize'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'days_before_event': widget.daysBeforeEvent,
-          'category_encoded': categoryEncoded,
-          'venue_capacity': widget.venueCapacity,
-          'location_encoded': locationEncoded,
-          'weekend_flag': widget.isWeekend ? 1 : 0,
-          'organizer_rating': widget.organizerRating,
-          'weather_encoded': weatherEncoded,
-          'past_event_attendance': widget.pastAttendance,
-        }),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(
+            Uri.parse('$_apiBaseUrl/api/revenue-optimization/optimize'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode({
+              'days_before_event': widget.daysBeforeEvent,
+              'event_category': eventCategory,
+              'venue_capacity': widget.venueCapacity,
+            }),
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -110,7 +83,8 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
           _isLoading = false;
         });
       } else {
-        throw Exception('Failed to get recommendation: ${response.statusCode}');
+        throw Exception(
+            'Failed to get recommendation: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       setState(() {
@@ -124,20 +98,25 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
     if (_recommendation == null) return;
 
     try {
-      final response = await http.post(
-        Uri.parse('$_apiBaseUrl/api/revenue-optimization/apply'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'event_id': widget.eventId,
-          'old_price': widget.currentPrice,
-          'new_price': _recommendation!['recommended_price'].toDouble(),
-          'predicted_revenue': _recommendation!['expected_revenue'].toDouble(),
-        }),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(
+            Uri.parse(
+                '$_apiBaseUrl/api/revenue-optimization/apply-recommendation'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode({
+              'event_id': widget.eventId,
+              'old_price': widget.currentPrice,
+              'new_price': _recommendation!['recommended_price'].toDouble(),
+              'predicted_revenue':
+                  _recommendation!['expected_revenue'].toDouble(),
+              'model_used': _recommendation!['model_used'] ?? 'unknown',
+            }),
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         widget.onPriceUpdated(_recommendation!['recommended_price'].toDouble());
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -155,7 +134,8 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
           });
         }
       } else {
-        throw Exception('Failed to apply recommendation: ${response.statusCode}');
+        throw Exception(
+            'Failed to apply recommendation: ${response.statusCode}');
       }
     } catch (e) {
       if (mounted) {
@@ -175,7 +155,8 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
 
     try {
       final response = await http.post(
-        Uri.parse('$_apiBaseUrl/api/revenue-optimization/reject-recommendation?event_id=${widget.eventId}'),
+        Uri.parse(
+            '$_apiBaseUrl/api/revenue-optimization/reject-recommendation?event_id=${widget.eventId}'),
         headers: {'Content-Type': 'application/json'},
       ).timeout(const Duration(seconds: 10));
 
@@ -253,7 +234,8 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
                     Chip(
                       label: Text(
                         _recommendation!['model_used'] ?? 'unknown',
-                        style: const TextStyle(fontSize: 11, color: Colors.white),
+                        style:
+                            const TextStyle(fontSize: 11, color: Colors.white),
                       ),
                       backgroundColor: Colors.white.withOpacity(0.2),
                       side: BorderSide(color: Colors.white.withOpacity(0.3)),
@@ -261,7 +243,7 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
                 ],
               ),
               const SizedBox(height: 24),
-              
+
               // Content
               if (_isLoading)
                 _buildLoadingState()
@@ -313,7 +295,8 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
         children: [
           Row(
             children: [
-              const Icon(Icons.error_outline, color: Colors.redAccent, size: 24),
+              const Icon(Icons.error_outline,
+                  color: Colors.redAccent, size: 24),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -361,12 +344,14 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
           spacing: 8,
           runSpacing: 8,
           children: [
-            _buildDetailChip(Icons.calendar_today, '${widget.daysBeforeEvent} days'),
+            _buildDetailChip(
+                Icons.calendar_today, '${widget.daysBeforeEvent} days'),
             _buildDetailChip(Icons.location_on, widget.location),
             _buildDetailChip(Icons.people, '${widget.venueCapacity} cap'),
             _buildDetailChip(Icons.star, '${widget.organizerRating} rating'),
             _buildDetailChip(Icons.wb_sunny, widget.weatherForecast),
-            _buildDetailChip(Icons.weekend, widget.isWeekend ? 'Weekend' : 'Weekday'),
+            _buildDetailChip(
+                Icons.weekend, widget.isWeekend ? 'Weekend' : 'Weekday'),
           ],
         ),
         const SizedBox(height: 20),
@@ -428,8 +413,10 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
   }
 
   Widget _buildRecommendationDisplay() {
-    double recommendedPrice = (_recommendation!['recommended_price'] ?? 2500).toDouble();
-    double expectedRevenue = (_recommendation!['expected_revenue'] ?? 0).toDouble();
+    double recommendedPrice =
+        (_recommendation!['recommended_price'] ?? 2500).toDouble();
+    double expectedRevenue =
+        (_recommendation!['expected_revenue'] ?? 0).toDouble();
     double priceDifference = recommendedPrice - widget.currentPrice;
     bool isPriceIncrease = priceDifference > 0;
     double priceChangePercent = (priceDifference / widget.currentPrice * 100);
@@ -482,7 +469,8 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: isPriceIncrease
                           ? Colors.green.withOpacity(0.3)
@@ -522,9 +510,9 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Expected Revenue Section
         Container(
           padding: const EdgeInsets.all(16),
@@ -566,9 +554,9 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Price Breakdown
         Container(
           padding: const EdgeInsets.all(12),
@@ -582,7 +570,8 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
               const SizedBox(height: 8),
               _buildBreakdownRow('Weather', widget.weatherForecast),
               const SizedBox(height: 8),
-              _buildBreakdownRow('Day Type', widget.isWeekend ? 'Weekend' : 'Weekday'),
+              _buildBreakdownRow(
+                  'Day Type', widget.isWeekend ? 'Weekend' : 'Weekday'),
               const SizedBox(height: 8),
               _buildBreakdownRow('Org. Rating', '${widget.organizerRating} ★'),
               const SizedBox(height: 8),
@@ -590,9 +579,9 @@ class _AIRevenueOptimizerCardState extends State<AIRevenueOptimizerCard> {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 24),
-        
+
         // Action Buttons
         Row(
           children: [

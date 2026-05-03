@@ -86,7 +86,6 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
     },
   };
 
-
   @override
   void initState() {
     super.initState();
@@ -102,7 +101,6 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
       _loadAnalyticsSummary();
     });
   }
-
 
   Future<void> _trackDashboardView() async {
     final authProvider = context.read<AuthProvider>();
@@ -407,7 +405,8 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
               _buildStatsSection(),
               const SizedBox(height: 24),
               AIRevenueOptimizerCard(
-                eventId: _selectedEventId.isNotEmpty ? _selectedEventId : 'default',
+                eventId:
+                    _selectedEventId.isNotEmpty ? _selectedEventId : 'default',
                 eventCategory: _eventCategory,
                 daysBeforeEvent: _daysUntilEvent.toInt(),
                 venueCapacity: _ticketsAvailable.toInt(),
@@ -417,7 +416,8 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                 weatherForecast: _weatherForecast,
                 pastAttendance: _pastAttendanceCount.toInt(),
                 isWeekend: _isWeekend,
-                apiBaseUrl: kIsWeb ? 'http://127.0.0.1:8001' : 'http://10.0.2.2:8001',
+                apiBaseUrl:
+                    kIsWeb ? 'http://127.0.0.1:8001' : 'http://10.0.2.2:8001',
                 onPriceUpdated: (newPrice) {
                   setState(() {
                     _currentPrice = newPrice;
@@ -450,15 +450,6 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
     return count.toString();
   }
 
-
-
-
-
-
-
-
-
-
   Widget _buildRealTimeInputs() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -479,43 +470,58 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
             ),
           ),
           const SizedBox(height: 24),
-          _buildSliderRow('Current ticket price', _currentPrice, 500, 10000, 'LKR', (val) {
+          _buildSliderRow(
+              'Current ticket price', _currentPrice, 500, 10000, 'LKR', (val) {
             setState(() => _currentPrice = val);
           }),
           _buildSliderRow('Tickets sold', 180, 0, 2000, '', (val) {}),
-          _buildSliderRow('Tickets available', _ticketsAvailable, 0, 2000, '', (val) {
+          _buildSliderRow('Tickets available', _ticketsAvailable, 0, 2000, '',
+              (val) {
             setState(() => _ticketsAvailable = val);
           }),
-          _buildSliderRow('Days until event', _daysUntilEvent, 1, 60, '', (val) {
+          _buildSliderRow('Days until event', _daysUntilEvent, 1, 60, '',
+              (val) {
             setState(() => _daysUntilEvent = val);
           }),
-          _buildDropdownRow('Event category', _eventCategory, ['Music', 'Tech', 'Cultural', 'Sports'], (val) {
+          _buildDropdownRow('Event category', _eventCategory,
+              ['Music', 'Tech', 'Cultural', 'Sports'], (val) {
             setState(() => _eventCategory = val);
           }),
-          _buildDropdownRow('Location', _selectedLocation, ['Colombo', 'Galle', 'Jaffna', 'Kandy', 'Negombo'], (val) {
+          _buildDropdownRow('Location', _selectedLocation,
+              ['Colombo', 'Galle', 'Jaffna', 'Kandy', 'Negombo'], (val) {
             setState(() => _selectedLocation = val);
           }),
-          _buildSliderRow('Organizer Rating', _organizerRating, 1.0, 5.0, '★', (val) {
+          _buildSliderRow('Organizer Rating', _organizerRating, 1.0, 5.0, '★',
+              (val) {
             setState(() => _organizerRating = val);
           }),
-          _buildDropdownRow('Weather Forecast', _weatherForecast, ['Clear', 'Cloudy', 'Rainy'], (val) {
+          _buildDropdownRow('Weather Forecast', _weatherForecast,
+              ['Clear', 'Cloudy', 'Rainy'], (val) {
             setState(() => _weatherForecast = val);
           }),
-          _buildSliderRow('Past Event Attendance', _pastAttendanceCount.clamp(0, _ticketsAvailable), 0, _ticketsAvailable.clamp(1, 2000), '', (val) {
+          _buildSliderRow(
+              'Past Event Attendance',
+              _pastAttendanceCount.clamp(0, _ticketsAvailable),
+              0,
+              _ticketsAvailable.clamp(1, 2000),
+              '', (val) {
             setState(() => _pastAttendanceCount = val);
           }),
           _buildToggleRow('Is Weekend', _isWeekend, (val) {
             setState(() => _isWeekend = val);
           }),
-          _buildSliderRow('Competitor avg price', 2700, 500, 10000, 'LKR', (val) {}),
+          _buildSliderRow(
+              'Competitor avg price', 2700, 500, 10000, 'LKR', (val) {}),
           _buildSliderRow('Marketing boost', 25, 0, 100, '%', (val) {}),
-          _buildSliderRow('Sales trend (last 30 days)', 2.0, 0, 10, 'x', (val) {}),
+          _buildSliderRow(
+              'Sales trend (last 30 days)', 2.0, 0, 10, 'x', (val) {}),
         ],
       ),
     );
   }
 
-  Widget _buildSliderRow(String label, double value, double min, double max, String unit, Function(double) onChanged) {
+  Widget _buildSliderRow(String label, double value, double min, double max,
+      String unit, Function(double) onChanged) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -530,7 +536,10 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
               ),
               Text(
                 '$unit ${value.toStringAsFixed(0)}',
-                style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+                style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13),
               ),
             ],
           ),
@@ -554,7 +563,8 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
     );
   }
 
-  Widget _buildDropdownRow(String label, String value, List<String> options, Function(String) onChanged) {
+  Widget _buildDropdownRow(String label, String value, List<String> options,
+      Function(String) onChanged) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -656,7 +666,8 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                       child: _buildStatCard(
                         icon: Icons.visibility,
                         title: 'Total Reach',
-                        value: _formatAnalyticsCount(_analyticsSummary?['total_events'] ?? 0),
+                        value: _formatAnalyticsCount(
+                            _analyticsSummary?['total_events'] ?? 0),
                         color: const Color(0xFF00D4FF),
                       ),
                     ),
@@ -665,7 +676,8 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                       child: _buildStatCard(
                         icon: Icons.trending_up,
                         title: 'Engagement',
-                        value: '${_getAnalyticsCount('revenue_optimization_generate') > 0 ? ((_getAnalyticsCount('revenue_optimization_result') / _getAnalyticsCount('revenue_optimization_generate')) * 100).toStringAsFixed(1) : '0'}%',
+                        value:
+                            '${_getAnalyticsCount('revenue_optimization_generate') > 0 ? ((_getAnalyticsCount('revenue_optimization_result') / _getAnalyticsCount('revenue_optimization_generate')) * 100).toStringAsFixed(1) : '0'}%',
                         color: const Color(0xFF00E5FF),
                       ),
                     ),
@@ -678,7 +690,8 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                       child: _buildStatCard(
                         icon: Icons.calendar_month,
                         title: 'Active events',
-                        value: _analyticsSummary?['total_events']?.toString() ?? '0',
+                        value: _analyticsSummary?['total_events']?.toString() ??
+                            '0',
                         color: const Color(0xFF764BA2),
                       ),
                     ),
@@ -687,7 +700,8 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
                       child: _buildStatCard(
                         icon: Icons.language,
                         title: 'Languages',
-                        value: '3', // This could be dynamic if we track language usage
+                        value:
+                            '3', // This could be dynamic if we track language usage
                         color: const Color(0xFF667eea),
                       ),
                     ),
@@ -1213,7 +1227,8 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
               color: Colors.transparent,
               child: InkWell(
                 onTap: () {
-                  _showSuccessSnackbar('Campaign updated for $_selectedLanguage');
+                  _showSuccessSnackbar(
+                      'Campaign updated for $_selectedLanguage');
                 },
                 child: Center(
                   child: Text(
@@ -1235,14 +1250,14 @@ class _ModernOrganizerDashboardState extends State<ModernOrganizerDashboard>
 
   Widget _buildCampaignAnalyticsSection() {
     final impressions = _analyticsSummary != null
-      ? _getAnalyticsCount('organizer_dashboard_view')
-      : null;
+        ? _getAnalyticsCount('organizer_dashboard_view')
+        : null;
     final clicks = _analyticsSummary != null
-      ? _getAnalyticsCount('revenue_optimization_generate')
-      : null;
+        ? _getAnalyticsCount('revenue_optimization_generate')
+        : null;
     final conversions = _analyticsSummary != null
-      ? _getAnalyticsCount('promotion_tier_selected')
-      : null;
+        ? _getAnalyticsCount('promotion_tier_selected')
+        : null;
 
     return Container(
       decoration: BoxDecoration(

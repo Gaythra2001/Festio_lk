@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:festio_lk/core/config/app_config.dart';
 import 'package:festio_lk/core/services/ai/trust_and_budget_service.dart';
 
 /// Component 3: Organizer Trust Assessment Screen
@@ -31,7 +32,7 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
   @override
   void initState() {
     super.initState();
-    _trustService = TrustAssessmentService();
+    _trustService = TrustAssessmentService(baseUrl: backendBaseUrl);
   }
 
   @override
@@ -399,12 +400,12 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF1E293B),
-            const Color(0xFF0F172A),
+            Color(0xFF1E293B),
+            Color(0xFF0F172A),
           ],
         ),
         borderRadius: BorderRadius.circular(24),
@@ -800,14 +801,6 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
         ],
       ),
     );
-  }
-
-  void _showErrorMessage() {
-    if (_errorMessage.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_errorMessage), backgroundColor: Colors.red),
-      );
-    }
   }
 }
 

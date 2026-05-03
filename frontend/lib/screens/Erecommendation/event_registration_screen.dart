@@ -14,51 +14,51 @@ class _EventRegistrationScreenState extends State<EventRegistrationScreen> {
   final TextEditingController _cityController = TextEditingController();
 
   // Event categories
-  final List<String> categories = ["Music", "Festival", "Dance", "Theater"];
+  final List<String> categories = ['Music', 'Festival', 'Dance', 'Theater'];
   List<String> selectedCategories = [];
 
   // Venue types
   final List<Map<String, dynamic>> venueOptions = [
-    {"name": "Outdoor", "icon": Icons.park},
-    {"name": "Indoor", "icon": Icons.meeting_room},
+    {'name': 'Outdoor', 'icon': Icons.park},
+    {'name': 'Indoor', 'icon': Icons.meeting_room},
   ];
   String? selectedVenue;
 
   // Time of day
   final List<Map<String, dynamic>> timeOptions = [
-    {"name": "Morning", "icon": Icons.wb_sunny},
-    {"name": "Evening", 'icon': Icons.nights_stay},
-    {"name": "Night", "icon": Icons.nightlight_round},
+    {'name': 'Morning', 'icon': Icons.wb_sunny},
+    {'name': 'Evening', 'icon': Icons.nights_stay},
+    {'name': 'Night', 'icon': Icons.nightlight_round},
   ];
   String? selectedTime;
 
   // Sri Lanka Districts
   final List<String> districts = [
-    "Colombo",
-    "Gampaha",
-    "Kalutara",
-    "Kandy",
-    "Matale",
-    "Nuwara Eliya",
-    "Galle",
-    "Matara",
-    "Hambantota",
-    "Jaffna",
-    "Kilinochchi",
-    "Mannar",
-    "Vavuniya",
-    "Mullaitivu",
-    "Batticaloa",
-    "Ampara",
-    "Trincomalee",
-    "Kurunegala",
-    "Puttalam",
-    "Anuradhapura",
-    "Polonnaruwa",
-    "Badulla",
-    "Monaragala",
-    "Ratnapura",
-    "Kegalle",
+    'Colombo',
+    'Gampaha',
+    'Kalutara',
+    'Kandy',
+    'Matale',
+    'Nuwara Eliya',
+    'Galle',
+    'Matara',
+    'Hambantota',
+    'Jaffna',
+    'Kilinochchi',
+    'Mannar',
+    'Vavuniya',
+    'Mullaitivu',
+    'Batticaloa',
+    'Ampara',
+    'Trincomalee',
+    'Kurunegala',
+    'Puttalam',
+    'Anuradhapura',
+    'Polonnaruwa',
+    'Badulla',
+    'Monaragala',
+    'Ratnapura',
+    'Kegalle',
   ];
   String? selectedDistrict;
 
@@ -70,7 +70,7 @@ class _EventRegistrationScreenState extends State<EventRegistrationScreen> {
       backgroundColor: const Color(0xFF0A0E27),
       appBar: AppBar(
         backgroundColor: const Color(0xFF141A3D),
-        title: const Text("Tell Us About You"),
+        title: const Text('Tell Us About You'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -80,11 +80,11 @@ class _EventRegistrationScreenState extends State<EventRegistrationScreen> {
             children: [
            
               // District Dropdown
-              Text("Your District", style: GoogleFonts.poppins(color: Colors.white)),
+              Text('Your District', style: GoogleFonts.poppins(color: Colors.white)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: selectedDistrict,
-                hint: const Text("Select district"),
+                initialValue: selectedDistrict,
+                hint: const Text('Select district'),
                 dropdownColor: const Color(0xFF141A3D),
                 decoration: InputDecoration(
                   filled: true,
@@ -105,13 +105,13 @@ class _EventRegistrationScreenState extends State<EventRegistrationScreen> {
               ),
               const SizedBox(height: 24),
 
-               Text("Your City", style: GoogleFonts.poppins(color: Colors.white)),
+               Text('Your City', style: GoogleFonts.poppins(color: Colors.white)),
               const SizedBox(height: 8),
               TextField(controller: _cityController),
               const SizedBox(height: 20),
 
               // Categories
-              Text("What events do you like?", style: GoogleFonts.poppins(color: Colors.white)),
+              Text('What events do you like?', style: GoogleFonts.poppins(color: Colors.white)),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 10,
@@ -135,7 +135,7 @@ class _EventRegistrationScreenState extends State<EventRegistrationScreen> {
               const SizedBox(height: 20),
 
               // Venue chips
-              Text("Preferred Venue Type", style: GoogleFonts.poppins(color: Colors.white)),
+              Text('Preferred Venue Type', style: GoogleFonts.poppins(color: Colors.white)),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 10,
@@ -161,7 +161,7 @@ class _EventRegistrationScreenState extends State<EventRegistrationScreen> {
               const SizedBox(height: 20),
 
               // Time chips
-              Text("Preferred Time of Day", style: GoogleFonts.poppins(color: Colors.white)),
+              Text('Preferred Time of Day', style: GoogleFonts.poppins(color: Colors.white)),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 10,
@@ -200,7 +200,7 @@ class _EventRegistrationScreenState extends State<EventRegistrationScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text("Submit"),
+                      : const Text('Submit'),
                 ),
               ),
             ],

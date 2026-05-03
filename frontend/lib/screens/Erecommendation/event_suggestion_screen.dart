@@ -43,7 +43,7 @@ Widget _buildPreviewImage(String imageUrl) {
 class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
   List<Map<String, dynamic>> suggestions = [];
   Map<String, dynamic>? clickData;
-  String userDistrict = "";
+  String userDistrict = '';
 
   List<Map<String, dynamic>> allEvents = [];
 
@@ -61,36 +61,36 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
   }
 
   String formatDate(DateTime? date) {
-    if (date == null) return "";
-    return "${date.day}/${date.month}/${date.year}";
+    if (date == null) return '';
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   Future<void> loadSuggestions() async {
-    debugPrint("🔵 ===== loadSuggestions START =====");
+    debugPrint('🔵 ===== loadSuggestions START =====');
 
     final prefs = await FirebaseService().getUserPreferences();
     final clicks = await FirebaseService().getUserClicks();
     final events = await FirebaseService().getApprovedEvents();
     allEvents = events;
 
-    debugPrint("📦 Raw Preferences: $prefs");
-    debugPrint("📊 Raw Click Data: $clicks");
+    debugPrint('📦 Raw Preferences: $prefs');
+    debugPrint('📊 Raw Click Data: $clicks');
 
     if (prefs == null) {
-      debugPrint("❌ Preferences are NULL. Stopping.");
+      debugPrint('❌ Preferences are NULL. Stopping.');
       return;
     }
 
     clickData = (clicks ?? {}).map((k, v) => MapEntry(k.toString().trim(), v));
 
-    debugPrint("📊 Processed Click Data: $clickData");
+    debugPrint('📊 Processed Click Data: $clickData');
 
-    userDistrict = prefs['district'] ?? "";
+    userDistrict = prefs['district'] ?? '';
     List<String> preferred =
         List<String>.from(prefs['preferredCategories'] ?? []);
 
-    debugPrint("📍 User District: $userDistrict");
-    debugPrint("🎯 Preferred Categories: $preferred");
+    debugPrint('📍 User District: $userDistrict');
+    debugPrint('🎯 Preferred Categories: $preferred');
 
     // 1️⃣ Filter user's district events by preferred categories
     sameDistrictEvents = allEvents.where((event) {
@@ -102,13 +102,13 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
           normalize(event['location']).contains(normalize(userDistrict));
 
       debugPrint("🔎 Checking Event: ${event['title']} | "
-          "CategoryMatch: $categoryMatch | "
-          "DistrictMatch: $districtMatch");
+          'CategoryMatch: $categoryMatch | '
+          'DistrictMatch: $districtMatch');
 
       return categoryMatch && districtMatch;
     }).toList();
 
-    debugPrint("✅ Same District Events Found: ${sameDistrictEvents.length}");
+    debugPrint('✅ Same District Events Found: ${sameDistrictEvents.length}');
 
     // Sort by duration first, then clicks
     for (var event in sameDistrictEvents) {
@@ -132,7 +132,7 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
       }
     });
 
-    debugPrint("📊 After Sorting Same District Events:");
+    debugPrint('📊 After Sorting Same District Events:');
     for (var e in sameDistrictEvents) {
       debugPrint(
           "🏆 ${e['title']} | Duration: ${e['duration']} | Clicks: ${e['clickCount']}");
@@ -155,14 +155,14 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
             !normalize(event['location']).contains(normalize(userDistrict));
 
         debugPrint("🔁 Checking Similar Event: ${event['title']} | "
-            "SameCategory: $sameCategory | "
-            "DifferentDistrict: $differentDistrict");
+            'SameCategory: $sameCategory | '
+            'DifferentDistrict: $differentDistrict');
 
         return sameCategory && differentDistrict;
       }).toList();
 
       debugPrint(
-          "🌍 Similar Events Found: ${similarOtherDistrictEvents.length}");
+          '🌍 Similar Events Found: ${similarOtherDistrictEvents.length}');
 
       // Sort similar events by clicks
       similarOtherDistrictEvents.sort((a, b) {
@@ -171,16 +171,16 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
         return clicksB.compareTo(clicksA);
       });
 
-      debugPrint("📊 After Sorting Similar Events:");
+      debugPrint('📊 After Sorting Similar Events:');
       for (var e in similarOtherDistrictEvents) {
         debugPrint(
             "⭐ ${e['title']} | Clicks: ${clickData?[e['title'].toString().trim()] ?? 0}");
       }
     } else {
-      debugPrint("⚠️ No Same District Events Found.");
+      debugPrint('⚠️ No Same District Events Found.');
     }
 
-    debugPrint("🔵 ===== loadSuggestions END =====");
+    debugPrint('🔵 ===== loadSuggestions END =====');
 
     setState(() {});
   }
@@ -191,7 +191,7 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
       backgroundColor: const Color(0xFF0A0E27),
       appBar: AppBar(
         backgroundColor: const Color(0xFF141A3D),
-        title: const Text("Recommended For You"),
+        title: const Text('Recommended For You'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(12),
@@ -214,7 +214,7 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
                     ),
                     icon: const Icon(Icons.smart_toy, color: Colors.white),
                     label: const Text(
-                      "AI Insights",
+                      'AI Insights',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -243,7 +243,7 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
                   child: Text(
-                    "Events You May Like",
+                    'Events You May Like',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -268,7 +268,7 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: Text(
-                    "Recommended Similar Events in Other Districts",
+                    'Recommended Similar Events in Other Districts',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -292,7 +292,7 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: Text(
-                    "No similar events available in other districts",
+                    'No similar events available in other districts',
                     style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ),
@@ -329,7 +329,7 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
                   ? "${(event['date'] as DateTime).day}/"
                       "${(event['date'] as DateTime).month}/"
                       "${(event['date'] as DateTime).year}"
-                  : "",
+                  : '',
               location: event['location'],
               imageUrl: event['imageUrl'],
             ),
@@ -401,13 +401,13 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
                         bottomRight: Radius.circular(16),
                       ),
                     ),
-                    child: Row(
-                      children: const [
+                    child: const Row(
+                      children: [
                         Icon(Icons.local_fire_department,
                             size: 16, color: Colors.white),
                         SizedBox(width: 4),
                         Text(
-                          "Most Like",
+                          'Most Like',
                           style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -446,7 +446,7 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
                             size: 12, color: Colors.white70),
                         const SizedBox(width: 4),
                         Text(
-                          "$clickCount clicks",
+                          '$clickCount clicks',
                           style: GoogleFonts.poppins(
                               fontSize: 10, color: Colors.white),
                         ),
@@ -459,7 +459,7 @@ class _EventSuggestionScreenState extends State<EventSuggestionScreen> {
                             size: 12, color: Colors.white70),
                         const SizedBox(width: 4),
                         Text(
-                          "$minutes m $seconds s spent",
+                          '$minutes m $seconds s spent',
                           style: GoogleFonts.poppins(
                               fontSize: 10, color: Colors.white),
                         ),

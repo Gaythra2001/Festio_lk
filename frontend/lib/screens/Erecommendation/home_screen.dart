@@ -37,8 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.edit), label: "Register"),
-          BottomNavigationBarItem(icon: Icon(Icons.star), label: "Suggestions"),
+          BottomNavigationBarItem(icon: Icon(Icons.edit), label: 'Register'),
+          BottomNavigationBarItem(icon: Icon(Icons.star), label: 'Suggestions'),
  
         ],
       ),

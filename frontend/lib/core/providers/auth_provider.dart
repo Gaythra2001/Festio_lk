@@ -10,9 +10,11 @@ class AuthProvider with ChangeNotifier {
       useFirebase ? null : MockAuthService();
   UserModel? _user;
   bool _isLoading = false;
+  bool _isInitializing = true; // Track initial Firebase session restoration
 
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
+  bool get isInitializing => _isInitializing;
   bool get isAuthenticated => _user != null;
 
   AuthProvider() {
@@ -21,6 +23,18 @@ class AuthProvider with ChangeNotifier {
 
   void _init() {
     if (useFirebase && _authService != null) {
+      // First, check if there's already a logged-in user (restored from Firebase session)
+      if (_authService!.currentUser != null) {
+        _loadUserData().then((_) {
+          _isInitializing = false;
+          notifyListeners();
+        });
+      } else {
+        _isInitializing = false;
+        notifyListeners();
+      }
+      
+      // Then listen to future auth state changes
       _authService!.authStateChanges.listen((firebaseUser) async {
         if (firebaseUser != null) {
           _user = await _authService!.getUserData();
@@ -32,7 +46,14 @@ class AuthProvider with ChangeNotifier {
     } else if (_mockAuthService != null) {
       // For mock, set initial user state
       _user = _mockAuthService!.currentUser;
+      _isInitializing = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> _loadUserData() async {
+    if (useFirebase && _authService != null && _authService!.currentUser != null) {
+      _user = await _authService!.getUserData();
     }
   }
 
@@ -137,7 +158,7 @@ class AuthProvider with ChangeNotifier {
     if (useFirebase && _authService != null) {
       return await _authService!.getAuthToken();
     } else if (_mockAuthService != null) {
-      return "mock-token";
+      return 'mock-token';
     }
     return null;
   }

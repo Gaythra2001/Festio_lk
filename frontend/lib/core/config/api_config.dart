@@ -1,6 +1,6 @@
 class ApiConfig {
   // Base URL for the backend API
-  static const String baseUrl = 'http://localhost:8000/api';
+  static const String baseUrl = 'http://127.0.0.1:8001/api';
   
   // API endpoints
   static const String recommendationsEndpoint = '$baseUrl/recommendations';

@@ -392,11 +392,29 @@ class _EventsScreenState extends State<EventsScreen>
               image: e.imageUrl ??
                   'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800',
               juice: 4.5,
-              price: e.ticketPrice != null
-                  ? (e.ticketPrice! == 0
-                      ? 'Free'
-                      : 'LKR ${e.ticketPrice!.toStringAsFixed(0)}')
-                  : 'Free',
+              price: () {
+                try {
+                  if (e.tickets.isNotEmpty) {
+                    // find minimum non-null numeric price
+                    double? minPrice;
+                    for (final t in e.tickets) {
+                      final dynamic p = t['price'];
+                      if (p is num) {
+                        final double dp = p.toDouble();
+                        if (minPrice == null || dp < minPrice) minPrice = dp;
+                      }
+                    }
+                    if (minPrice != null) {
+                      return minPrice == 0 ? 'Free' : 'From LKR ${minPrice.toStringAsFixed(0)}';
+                    }
+                  }
+                } catch (_) {}
+                return e.ticketPrice != null
+                    ? (e.ticketPrice! == 0
+                        ? 'Free'
+                        : 'LKR ${e.ticketPrice!.toStringAsFixed(0)}')
+                    : 'Free';
+              }(),
             ))
         .toList();
 
