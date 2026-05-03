@@ -59,11 +59,11 @@ app.add_middleware(
 
 # ── Schemas ────────────────────────────────────────────────────────────────────
 class EventRequest(BaseModel):
-    title:       str   = Field(..., min_length=3,  example="Music Concert in Kandy")
-    description: str   = Field(..., min_length=10, example="A live music night with local Sri Lankan bands.")
+    title:       str   = Field(..., min_length=1,  example="Music Concert in Kandy")
+    description: str   = Field(..., min_length=1,  example="A live music night with local Sri Lankan bands.")
     price:       float = Field(..., ge=0,           example=1500)
-    location:    str   = Field(..., min_length=2,  example="Kandy")
-    category:    str   = Field(..., min_length=2,  example="Music Concert")
+    location:    str   = Field(..., min_length=1,  example="Kandy")
+    category:    str   = Field(..., min_length=1,  example="Music Concert")
 
     class Config:
         json_schema_extra = {
@@ -108,6 +108,12 @@ def health():
     "/predict-event",
     response_model=EventResponse,
     summary="Classify an event as Real or Fake",
+    tags=["Prediction"],
+)
+@app.post(
+    "/api/trust/predict-event",
+    response_model=EventResponse,
+    summary="Classify an event as Real or Fake (Flutter alias)",
     tags=["Prediction"],
 )
 def predict(event: EventRequest):
