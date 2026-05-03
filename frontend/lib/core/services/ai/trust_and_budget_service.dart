@@ -122,7 +122,7 @@ class TrustAssessmentService {
   Future<Map<String, dynamic>> verifyEventAuthenticity(Map<String, dynamic> eventData) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/predict-event'),
+        Uri.parse('$baseUrl/api/trust/predict-event'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(eventData),
       );
@@ -131,7 +131,7 @@ class TrustAssessmentService {
         final data = json.decode(response.body);
         return {
           'prediction': data['prediction'],
-          'trust_score': '${data['trust_score']}%',
+          'trust_score': '${data['confidence'] ?? data['trust_score'] ?? 0}%',
           'real_probability': '${(data['real_probability'] * 100).toStringAsFixed(1)}%',
           'fake_probability': '${(data['fake_probability'] * 100).toStringAsFixed(1)}%',
           'trust_level': data['prediction'] == 'Real' ? 'highly_trusted' : 'not_trusted'
