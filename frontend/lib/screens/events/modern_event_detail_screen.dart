@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 import '../../widgets/rating_tab.dart';
 import '../organizer/organizer_trust_profile_screen.dart';
+import 'package:festio_lk/core/config/app_config.dart';
 import 'package:festio_lk/core/services/ai/trust_and_budget_service.dart';
 
 class ModernEventDetailScreen extends StatefulWidget {
@@ -71,7 +72,7 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _trustService = TrustAssessmentService();
+    _trustService = TrustAssessmentService(baseUrl: backendBaseUrl);
     _trackSessionStart();
     _fetchTrustScore();
   }

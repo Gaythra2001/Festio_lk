@@ -1,11 +1,16 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+
+import '../../config/app_config.dart';
 
 /// Service for Component 3: Organizer Trust Assessment
 class TrustAssessmentService {
   final String baseUrl;
 
-  TrustAssessmentService({this.baseUrl = 'http://localhost:8000'});
+  TrustAssessmentService({String? baseUrl})
+      : baseUrl = baseUrl ??
+            (kIsWeb ? backendBaseUrl : 'http://10.0.2.2:8001');
 
   /// Validate event and organizer
   Future<Map<String, dynamic>> validateEvent({
@@ -131,10 +136,11 @@ class TrustAssessmentService {
         final data = json.decode(response.body);
         return {
           'prediction': data['prediction'],
-          'trust_score': '${data['confidence'] ?? data['trust_score'] ?? 0}%',
-          'real_probability': '${(data['real_probability'] * 100).toStringAsFixed(1)}%',
-          'fake_probability': '${(data['fake_probability'] * 100).toStringAsFixed(1)}%',
-          'trust_level': data['prediction'] == 'Real' ? 'highly_trusted' : 'not_trusted'
+          'trust_score': _formatPercentage(data['trust_score'] ?? data['confidence'] ?? 0),
+          'real_probability': _formatPercentage(data['real_probability'] ?? 0),
+          'fake_probability': _formatPercentage(data['fake_probability'] ?? 0),
+          'trust_level': data['trust_level'] ??
+              (data['prediction'] == 'Real' ? 'highly_trusted' : 'not_trusted')
         };
       } else {
         throw Exception('Failed to verify event: ${response.statusCode} - ${response.body}');
@@ -143,13 +149,29 @@ class TrustAssessmentService {
       throw Exception('Error predicting event: $e');
     }
   }
+
+  String _formatPercentage(dynamic value) {
+    if (value == null) {
+      return '0.0%';
+    }
+
+    if (value is num) {
+      final percentage = value <= 1 ? value * 100 : value;
+      return '${percentage.toStringAsFixed(1)}%';
+    }
+
+    final text = value.toString();
+    return text.endsWith('%') ? text : '$text%';
+  }
 }
 
 /// Service for Component 4: Event Budget Planning
 class BudgetPlanningService {
   final String baseUrl;
 
-  BudgetPlanningService({this.baseUrl = 'http://localhost:8000'});
+  BudgetPlanningService({String? baseUrl})
+      : baseUrl = baseUrl ??
+            (kIsWeb ? backendBaseUrl : 'http://10.0.2.2:8001');
 
   /// Create complete budget plan
   Future<Map<String, dynamic>> createBudgetPlan({

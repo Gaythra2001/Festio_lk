@@ -9,20 +9,6 @@ import '../../core/providers/event_provider.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/models/event_model.dart';
 
-class _TicketOptionDraft {
-  _TicketOptionDraft({
-    required this.id,
-    required this.type,
-    required this.price,
-    required this.quantity,
-  });
-
-  final String id;
-  String type;
-  String price;
-  String quantity;
-}
-
 class EventSubmissionScreen extends StatefulWidget {
   const EventSubmissionScreen({super.key});
 
@@ -36,6 +22,7 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
+  final _priceController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
 
   late TabController _tabController;
@@ -46,8 +33,6 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
   TimeOfDay _selectedTime = const TimeOfDay(hour: 18, minute: 0);
   bool _isSubmitting = false;
   XFile? _selectedImage;
-  final List<_TicketOptionDraft> _ticketOptions = [];
-  int _ticketOptionCounter = 0;
 
   bool _isCheckingLocation = false;
   String? _locationAvailabilityMessage;
@@ -75,11 +60,6 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _ticketOptions.addAll([
-      _createTicketOption(type: 'General Admission', price: '0', quantity: '100'),
-      _createTicketOption(type: 'Early Bird', price: '0', quantity: '50'),
-      _createTicketOption(type: 'VIP', price: '0', quantity: '20'),
-    ]);
   }
 
   @override
@@ -89,20 +69,8 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
     _titleController.dispose();
     _descriptionController.dispose();
     _locationController.dispose();
+    _priceController.dispose();
     super.dispose();
-  }
-
-  _TicketOptionDraft _createTicketOption({
-    required String type,
-    String price = '',
-    String quantity = '',
-  }) {
-    return _TicketOptionDraft(
-      id: 'ticket_${_ticketOptionCounter++}',
-      type: type,
-      price: price,
-      quantity: quantity,
-    );
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -286,27 +254,6 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
         final eventProvider =
             Provider.of<EventProvider>(context, listen: false);
 
-        final tickets = _buildTicketPayload();
-        if (tickets.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Please complete at least one ticket option.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-          setState(() {
-            _isSubmitting = false;
-          });
-          return;
-        }
-
-        final int totalCapacity = tickets.fold<int>(
-          0,
-          (sum, ticket) => sum + (ticket['quantity'] as int),
-        );
-        final double? primaryTicketPrice =
-            (tickets.first['price'] as num?)?.toDouble();
-
         // Create event date/time
         final eventDateTime = DateTime(
           _selectedDate.year,
@@ -328,10 +275,9 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
           organizerId: authProvider.user?.id ?? 'demo_user',
           organizerName: authProvider.user?.displayName ?? 'Demo User',
           submittedAt: DateTime.now(),
-          maxAttendees: totalCapacity > 0 ? totalCapacity : null,
-          ticketPrice: primaryTicketPrice,
-          ticketUrl: null,
-          tickets: tickets,
+          ticketPrice: _priceController.text.isNotEmpty
+              ? double.tryParse(_priceController.text)
+              : null,
           isApproved: true,
           status: 'approved',
         );
@@ -890,9 +836,9 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
 
               const SizedBox(height: 24),
 
-              // Ticket options
+              // Price
               Text(
-                'Ticket Options',
+                'Price (LKR)',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -900,38 +846,11 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
                 ),
               ),
               const SizedBox(height: 12),
-              Text(
-                'Add a few ticket tiers such as General Admission, Early Bird, or VIP.',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Colors.white70,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ...List.generate(_ticketOptions.length, (index) {
-                final option = _ticketOptions[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: _buildTicketOptionCard(option, index),
-                );
-              }),
-              TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _ticketOptions.add(
-                      _createTicketOption(
-                        type: 'Section ${_ticketOptions.length + 1}',
-                        price: '0',
-                        quantity: '0',
-                      ),
-                    );
-                  });
-                },
-                icon: const Icon(Icons.add_circle_outline, color: Colors.white),
-                label: Text(
-                  'Add Another Ticket Tier',
-                  style: GoogleFonts.poppins(color: Colors.white),
-                ),
+              _buildTextField(
+                controller: _priceController,
+                hintText: 'Enter price (0 for free)',
+                prefixIcon: Icons.attach_money,
+                keyboardType: TextInputType.number,
               ),
 
               const SizedBox(height: 32),
@@ -1380,142 +1299,6 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
         maxLines: maxLines,
         keyboardType: keyboardType,
         validator: validator,
-        onChanged: onChanged,
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: GoogleFonts.poppins(color: Colors.white38),
-          prefixIcon: prefixIcon != null
-              ? Icon(prefixIcon, color: Colors.white54)
-              : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(16),
-        ),
-      ),
-    );
-  }
-
-  List<Map<String, dynamic>> _buildTicketPayload() {
-    final tickets = <Map<String, dynamic>>[];
-
-    for (final option in _ticketOptions) {
-      final String ticketType = option.type.trim();
-      final String priceText = option.price.trim();
-      final String quantityText = option.quantity.trim();
-
-      if (ticketType.isEmpty && priceText.isEmpty && quantityText.isEmpty) {
-        continue;
-      }
-
-      final double? parsedPrice = double.tryParse(priceText);
-      final int? parsedQuantity = int.tryParse(quantityText);
-
-      if (ticketType.isEmpty || parsedPrice == null || parsedQuantity == null || parsedQuantity <= 0) {
-        return [];
-      }
-
-      tickets.add({
-        'ticket_type': ticketType,
-        'price': parsedPrice,
-        'quantity': parsedQuantity,
-      });
-    }
-
-    return tickets;
-  }
-
-  Widget _buildTicketOptionCard(_TicketOptionDraft option, int index) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1F3A),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Ticket Tier ${index + 1}',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              if (_ticketOptions.length > 1)
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _ticketOptions.removeAt(index);
-                    });
-                  },
-                  icon: const Icon(Icons.delete_outline, color: Colors.white54),
-                  tooltip: 'Remove ticket tier',
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _buildTicketInputField(
-            key: ValueKey('${option.id}_type'),
-            initialValue: option.type,
-            hintText: 'Ticket type',
-            prefixIcon: Icons.confirmation_number_outlined,
-            onChanged: (value) => option.type = value,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildTicketInputField(
-                  key: ValueKey('${option.id}_price'),
-                  initialValue: option.price,
-                  hintText: 'Price (LKR)',
-                  prefixIcon: Icons.attach_money,
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) => option.price = value,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildTicketInputField(
-                  key: ValueKey('${option.id}_quantity'),
-                  initialValue: option.quantity,
-                  hintText: 'Quantity',
-                  prefixIcon: Icons.confirmation_number,
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) => option.quantity = value,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTicketInputField({
-    required Key key,
-    required String initialValue,
-    required String hintText,
-    required void Function(String) onChanged,
-    IconData? prefixIcon,
-    TextInputType? keyboardType,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF11162B),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
-      child: TextFormField(
-        key: key,
-        initialValue: initialValue,
-        style: GoogleFonts.poppins(color: Colors.white),
-        keyboardType: keyboardType,
         onChanged: onChanged,
         decoration: InputDecoration(
           hintText: hintText,
