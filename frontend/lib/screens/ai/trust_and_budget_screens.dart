@@ -18,15 +18,15 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
   String _errorMessage = '';
   final _formKey = GlobalKey<FormState>();
   
-  final _organizerNameController = TextEditingController(text: 'John Doe');
-  final _emailController = TextEditingController(text: 'john@example.com');
-  final _phoneController = TextEditingController(text: '0712345678');
-  final _pastEventsController = TextEditingController(text: '5');
-  final _titleController = TextEditingController(text: 'Food Festival Colombo');
-  final _descController = TextEditingController(text: 'A great cultural food festival.');
-  final _priceController = TextEditingController(text: '1500');
-  final _locationController = TextEditingController(text: 'Colombo');
-  final _categoryController = TextEditingController(text: 'Food');
+  final _organizerNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _pastEventsController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _descController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _locationController = TextEditingController();
+  final _categoryController = TextEditingController();
 
   @override
   void initState() {
@@ -287,12 +287,16 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
             if (_errorMessage.isNotEmpty)
               _buildErrorDisplay(),
               
-            if (_validationResult != null)
+            if (_validationResult != null) ...[
+              const SizedBox(height: 32),
+              _buildSectionHeader('Analysis Result', Icons.analytics),
+              const SizedBox(height: 16),
               _buildResultCard(
                 title: 'AI Verification Result',
                 data: _validationResult!,
                 color: _getTrustColor(_validationResult?['trust_level'] ?? ''),
               ),
+            ],
             const SizedBox(height: 40),
           ],
         ),
@@ -382,23 +386,32 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
     required Map<String, dynamic> data,
     required Color color,
   }) {
-    final isReal = data['prediction'] == 'Real';
-    final trustScoreStr = data['trust_score']?.toString().replaceAll('%', '') ?? '0';
-    final trustScore = double.tryParse(trustScoreStr) ?? 0.0;
+    bool isReal = data['prediction'] == 'Real';
+    double trustScore = double.tryParse(data['trust_score']?.toString().replaceAll('%', '') ?? '0') ?? 0.0;
+    String realProb = data['real_probability']?.toString() ?? '0%';
+    String fakeProb = data['fake_probability']?.toString() ?? '0%';
     
     final badgeColor = isReal ? const Color(0xFF10B981) : const Color(0xFFEF4444);
     final badgeIcon = isReal ? Icons.verified_user : Icons.gpp_maybe;
+    final assessmentText = isReal ? 'Highly Reliable' : 'Suspicious Pattern';
     
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF1E293B),
+            const Color(0xFF0F172A),
+          ],
+        ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withOpacity(0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -410,46 +423,36 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'TRUST SCORE',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${trustScore.toStringAsFixed(1)}%',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
+              Text(
+                'AI TRUST INSIGHTS',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: badgeColor.withOpacity(0.1),
+                  color: badgeColor.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: badgeColor.withOpacity(0.5)),
+                  boxShadow: [
+                    BoxShadow(color: badgeColor.withOpacity(0.1), blurRadius: 8, spreadRadius: 1),
+                  ],
                 ),
                 child: Row(
                   children: [
-                    Icon(badgeIcon, color: badgeColor, size: 20),
+                    Icon(badgeIcon, color: badgeColor, size: 16),
                     const SizedBox(width: 8),
                     Text(
                       isReal ? 'VERIFIED REAL' : 'POTENTIAL RISK',
                       style: TextStyle(
                         color: badgeColor,
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 12,
+                        letterSpacing: 1.2,
                       ),
                     ),
                   ],
@@ -457,30 +460,90 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: trustScore / 100,
-              minHeight: 10,
-              backgroundColor: Colors.white.withOpacity(0.05),
-              valueColor: AlwaysStoppedAnimation<Color>(badgeColor),
-            ),
-          ),
           const SizedBox(height: 32),
-          const Text(
-            'KEY METRICS',
-            style: TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1,
+          Center(
+            child: Container(
+              width: 160,
+              height: 160,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: badgeColor.withOpacity(0.15),
+                    blurRadius: 40,
+                    spreadRadius: 10,
+                  ),
+                ],
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CircularProgressIndicator(
+                    value: trustScore / 100,
+                    strokeWidth: 12,
+                    backgroundColor: Colors.white.withOpacity(0.05),
+                    valueColor: AlwaysStoppedAnimation<Color>(badgeColor),
+                    strokeCap: StrokeCap.round,
+                  ),
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.security, color: badgeColor.withOpacity(0.8), size: 28),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${trustScore.toStringAsFixed(1)}%',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        Text(
+                          'SCORE',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.5),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 12),
-          _buildMetricRow('Real Probability', data['real_probability']?.toString() ?? '0%', Colors.greenAccent),
-          _buildMetricRow('Risk Index', data['fake_probability']?.toString() ?? '0%', Colors.redAccent),
-          _buildMetricRow('Assessment', isReal ? 'Highly Reliable' : 'Suspicious Pattern', Colors.blueAccent),
+          const SizedBox(height: 40),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'KEY METRICS',
+                  style: TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildMetricRow('Real Probability', realProb, Colors.greenAccent),
+                const Divider(color: Colors.white10, height: 24),
+                _buildMetricRow('Risk Index', fakeProb, Colors.redAccent),
+                const Divider(color: Colors.white10, height: 24),
+                _buildMetricRow('Assessment', assessmentText, Colors.blueAccent),
+              ],
+            ),
+          ),
           
           const SizedBox(height: 32),
           SizedBox(
@@ -488,12 +551,12 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
             child: OutlinedButton.icon(
               onPressed: () => _generateProfessionalReport(context, data),
               icon: const Icon(Icons.picture_as_pdf_outlined),
-              label: const Text('GENERATE VERIFICATION REPORT'),
+              label: const Text('GENERATE VERIFICATION REPORT', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
               style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white.withOpacity(0.9),
-                side: const BorderSide(color: Color(0xFF6366F1)),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                foregroundColor: Colors.white.withOpacity(0.95),
+                side: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
             ),
           ),

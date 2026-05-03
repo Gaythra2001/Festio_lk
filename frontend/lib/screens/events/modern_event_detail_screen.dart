@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 import '../../widgets/rating_tab.dart';
 import '../organizer/organizer_trust_profile_screen.dart';
+import 'package:festio_lk/core/services/ai/trust_and_budget_service.dart';
 
 class ModernEventDetailScreen extends StatefulWidget {
   final String title;
@@ -31,6 +32,11 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
   late TabController _tabController;
 
   DateTime? _openedAt;
+
+  late TrustAssessmentService _trustService;
+  bool _isLoadingTrust = true;
+  Map<String, dynamic>? _trustData;
+  String _trustError = '';
 
   Widget _buildHeroImage(String imageUrl) {
     final uri = Uri.tryParse(imageUrl);
@@ -65,7 +71,41 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _trustService = TrustAssessmentService();
     _trackSessionStart();
+    _fetchTrustScore();
+  }
+
+  Future<void> _fetchTrustScore() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoadingTrust = true;
+      _trustError = '';
+    });
+
+    try {
+      final result = await _trustService.verifyEventAuthenticity({
+        'title': widget.title,
+        'description': 'A magnificent event showcasing the rich heritage and traditions. Experience traditional performances.',
+        'price': 2500,
+        'location': widget.location,
+        'category': 'Festival',
+      });
+
+      if (mounted) {
+        setState(() {
+          _trustData = result;
+          _isLoadingTrust = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _trustError = 'Could not load AI insights. Please try again.';
+          _isLoadingTrust = false;
+        });
+      }
+    }
   }
 
   @override
@@ -698,6 +738,57 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
   }
 
   Widget _buildAITrustTab() {
+    if (_isLoadingTrust) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 40),
+            const CircularProgressIndicator(color: Color(0xFF6366F1)),
+            const SizedBox(height: 16),
+            Text(
+              'Analyzing Event Authenticity...',
+              style: GoogleFonts.poppins(color: Colors.white70),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_trustError.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 40),
+            const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+            const SizedBox(height: 16),
+            Text(
+              _trustError,
+              style: GoogleFonts.poppins(color: Colors.redAccent),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _fetchTrustScore,
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6366F1)),
+              child: const Text('Retry', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    double trustScore = double.tryParse(_trustData!['trust_score']?.toString().replaceAll('%', '') ?? '0') ?? 0.0;
+    bool isReal = _trustData!['prediction'] == 'Real';
+    String fakeProb = _trustData!['fake_probability']?.toString() ?? '0%';
+    
+    final badgeColor = isReal ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    final badgeText = isReal ? 'SECURED' : 'RISK DETECTED';
+    final badgeIcon = isReal ? Icons.verified : Icons.gpp_maybe;
+    
+    final authenticityText = isReal ? 'Highly Authentic' : 'Low Authenticity';
+    final recordText = isReal ? 'Verified History' : 'Suspicious History';
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -714,22 +805,30 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF10B981).withOpacity(0.5)),
+                  color: badgeColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: badgeColor.withOpacity(0.6), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: badgeColor.withOpacity(0.2),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.verified, color: Color(0xFF10B981), size: 14),
-                    const SizedBox(width: 4),
+                    Icon(badgeIcon, color: badgeColor, size: 16),
+                    const SizedBox(width: 6),
                     Text(
-                      'SECURED',
+                      badgeText,
                       style: GoogleFonts.poppins(
-                        color: const Color(0xFF10B981),
-                        fontSize: 10,
+                        color: badgeColor,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
                       ),
                     ),
                   ],
@@ -737,69 +836,161 @@ class _ModernEventDetailScreenState extends State<ModernEventDetailScreen>
               ),
             ],
           ),
+          const SizedBox(height: 24),
+          
+          // Premium Circular Score Card
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF1A1F3A),
+                  const Color(0xFF1A1F3A).withOpacity(0.8),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Center(
+                  child: Container(
+                    width: 140,
+                    height: 140,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: badgeColor.withOpacity(0.2),
+                          blurRadius: 30,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        CircularProgressIndicator(
+                          value: trustScore / 100,
+                          strokeWidth: 10,
+                          backgroundColor: Colors.white.withOpacity(0.05),
+                          valueColor: AlwaysStoppedAnimation<Color>(badgeColor),
+                          strokeCap: StrokeCap.round,
+                        ),
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.security, color: badgeColor.withOpacity(0.8), size: 24),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${trustScore.toStringAsFixed(1)}%',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                'SCORE',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white54,
+                                  letterSpacing: 2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildInsightRow('Event Authenticity', authenticityText, isReal ? Colors.greenAccent : Colors.redAccent),
+                      const Divider(color: Colors.white10, height: 24),
+                      _buildInsightRow('Organizer Record', recordText, Colors.blueAccent),
+                      const Divider(color: Colors.white10, height: 24),
+                      _buildInsightRow('Risk Probability', fakeProb, Colors.orangeAccent),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'AI Analysis Remarks',
+            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF1A1F3A),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.05)),
+              color: const Color(0xFF6366F1).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.3)),
             ),
-            child: Column(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('TRUST SCORE', style: TextStyle(color: Colors.white54, fontSize: 10, letterSpacing: 1)),
-                        const SizedBox(height: 4),
-                        const Text('94.5%', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    const Icon(Icons.security, color: Color(0xFF6366F1), size: 32),
-                  ],
+                const Icon(Icons.auto_awesome, color: Color(0xFF6366F1), size: 24),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    isReal
+                      ? 'The AI system has deeply analyzed this event based on its description, location, and pricing metadata. The remarkably high trust score is attributed to consistent historical patterns, realistic pricing boundaries, and verified organizer credentials.'
+                      : 'Anomalous patterns detected in event pricing or description. The risk index exceeds the safety threshold for this category. Manual verification is highly recommended.',
+                    style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.85), fontSize: 13, height: 1.6),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                const LinearProgressIndicator(
-                  value: 0.945,
-                  backgroundColor: Colors.white10,
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
-                  minHeight: 6,
-                ),
-                const SizedBox(height: 20),
-                _buildInsightRow('Event Authenticity', 'High', Colors.greenAccent),
-                _buildInsightRow('Organizer Record', 'Verified', Colors.blueAccent),
-                _buildInsightRow('Risk Probability', '2.1%', Colors.redAccent),
               ],
             ),
           ),
-          const SizedBox(height: 24),
-          Text(
-            'AI Analysis Remarks',
-            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'The AI system has analyzed this event based on its description, location, and pricing metadata. The high trust score is attributed to consistent historical patterns and verified organizer credentials.',
-            style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13, height: 1.5),
-          ),
+          const SizedBox(height: 40),
         ],
       ),
     );
   }
 
   Widget _buildInsightRow(String label, String value, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: Colors.white60, fontSize: 13)),
-          Text(value, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13)),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label, 
+          style: GoogleFonts.poppins(color: Colors.white60, fontSize: 13, fontWeight: FontWeight.w500)
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            value, 
+            style: GoogleFonts.poppins(color: color, fontWeight: FontWeight.bold, fontSize: 13)
+          ),
+        ),
+      ],
     );
   }
 }

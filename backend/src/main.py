@@ -17,9 +17,8 @@ from services.firestore_service import get_firestore_service
 from services.storage_service import get_storage_service
 from routes import (
     auth, events, bookings, users, organizers, recommendations,
-    research_behavior, research_features, research_models, promotion_ma_epom,
-    trust_and_budget, organizer_ml_routes, organizer_chatbot_routes,
-    revenue_optimization, analytics
+    research_behavior, research_features, research_models,
+    trust, trust_assessment_ml, revenue_optimization
     # research_evaluation  # Temporarily disabled due to file corruption
 )
 
@@ -27,13 +26,13 @@ from routes import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("🚀 Starting Festio LK Backend...")
+    print("[START] Starting Festio LK Backend...")
     print(f"Environment: {settings.ENVIRONMENT}")
     
     # Check if using Firebase Emulator
     use_emulator = os.getenv("USE_FIREBASE_EMULATOR", "").lower() == "true"
     if use_emulator:
-        print("🔥 Using Firebase Emulators (local development mode)")
+        print("[DEV] Using Firebase Emulators (local development mode)")
         os.environ["FIRESTORE_EMULATOR_HOST"] = "127.0.0.1:8080"
         os.environ["FIREBASE_AUTH_EMULATOR_HOST"] = "127.0.0.1:9099"
         os.environ["FIREBASE_STORAGE_EMULATOR_HOST"] = "127.0.0.1:9199"
@@ -52,20 +51,20 @@ async def lifespan(app: FastAPI):
     
     if firebase_initialized:
         app.state.firestore = firestore_service
-        print("✅ Firestore initialized successfully")
+        print("[OK] Firestore initialized successfully")
     else:
-        print("⚠️  Firestore not available - running in compatibility mode")
+        print("[WARN] Firestore not available - running in compatibility mode")
     
     if storage_initialized:
         app.state.storage = storage_service
-        print("✅ Firebase Storage initialized successfully")
+        print("[OK] Firebase Storage initialized successfully")
     else:
-        print("⚠️  Firebase Storage not available - file uploads disabled")
+        print("[WARN] Firebase Storage not available - file uploads disabled")
     
-    print("✅ All services initialized")
+    print("[OK] All services initialized")
     yield
     # Shutdown
-    print("👋 Shutting down Festio LK Backend...")
+    print("[STOP] Shutting down Festio LK Backend...")
 
 
 app = FastAPI(
@@ -121,26 +120,27 @@ app.include_router(research_models.router)
 # app.include_router(research_evaluation.router)  # Temporarily disabled
 
 # Multilingual Promotion routers
-app.include_router(promotion_ma_epom.router)
+# app.include_router(promotion_ma_epom.router)
 
 # Trust Assessment & Budget Planning routers
-app.include_router(trust_and_budget.router)
+app.include_router(trust.router)
+app.include_router(trust_assessment_ml.router)
 
 # Organizer ML routers
-app.include_router(organizer_ml_routes.router)
+# app.include_router(organizer_ml_routes.router)
 
 # Organizer Chatbot routers
-app.include_router(organizer_chatbot_routes.router)
+# app.include_router(organizer_chatbot_routes.router)
 
 # Revenue Optimization (Using Firestore) - DISABLED in favor of new AI Revenue Optimization
 # app.include_router(revenue_optimization.router)
 
 # New AI Revenue Optimization (As requested)
-from revenue_optimizer_api import router as revenue_api
-app.include_router(revenue_api)
+# from revenue_optimizer_api import router as revenue_api
+# app.include_router(revenue_api)
 
 # Analytics routers
-app.include_router(analytics.router)
+# app.include_router(analytics.router)
 
 
 @app.get("/")
