@@ -7,6 +7,10 @@ import sys
 import os
 from pathlib import Path
 
+# Fix Windows charmap encoding errors
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+
 # Add backend directory to Python path
 backend_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_dir))
@@ -18,7 +22,7 @@ from services.storage_service import get_storage_service
 from routes import (
     auth, events, bookings, users, organizers, recommendations,
     research_behavior, research_features, research_models,
-    trust as trust_and_budget, revenue_optimization
+    trust_and_budget, revenue_optimization
     # research_evaluation  # Temporarily disabled due to file corruption
 )
 
@@ -163,3 +167,5 @@ if __name__ == "__main__":
         port=settings.PORT,
         reload=settings.ENVIRONMENT == "development"
     )
+
+

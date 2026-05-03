@@ -126,11 +126,13 @@ class TrustAssessmentService {
   /// Verify event authenticity using the ML API
   Future<Map<String, dynamic>> verifyEventAuthenticity(Map<String, dynamic> eventData) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/trust/predict-event'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(eventData),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/api/trust/predict-event'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode(eventData),
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -146,7 +148,21 @@ class TrustAssessmentService {
         throw Exception('Failed to verify event: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      throw Exception('Error predicting event: $e');
+      String errorMessage = e.toString();
+      
+      // Check if it's a connection error
+      if (errorMessage.contains('Failed to fetch') || 
+          errorMessage.contains('Connection refused') ||
+          errorMessage.contains('Failed host lookup')) {
+        throw Exception(
+          'Backend server not running. Please start the backend:\n\n'
+          'cd backend\n'
+          'python run.py\n\n'
+          'Then try again. (Server should run on http://127.0.0.1:8001)'
+        );
+      }
+      
+      throw Exception('Error predicting event: $errorMessage');
     }
   }
 

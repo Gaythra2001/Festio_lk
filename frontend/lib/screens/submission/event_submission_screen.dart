@@ -1031,7 +1031,7 @@ class _EventSubmissionScreenState extends State<EventSubmissionScreen>
             ),
             child: Column(
               children: [
-                Icon(Icons.confirmation_number_outlined,
+                const Icon(Icons.confirmation_number_outlined,
                     color: Colors.white24, size: 40),
                 const SizedBox(height: 10),
                 Text(

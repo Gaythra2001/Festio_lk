@@ -6,7 +6,7 @@ class RevenueOptimizationService {
   final String baseUrl;
 
   RevenueOptimizationService({String? baseUrl})
-      : baseUrl = baseUrl ?? (kIsWeb ? 'http://localhost:8000' : 'http://10.0.2.2:8000');
+      : baseUrl = baseUrl ?? (kIsWeb ? 'http://localhost:8001' : 'http://10.0.2.2:8001');
 
   Future<Map<String, dynamic>> optimizeRevenue({
     required int daysBeforeEvent,

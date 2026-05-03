@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 class ResearchModelService {
   final String baseUrl;
 
-  ResearchModelService({this.baseUrl = 'http://localhost:8000'});
+  ResearchModelService({this.baseUrl = 'http://localhost:8001'});
 
   /// Benchmark multiple models
   Future<Map<String, dynamic>> benchmarkModels(Map<String, dynamic> request) async {

@@ -74,7 +74,7 @@ class QuickAction {
 
 /// Organizer Chatbot Provider
 class OrganizerChatbotProvider extends ChangeNotifier {
-  static final String baseUrl = kIsWeb ? 'http://localhost:8000/api/organizer-chatbot' : 'http://10.0.2.2:8000/api/organizer-chatbot';
+  static final String baseUrl = kIsWeb ? 'http://localhost:8001/api/organizer-chatbot' : 'http://10.0.2.2:8001/api/organizer-chatbot';
 
   final String organizerId;
   final String eventId;

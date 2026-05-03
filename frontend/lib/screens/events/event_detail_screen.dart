@@ -128,10 +128,10 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         DropdownButtonFormField<int>(
-                          value: _selectedTicketIndex.clamp(0, widget.event.tickets.length - 1),
+                          initialValue: _selectedTicketIndex.clamp(0, widget.event.tickets.length - 1),
                           decoration: const InputDecoration(border: InputBorder.none),
                           dropdownColor: const Color(0xFF1A1F3A),
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                           items: List.generate(widget.event.tickets.length, (i) {
                             final t = widget.event.tickets[i];
                             final price = (t['price'] as num?)?.toDouble() ?? 0.0;
@@ -141,8 +141,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(t['ticket_type']?.toString() ?? 'Ticket', style: TextStyle(color: Colors.white)),
-                                  Text(label, style: TextStyle(color: Colors.white70)),
+                                  Text(t['ticket_type']?.toString() ?? 'Ticket', style: const TextStyle(color: Colors.white)),
+                                  Text(label, style: const TextStyle(color: Colors.white70)),
                                 ],
                               ),
                             );
@@ -187,7 +187,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                 child: Builder(builder: (ctx) {
                                   final p = (widget.event.tickets[_selectedTicketIndex]['price'] as num?)?.toDouble() ?? widget.event.ticketPrice ?? 0.0;
                                   final total = p * _selectedQuantity;
-                                  return Text('Total: ${p == 0 ? 'Free' : 'LKR ${total.toStringAsFixed(0)}'}', style: TextStyle(fontWeight: FontWeight.w600));
+                                  return Text('Total: ${p == 0 ? 'Free' : 'LKR ${total.toStringAsFixed(0)}'}', style: const TextStyle(fontWeight: FontWeight.w600));
                                 }),
                               ),
                             ),

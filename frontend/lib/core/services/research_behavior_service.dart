@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 class ResearchBehaviorService {
   final String baseUrl;
 
-  ResearchBehaviorService({this.baseUrl = 'http://localhost:8000'});
+  ResearchBehaviorService({this.baseUrl = 'http://localhost:8001'});
 
   /// Analyze user click patterns
   Future<Map<String, dynamic>> analyzeClicks(List<Map<String, dynamic>> clickData) async {

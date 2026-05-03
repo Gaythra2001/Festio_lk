@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 class MAEPOMService {
   final String baseUrl;
 
-  MAEPOMService({this.baseUrl = 'http://localhost:8000'});
+  MAEPOMService({this.baseUrl = 'http://localhost:8001'});
 
   /// Generate personalized multilingual event promotion
   Future<Map<String, dynamic>> generatePromotion({

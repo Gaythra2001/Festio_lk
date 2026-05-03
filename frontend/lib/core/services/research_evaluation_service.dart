@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 class ResearchEvaluationService {
   final String baseUrl;
 
-  ResearchEvaluationService({this.baseUrl = 'http://localhost:8000'});
+  ResearchEvaluationService({this.baseUrl = 'http://localhost:8001'});
 
   /// Calculate ranking metrics (NDCG, MAP, Recall, Precision)
   Future<Map<String, dynamic>> calculateRankingMetrics(

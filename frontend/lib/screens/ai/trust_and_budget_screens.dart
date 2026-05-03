@@ -373,10 +373,22 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
         border: Border.all(color: Colors.red.withOpacity(0.3)),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline, color: Colors.redAccent),
+          const Padding(
+            padding: EdgeInsets.only(top: 4),
+            child: Icon(Icons.error_outline, color: Colors.redAccent),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: Text(_errorMessage, style: const TextStyle(color: Colors.redAccent))),
+          Expanded(
+            child: Text(
+              _errorMessage,
+              style: const TextStyle(
+                color: Colors.redAccent,
+                height: 1.4,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -389,12 +401,15 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
   }) {
     bool isReal = data['prediction'] == 'Real';
     double trustScore = double.tryParse(data['trust_score']?.toString().replaceAll('%', '') ?? '0') ?? 0.0;
+    double riskIndex = double.tryParse(data['fake_probability']?.toString().replaceAll('%', '') ?? '0') ?? 0.0;
     String realProb = data['real_probability']?.toString() ?? '0%';
     String fakeProb = data['fake_probability']?.toString() ?? '0%';
     
     final badgeColor = isReal ? const Color(0xFF10B981) : const Color(0xFFEF4444);
     final badgeIcon = isReal ? Icons.verified_user : Icons.gpp_maybe;
-    final assessmentText = isReal ? 'Highly Reliable' : 'Suspicious Pattern';
+    final assessmentText = isReal 
+      ? (trustScore > 90 ? 'Highly Reliable' : 'Needs Verification')
+      : (riskIndex > 90 ? 'High Risk - Suspicious' : 'Moderate Risk');
     
     return Container(
       width: double.infinity,
@@ -629,7 +644,9 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
 
   Widget _buildReportView(Map<String, dynamic> data) {
     final isReal = data['prediction'] == 'Real';
-    final trustScore = data['trust_score']?.toString() ?? '0%';
+    final trustScoreStr = data['trust_score']?.toString() ?? '0%';
+    final trustScoreNum = double.tryParse(trustScoreStr.replaceAll('%', '')) ?? 0.0;
+    final riskIndexNum = double.tryParse(data['fake_probability']?.toString().replaceAll('%', '') ?? '0') ?? 0.0;
     final verificationId = 'FST-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
     
     return Container(
@@ -676,7 +693,8 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
                   
                   _buildReportSection('VERIFICATION SUMMARY', [
                     _buildReportRow('Status', isReal ? 'AUTHENTIC' : 'SUSPICIOUS', isReal ? Colors.green : Colors.red),
-                    _buildReportRow('Trust Index', trustScore, const Color(0xFF6366F1)),
+                    _buildReportRow('Trust Index', trustScoreStr, const Color(0xFF6366F1)),
+                    _buildReportRow('Risk Index', '${riskIndexNum.toStringAsFixed(1)}%', Colors.red),
                     _buildReportRow('Verification ID', verificationId, Colors.black),
                     _buildReportRow('Date Issued', DateTime.now().toString().substring(0, 16), Colors.black),
                   ]),
@@ -712,8 +730,12 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
                         const SizedBox(height: 12),
                         Text(
                           isReal 
-                            ? 'The event structure and organizer profile align with high-trust historical patterns. No fraudulent markers detected in description or pricing metadata.'
-                            : 'Anomalous patterns detected in event pricing or description. The risk index exceeds the safety threshold for this category. Manual verification recommended.',
+                            ? (trustScoreNum > 90
+                              ? 'Event verified as HIGHLY RELIABLE. All authentication markers passed. The event structure and organizer profile align with high-trust historical patterns. No fraudulent indicators detected.'
+                              : 'Event marked for verification. Structure appears legitimate but requires additional validation. Recommend manual review of organizer credentials.')
+                            : (riskIndexNum > 90
+                              ? 'HIGH RISK - SUSPICIOUS PATTERN DETECTED. Critical anomalies identified in event pricing or description metadata. Flagged for manual investigation. Manual verification strongly recommended before proceeding.'
+                              : 'Moderate risk detected. Some anomalies identified in event data. Manual verification recommended to confirm event authenticity.'),
                           style: const TextStyle(fontSize: 14, color: Color(0xFF475569), height: 1.5),
                         ),
                       ],

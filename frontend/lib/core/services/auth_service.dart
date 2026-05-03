@@ -129,7 +129,7 @@ class AuthService {
         // Also notify the backend to keep Firestore (via Admin SDK) in sync
         try {
           await http.post(
-            Uri.parse('http://localhost:8000/api/auth/register'),
+            Uri.parse('http://localhost:8001/api/auth/register'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
               'email': email,

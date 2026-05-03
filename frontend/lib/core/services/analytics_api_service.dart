@@ -6,7 +6,7 @@ class AnalyticsApiService {
   final String baseUrl;
 
   AnalyticsApiService({String? baseUrl})
-      : baseUrl = baseUrl ?? (kIsWeb ? 'http://localhost:8000' : 'http://10.0.2.2:8000');
+      : baseUrl = baseUrl ?? (kIsWeb ? 'http://localhost:8001' : 'http://10.0.2.2:8001');
 
   Future<void> trackEvent({
     required String organizerId,

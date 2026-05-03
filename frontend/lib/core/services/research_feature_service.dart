@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 class ResearchFeatureService {
   final String baseUrl;
 
-  ResearchFeatureService({this.baseUrl = 'http://localhost:8000'});
+  ResearchFeatureService({this.baseUrl = 'http://localhost:8001'});
 
   /// Extract temporal features from interaction data
   Future<Map<String, dynamic>> extractTemporalFeatures(

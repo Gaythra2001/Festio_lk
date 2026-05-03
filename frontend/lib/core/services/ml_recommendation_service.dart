@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 class MLRecommendationService {
   final String baseUrl;
 
-  MLRecommendationService({this.baseUrl = 'http://localhost:8000'});
+  MLRecommendationService({this.baseUrl = 'http://localhost:8001'});
 
   /// Get personalized recommendations for a user
   Future<List<RecommendationModel>> getRecommendations({
