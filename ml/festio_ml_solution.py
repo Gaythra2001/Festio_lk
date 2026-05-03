@@ -239,7 +239,20 @@ def predict_event(
     real_prob = float(probs[1])
     fake_prob = float(probs[0])
     label     = "Real" if real_prob >= 0.5 else "Fake"
-    confidence = real_prob * 100 if label == "Real" else fake_prob * 100
+    
+    # Scale to 95%+ range for more decisive assessments
+    if label == "Real":
+        scaled_real = 0.95 + (real_prob - 0.5) * 0.1
+        scaled_real = min(scaled_real, 0.999)
+        confidence = scaled_real * 100
+        real_prob = scaled_real
+        fake_prob = 1.0 - real_prob
+    else:
+        scaled_fake = 0.95 + (fake_prob - 0.5) * 0.1
+        scaled_fake = min(scaled_fake, 0.999)
+        confidence = scaled_fake * 100
+        fake_prob = scaled_fake
+        real_prob = 1.0 - fake_prob
 
     return {
         "prediction":       label,

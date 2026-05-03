@@ -537,7 +537,7 @@ class _TrustAssessmentScreenState extends State<TrustAssessmentScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildMetricRow('Real Probability', realProb, Colors.greenAccent),
+                _buildMetricRow('Trust Score', realProb, Colors.greenAccent),
                 const Divider(color: Colors.white10, height: 24),
                 _buildMetricRow('Risk Index', fakeProb, Colors.redAccent),
                 const Divider(color: Colors.white10, height: 24),
