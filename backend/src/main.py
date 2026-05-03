@@ -18,7 +18,7 @@ from services.storage_service import get_storage_service
 from routes import (
     auth, events, bookings, users, organizers, recommendations,
     research_behavior, research_features, research_models,
-    trust_and_budget, revenue_optimization
+    trust as trust_and_budget, revenue_optimization
     # research_evaluation  # Temporarily disabled due to file corruption
 )
 
